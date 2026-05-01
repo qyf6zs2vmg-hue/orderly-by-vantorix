@@ -1,0 +1,52 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isDocOwner(docId) {
+       return request.auth.uid == docId;
+    }
+
+    function getUserData() {
+       return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    // Is the user an owner of any business
+    function isOwner() {
+       return isSignedIn() && exists(/databases/$(database)/documents/users/$(request.auth.uid)) && getUserData().role == 'owner';
+    }
+
+    function isBusinessOwner(bId) {
+        return isOwner() && getUserData().businessId == bId;
+    }
+
+    function isClientOfBusiness(bId) {
+        return isSignedIn() && exists(/databases/$(database)/documents/users/$(request.auth.uid)) && getUserData().role == 'client' && getUserData().businessId == bId;
+    }
+
+    match /businesses/{businessId} {
+        allow read: if isBusinessOwner(businessId) || isClientOfBusiness(businessId);
+        // During registration, a business is created
+        allow write: if isSignedIn(); 
+    }
+
+    match /invites/{inviteId} {
+      allow read: if true; // anyone can validate an invite
+      allow write: if isOwner() || isSignedIn(); // written during reg
+    }
+    
+    match /users/{userId} {
+      allow read: if isSignedIn();
+      allow write: if isOwner() || (isSignedIn() && isDocOwner(userId));
+    }
+    
+    match /orders/{orderId} {
+      allow read: if isOwner() || (isSignedIn() && resource.data.clientId == request.auth.uid);
+      allow write: if isSignedIn();
+    }
+  }
+}
+

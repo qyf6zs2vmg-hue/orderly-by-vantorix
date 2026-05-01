@@ -1,0 +1,10 @@
+{
+  "projectId": "vantorix-order-system",
+  "appId": "1:44411108084:web:852efaf03a9825b7353ca1",
+  "apiKey": "AIzaSyBU4qrEUCcvPPqJHT1H68yEDf0QiEGqLMA",
+  "authDomain": "vantorix-order-system.firebaseapp.com",
+  "firestoreDatabaseId": "(default)",
+  "storageBucket": "vantorix-order-system.firebasestorage.app",
+  "messagingSenderId": "44411108084",
+  "measurementId": "G-KLQZR4T5BF"
+}

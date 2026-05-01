@@ -72,7 +72,7 @@ export default function Login() {
           <div className="text-center mb-8 w-full flex flex-col items-center">
             <div className="flex flex-col items-center mb-6">
                <LogoSVG className="w-10 h-10 mb-2" />
-               <span className="font-bold tracking-[0.2em] text-[15px] text-text-main">VANTORIX</span>
+               <span className="font-bold tracking-[0.2em] text-[15px] text-text-main">Orderly</span>
             </div>
             
             <h2 className="text-[22px] font-bold text-text-main tracking-tight mb-2">Вход в систему</h2>

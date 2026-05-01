@@ -2,39 +2,39 @@ import React from 'react';
 
 export default function PrivacyPolicyContent() {
   return (
-    <div className="prose prose-sm xl:prose-base max-w-none prose-invert font-sans" style={{ textWrap: "balance" }}>
-      <h3 className="text-lg font-semibold text-white mb-2 mt-4">1. Какую информацию мы собираем</h3>
-      <p className="mb-4 text-[#A1A1AA]">
+    <div className="prose prose-sm xl:prose-base max-w-none font-sans" style={{ textWrap: "balance" }}>
+      <h3 className="text-lg font-semibold text-text-main mb-2 mt-4">1. Какую информацию мы собираем</h3>
+      <p className="mb-4 text-text-muted">
         Мы собираем персональные данные, необходимые для обеспечения работы сервиса: ваше имя, контактные данные электронную (почту, телефон) и информацию, связанную с профилем бизнеса. Также мы фиксируем данные об активности в приложении (входы, действия) с целью обеспечения безопасности и улучшения сервиса.
       </p>
 
-      <h3 className="text-lg font-semibold text-white mb-2 mt-4">2. Использование данных</h3>
-      <p className="mb-4 text-[#A1A1AA]">
+      <h3 className="text-lg font-semibold text-text-main mb-2 mt-4">2. Использование данных</h3>
+      <p className="mb-4 text-text-muted">
         Ваши данные используются для аутентификации, обработки ваших заказов, оказания услуг поддержки и улучшения бизнес-ориентированного функционала платформы. Кроме того, ваши данные используются для рассылки системных уведомлений.
       </p>
 
-      <h3 className="text-lg font-semibold text-white mb-2 mt-4">3. Хранение данных (Firebase)</h3>
-      <p className="mb-4 text-[#A1A1AA]">
+      <h3 className="text-lg font-semibold text-text-main mb-2 mt-4">3. Хранение данных (Firebase)</h3>
+      <p className="mb-4 text-text-muted">
         Мы используем сервисы Google Firebase (Firestore, Authentication) для хранения и обработки данных. Google обеспечивает высокий уровень безопасности данных и соответствие международным стандартам. Данные хранятся изолированно с использованием строгих правил доступа (Security Rules).
       </p>
 
-      <h3 className="text-lg font-semibold text-white mb-2 mt-4">4. Правила доступа</h3>
-      <p className="mb-4 text-[#A1A1AA]">
+      <h3 className="text-lg font-semibold text-text-main mb-2 mt-4">4. Правила доступа</h3>
+      <p className="mb-4 text-text-muted">
         Доступ к вашим данным ограничен рамками бизнеса, к которому вы присоединились или который создали. Администраторы бизнеса (Владельцы) могут просматривать информацию о пользователях в рамках своей организации. Мы не передаем данные третьим лицам без вашего явного согласия, за исключением случаев, предусмотренных законодательством.
       </p>
 
-      <h3 className="text-lg font-semibold text-white mb-2 mt-4">5. Безопасность</h3>
-      <p className="mb-4 text-[#A1A1AA]">
+      <h3 className="text-lg font-semibold text-text-main mb-2 mt-4">5. Безопасность</h3>
+      <p className="mb-4 text-text-muted">
         Мы принимаем необходимые организационные и технические меры для защиты персональных данных от неправомерного или случайного доступа. Все соединения осуществляются по защищенному протоколу HTTPS.
       </p>
 
-      <h3 className="text-lg font-semibold text-white mb-2 mt-4">6. Ответственность пользователя</h3>
-      <p className="mb-4 text-[#A1A1AA]">
+      <h3 className="text-lg font-semibold text-text-main mb-2 mt-4">6. Ответственность пользователя</h3>
+      <p className="mb-4 text-text-muted">
         Пользователь несет ответственность за сохранность своих учетных данных и паролей. Вы обязуетесь не разглашать информацию о своем аккаунте третьим лицам.
       </p>
 
-      <h3 className="text-lg font-semibold text-white mb-2 mt-4">7. Обновление политики</h3>
-      <p className="mb-4 text-[#A1A1AA]">
+      <h3 className="text-lg font-semibold text-text-main mb-2 mt-4">7. Обновление политики</h3>
+      <p className="mb-4 text-text-muted">
         Мы оставляем за собой право вносить изменения в настоящую Политику конфиденциальности. Новая редакция вступает в силу с момента ее публикации на этой странице. Продолжение использования системы после изменений означает согласие с актуальной версией документа.
       </p>
     </div>

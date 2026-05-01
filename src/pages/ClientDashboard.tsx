@@ -127,7 +127,7 @@ export default function ClientDashboard() {
         {/* Logo */}
         <div className="flex items-center gap-2 px-3 mb-1">
           <LogoSVG className="w-6 h-6" />
-          <span className="font-bold tracking-widest text-[16px]">VANTORIX</span>
+          <span className="font-bold tracking-widest text-[16px]">Orderly</span>
         </div>
         <div className="text-[10px] text-text-muted font-medium px-3 mb-8">Build. Automate. Scale.</div>
 

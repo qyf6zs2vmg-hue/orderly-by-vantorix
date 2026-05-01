@@ -11,7 +11,7 @@ export default function PendingApproval() {
         
         <div className="flex flex-col items-center mb-8">
             <LogoSVG className="w-10 h-10 mb-2" />
-            <span className="font-bold tracking-[0.2em] text-[15px] text-text-main">VANTORIX</span>
+            <span className="font-bold tracking-[0.2em] text-[15px] text-text-main">Orderly</span>
         </div>
 
         <div className="w-16 h-16 bg-[#F9F5F1] text-brand-primary border border-[#EFE8DE] rounded-2xl flex items-center justify-center mx-auto mb-6">

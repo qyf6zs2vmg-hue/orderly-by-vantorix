@@ -95,7 +95,7 @@ export default function App() {
         </div>
         
         <div className="pb-10 absolute bottom-0 w-full flex justify-center">
-          <div className="text-[13px] font-bold tracking-[0.15em] text-[#807D7A] uppercase">
+          <div className="text-[12px] font-bold tracking-[0.3em] text-[#807D7A] uppercase">
             BY VANTORIX
           </div>
         </div>

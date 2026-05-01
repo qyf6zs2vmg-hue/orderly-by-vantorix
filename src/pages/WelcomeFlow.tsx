@@ -20,7 +20,7 @@ export default function WelcomeFlow() {
   }
 
   if (user && appUser) {
-    if (appUser.role === 'owner') return <Navigate to="/admin" replace />;
+    if (appUser.role === 'owner' || appUser.role === 'admin') return <Navigate to="/admin" replace />;
     if (appUser.role === 'client') return <Navigate to="/client" replace />;
   }
 

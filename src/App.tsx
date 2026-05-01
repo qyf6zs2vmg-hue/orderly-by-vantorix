@@ -43,7 +43,11 @@ function ProtectedRoute({ children, requiredRole }: { children: React.ReactNode,
 
   if (appUser.status === 'blocked') return <div className="min-h-screen flex items-center justify-center bg-bg-base text-brand-danger text-xl font-medium font-sans">Ваш аккаунт заблокирован.</div>;
 
-  if (requiredRole && appUser.role !== requiredRole) {
+  if (requiredRole && requiredRole === 'owner') {
+    if (appUser.role !== 'owner' && appUser.role !== 'admin') {
+      return <Navigate to="/" replace />;
+    }
+  } else if (requiredRole && appUser.role !== requiredRole) {
     return <Navigate to="/" replace />;
   }
 
@@ -66,7 +70,7 @@ function HomeRedirect() {
     return <Navigate to="/welcome" replace />;
   }
 
-  if (appUser.role === 'owner') return <Navigate to="/admin" replace />;
+  if (appUser.role === 'owner' || appUser.role === 'admin') return <Navigate to="/admin" replace />;
   if (appUser.role === 'client') return <Navigate to="/client" replace />;
 
   return <Navigate to="/welcome" replace />;
@@ -112,6 +116,7 @@ export default function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/join" element={<Join />} />
+          <Route path="/invite/:code" element={<Join />} />
           <Route path="/admin" element={<ProtectedRoute requiredRole="owner"><AdminDashboard /></ProtectedRoute>} />
           <Route path="/client" element={<ProtectedRoute requiredRole="client"><ClientDashboard /></ProtectedRoute>} />
           <Route path="*" element={<Navigate to="/" replace />} />

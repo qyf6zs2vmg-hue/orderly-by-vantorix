@@ -49,12 +49,12 @@ export default function Login() {
         }
       }
 
-      if (userData.role === 'owner') {
+      if (userData.role === 'owner' || userData.role === 'admin') {
         navigate('/admin');
       } else if (userData.role === 'client') {
         navigate('/client');
       } else {
-        alert("Неизвестная роль");
+        alert("Неизвестная роль: " + userData.role);
       }
     } catch (err: any) {
       console.error("LOGIN ERROR:", err);

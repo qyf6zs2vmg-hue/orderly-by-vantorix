@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { createUserWithEmailAndPassword, sendEmailVerification, signOut } from 'firebase/auth';
 import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { auth, db } from '../lib/firebase';
-import { useNavigate, useSearchParams, Navigate } from 'react-router-dom';
+import { useNavigate, useSearchParams, useParams, Navigate } from 'react-router-dom';
 import { Lock, Mail, User as UserIcon, EyeOff, Building2 } from 'lucide-react';
 import { useAuth } from '../lib/AuthContext';
 import PrivacyPolicyContent from '../components/PrivacyPolicyContent';
@@ -10,7 +10,8 @@ import { LogoSVG } from '../components/SharedLogo';
 
 export default function Join() {
   const [searchParams] = useSearchParams();
-  const code = searchParams.get('code');
+  const params = useParams();
+  const code = params.code || searchParams.get('code');
   
   const [inviteData, setInviteData] = useState<any>(null);
   const [loadingInvite, setLoadingInvite] = useState(true);
@@ -68,10 +69,6 @@ export default function Join() {
 
     checkInvite();
   }, [code]);
-
-  if (user && appUser) {
-    return <Navigate to="/" replace />;
-  }
 
   const handleRegister = async (e: React.FormEvent | React.MouseEvent) => {
     if (e && e.preventDefault) e.preventDefault();

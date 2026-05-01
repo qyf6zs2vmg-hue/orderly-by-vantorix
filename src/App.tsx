@@ -84,12 +84,19 @@ export default function App() {
 
   if (initialLoading) {
     return (
-      <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-bg-base text-text-main font-sans">
-        <div className="flex flex-col items-center">
-          <div className="w-10 h-10 border-4 border-border-color border-t-brand-primary rounded-full animate-spin mb-6 drop-shadow-sm"></div>
-          <h1 className="text-4xl font-bold tracking-tight mb-2">Orderly</h1>
-          <div className="text-[11px] font-bold tracking-[0.2em] text-text-muted mt-4 uppercase">
-            by VANTORIX
+      <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[#F9F8F6] font-sans">
+        <div className="flex-1 flex items-center justify-center mt-[-40px]">
+          <div className="flex items-center gap-3.5">
+            <Loader2 className="w-11 h-11 animate-spin text-[#D97757]" strokeWidth={2.5} />
+            <h1 className="text-[46px] tracking-tight text-[#1A1A1A]" style={{ fontFamily: 'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif' }}>
+              Orderly
+            </h1>
+          </div>
+        </div>
+        
+        <div className="pb-10 absolute bottom-0 w-full flex justify-center">
+          <div className="text-[13px] font-bold tracking-[0.15em] text-[#807D7A] uppercase">
+            BY VANTORIX
           </div>
         </div>
       </div>

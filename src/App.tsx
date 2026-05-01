@@ -14,6 +14,7 @@ import ClientDashboard from './pages/ClientDashboard';
 import PendingApproval from './pages/PendingApproval';
 import WelcomeFlow from './pages/WelcomeFlow';
 import { Loader2 } from 'lucide-react';
+import { Analytics } from '@vercel/analytics/react';
 
 function ProtectedRoute({ children, requiredRole }: { children: React.ReactNode, requiredRole?: 'owner' | 'client' }) {
   const { user, appUser, loading } = useAuth();
@@ -117,6 +118,7 @@ export default function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>
+      <Analytics />
     </AuthProvider>
   );
 }

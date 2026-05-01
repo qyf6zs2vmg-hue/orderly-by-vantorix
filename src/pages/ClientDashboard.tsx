@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { collection, onSnapshot, query, where, addDoc, updateDoc, doc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { useAuth } from '../lib/AuthContext';
-import { LogOut, Store, ShoppingBag, Archive, Box, Plus, Minus, CreditCard, PackageCheck, ShoppingCart, Shield, Bell, Mail, ChevronDown } from 'lucide-react';
+import { LogOut, Store, ShoppingBag, Archive, Box, Plus, Minus, CreditCard, PackageCheck, ShoppingCart, Shield, Bell, Mail, ChevronDown, Menu } from 'lucide-react';
 import clsx from 'clsx';
 import PrivacyPolicyContent from '../components/PrivacyPolicyContent';
 import AnimatedSearch from '../components/AnimatedSearch';
@@ -22,6 +22,7 @@ export default function ClientDashboard() {
   
   const [cart, setCart] = useState<{product: any, quantity: number}[]>([]);
   const [myOrders, setMyOrders] = useState<any[]>([]);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     if (!appUser?.uid) return;
@@ -108,9 +109,20 @@ export default function ClientDashboard() {
   };
 
   return (
-    <div className="h-screen overflow-hidden bg-bg-base flex flex-col md:flex-row font-sans text-text-main">
+    <div className="h-screen overflow-hidden bg-bg-base flex flex-row font-sans text-text-main">
+      {/* Mobile Backdrop */}
+      {isMobileMenuOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-40 md:hidden transition-opacity"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
-      <div className="w-full md:w-[260px] flex-shrink-0 flex flex-col py-6 px-4 bg-bg-base border-b md:border-b-0 md:border-r border-border-color md:border-transparent z-20 h-auto md:h-full relative overflow-y-auto no-scrollbar">
+      <div className={clsx(
+        "fixed md:static inset-y-0 left-0 w-[260px] flex-shrink-0 flex flex-col py-6 px-4 bg-bg-base border-r border-border-color z-50 transition-transform duration-300 select-none h-full overflow-y-auto no-scrollbar",
+        isMobileMenuOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+      )}>
           
         {/* Logo */}
         <div className="flex items-center gap-2 px-3 mb-1">
@@ -180,11 +192,20 @@ export default function ClientDashboard() {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden relative">
+      <div className="flex-1 flex flex-col overflow-hidden relative w-full">
         {/* Top Header */}
-        <header className="px-8 py-6 flex items-center justify-between flex-shrink-0 z-30">
-           <div className="flex-1 md:flex-none">
-              <div className="hidden md:block">
+        <header className="px-4 md:px-8 py-4 md:py-6 flex items-center justify-between flex-shrink-0 z-30">
+           
+           <div className="flex items-center flex-1 md:flex-none">
+              {/* Mobile Menu Button */}
+              <button 
+                className="md:hidden p-2 text-text-muted hover:text-text-main transition-colors mr-3"
+                onClick={() => setIsMobileMenuOpen(true)}
+              >
+                 <Menu className="w-5 h-5" />
+              </button>
+
+              <div className={clsx("hidden md:block", activeTab !== 'shop' && "invisible")}>
                  <AnimatedSearch />
               </div>
            </div>
@@ -211,7 +232,7 @@ export default function ClientDashboard() {
            </div>
         </header>
 
-        <main className="flex-1 overflow-y-auto px-4 md:px-8 pb-8 no-scrollbar">
+        <main className="flex-1 overflow-y-auto px-4 md:px-8 pb-8 no-scrollbar" onClick={() => setIsMobileMenuOpen(false)}>
         {activeTab === 'shop' && (
           <div className="max-w-6xl flex flex-col xl:flex-row gap-8 relative z-10 w-full mx-auto animate-in fade-in duration-300">
             <div className="flex-1">

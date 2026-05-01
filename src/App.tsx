@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './lib/AuthContext';
 import Login from './pages/Login';
@@ -73,6 +73,29 @@ function HomeRedirect() {
 }
 
 export default function App() {
+  const [initialLoading, setInitialLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setInitialLoading(false);
+    }, 5000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (initialLoading) {
+    return (
+      <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-bg-base text-text-main font-sans">
+        <div className="flex flex-col items-center">
+          <div className="w-10 h-10 border-4 border-border-color border-t-brand-primary rounded-full animate-spin mb-6 drop-shadow-sm"></div>
+          <h1 className="text-4xl font-bold tracking-tight mb-2">Orderly</h1>
+          <div className="text-[11px] font-bold tracking-[0.2em] text-text-muted mt-4 uppercase">
+            by VANTORIX
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <AuthProvider>
       <BrowserRouter>

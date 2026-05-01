@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { collection, onSnapshot, query, where, doc, updateDoc, deleteDoc, setDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { useAuth } from '../lib/AuthContext';
-import { LogOut, Key, Users, Copy, RefreshCcw, ShoppingCart, Shield, Bell, Mail, ChevronDown, Search, Plus, Store, Box } from 'lucide-react';
+import { LogOut, Key, Users, Copy, RefreshCcw, ShoppingCart, Shield, Bell, Mail, ChevronDown, Search, Plus, Store, Box, Menu } from 'lucide-react';
 import clsx from 'clsx';
 import { LogoSVG } from '../components/SharedLogo';
 import PrivacyPolicyContent from '../components/PrivacyPolicyContent';
@@ -33,6 +33,7 @@ export default function AdminDashboard() {
   const [activeUsers, setActiveUsers] = useState<any[]>([]);
   const [orders, setOrders] = useState<any[]>([]);
   const [editingClient, setEditingClient] = useState<{id: string, name: string, companyName: string} | null>(null);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     if (!appUser?.businessId) return;
@@ -93,9 +94,20 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="h-screen overflow-hidden bg-bg-base flex flex-col md:flex-row font-sans text-text-main">
+    <div className="h-screen overflow-hidden bg-bg-base flex flex-row font-sans text-text-main">
+      {/* Mobile Backdrop */}
+      {isMobileMenuOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-40 md:hidden transition-opacity"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
-      <div className="w-full md:w-[260px] flex-shrink-0 flex flex-col py-6 px-4 bg-bg-base border-b md:border-b-0 md:border-r border-border-color md:border-transparent z-20 h-auto md:h-full relative overflow-y-auto no-scrollbar">
+      <div className={clsx(
+        "fixed md:static inset-y-0 left-0 w-[260px] flex-shrink-0 flex flex-col py-6 px-4 bg-bg-base border-r border-border-color z-50 transition-transform duration-300 select-none h-full overflow-y-auto no-scrollbar",
+        isMobileMenuOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+      )}>
         
         {/* Logo */}
         <div className="flex items-center gap-2 px-3 mb-1">
@@ -180,11 +192,20 @@ export default function AdminDashboard() {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden relative">
+      <div className="flex-1 flex flex-col overflow-hidden relative w-full">
         {/* Top Header */}
-        <header className="px-8 py-6 flex items-center justify-between flex-shrink-0 z-30">
+        <header className="px-4 md:px-8 py-4 md:py-6 flex items-center justify-between flex-shrink-0 z-30">
+             
+             {/* Mobile Menu Button */}
+             <button 
+               className="md:hidden p-2 text-text-muted hover:text-text-main transition-colors mr-2"
+               onClick={() => setIsMobileMenuOpen(true)}
+             >
+                <Menu className="w-5 h-5" />
+             </button>
+
              {/* Search */}
-             <div className="relative w-[360px] hidden md:block">
+             <div className={clsx("relative w-[360px] hidden md:block", activeTab !== 'products' && "invisible")}>
                 <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
                 <input 
                   type="text" 
@@ -217,7 +238,7 @@ export default function AdminDashboard() {
              </div>
         </header>
 
-        <main className="flex-1 overflow-y-auto px-4 md:px-8 pb-8 no-scrollbar">
+        <main className="flex-1 overflow-y-auto px-4 md:px-8 pb-8 no-scrollbar" onClick={() => setIsMobileMenuOpen(false)}>
           
           {/* Invites Tab */}
           {activeTab === 'invites' && (

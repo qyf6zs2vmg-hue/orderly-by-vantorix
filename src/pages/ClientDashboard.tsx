@@ -148,7 +148,7 @@ export default function ClientDashboard() {
             className={clsx("flex items-center px-4 py-2.5 rounded-[10px] text-[13px] font-medium transition-colors", activeTab === 'shop' ? "bg-[#F3EBE1] text-brand-primary" : "text-text-muted hover:text-text-main hover:bg-[#FAF7F2]")}
           >
             <Store className={clsx("w-4 h-4 mr-3", activeTab === 'shop' ? "text-brand-primary" : "text-text-muted")} />
-            Каталог
+            Товары (Заказ)
           </button>
           
           <button
@@ -157,7 +157,7 @@ export default function ClientDashboard() {
           >
             <div className="flex items-center">
               <ShoppingBag className={clsx("w-4 h-4 mr-3", activeTab === 'active' ? "text-brand-primary" : "text-text-muted")} />
-              Активные
+              Мои заказы
             </div>
             {myOrders.filter(o => o.status === 'active').length > 0 && (
               <span className="bg-brand-primary text-white text-[10px] px-2 py-0.5 rounded-[6px] font-bold ml-auto shadow-sm">
@@ -171,7 +171,7 @@ export default function ClientDashboard() {
             className={clsx("flex items-center px-4 py-2.5 rounded-[10px] text-[13px] font-medium transition-colors", activeTab === 'archive' ? "bg-[#F3EBE1] text-brand-primary" : "text-text-muted hover:text-text-main hover:bg-[#FAF7F2]")}
           >
             <Archive className={clsx("w-4 h-4 mr-3", activeTab === 'archive' ? "text-brand-primary" : "text-text-muted")} />
-            Архив
+            Архив заказов
           </button>
 
           <button

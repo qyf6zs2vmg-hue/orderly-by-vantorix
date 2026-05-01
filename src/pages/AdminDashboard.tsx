@@ -7,8 +7,8 @@ import clsx from 'clsx';
 import { LogoSVG } from '../components/SharedLogo';
 import PrivacyPolicyContent from '../components/PrivacyPolicyContent';
 
-function generateRandomCode(length = 8) {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+function generateRandomCode(length = 24) {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
   let result = '';
   for (let i = 0; i < length; i++) {
     result += chars.charAt(Math.floor(Math.random() * chars.length));

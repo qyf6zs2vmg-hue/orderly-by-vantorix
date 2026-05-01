@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { createUserWithEmailAndPassword, sendEmailVerification, signOut } from 'firebase/auth';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification, signOut } from 'firebase/auth';
 import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { auth, db } from '../lib/firebase';
 import { useNavigate, useSearchParams, useParams, Navigate } from 'react-router-dom';
@@ -18,7 +18,6 @@ export default function Join() {
   const [inviteError, setInviteError] = useState('');
 
   const [name, setName] = useState('');
-  const [companyName, setCompanyName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -26,9 +25,27 @@ export default function Join() {
   const [agreePrivacy, setAgreePrivacy] = useState(false);
   const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isLogin, setIsLogin] = useState(false);
   
   const navigate = useNavigate();
   const { user, appUser } = useAuth();
+  
+  useEffect(() => {
+    if (user && appUser && inviteData) {
+      if (appUser.role === 'client') {
+         if (appUser.businessId === inviteData.businessId) {
+             navigate('/client', { replace: true });
+         } else {
+             // they might belong to another business, let's keep them here 
+             // but visually maybe they should log out first?
+             // Actually if they are logged in, just redirect to their dashboard
+             navigate('/client', { replace: true });
+         }
+      } else {
+         navigate('/admin', { replace: true });
+      }
+    }
+  }, [user, appUser, inviteData, navigate]);
 
   useEffect(() => {
     async function checkInvite() {
@@ -70,10 +87,10 @@ export default function Join() {
     checkInvite();
   }, [code]);
 
-  const handleRegister = async (e: React.FormEvent | React.MouseEvent) => {
+  const handleSubmit = async (e: React.FormEvent | React.MouseEvent) => {
     if (e && e.preventDefault) e.preventDefault();
     if (!inviteData) return;
-    if (!agreePrivacy) {
+    if (!isLogin && !agreePrivacy) {
       setError('Вы должны согласиться с Политикой конфиденциальности');
       return;
     }
@@ -82,31 +99,63 @@ export default function Join() {
     setLoading(true);
 
     try {
-      const userCred = await createUserWithEmailAndPassword(auth, email, password);
-      const uid = userCred.user.uid;
+      if (isLogin) {
+        // Handle Login
+        const userCred = await signInWithEmailAndPassword(auth, email, password);
+        const uid = userCred.user.uid;
+        const userDoc = await getDoc(doc(db, 'users', uid));
+        
+        if (userDoc.exists()) {
+          const ud = userDoc.data();
+          if (ud.role === 'client') {
+            if (ud.businessId !== inviteData.businessId) {
+                // Assign to this new business? 
+                // Typically you only belong to one business or we just overwrite it
+                await updateDoc(doc(db, 'users', uid), {
+                    businessId: inviteData.businessId,
+                    inviteCode: code,
+                    status: ud.status === 'blocked' ? 'blocked' : 'pending' 
+                });
+                await updateDoc(doc(db, 'invites', inviteData.id), { used: true });
+            }
+            navigate('/client');
+          } else {
+             navigate('/admin');
+          }
+        }
+      } else {
+        // Handle Register
+        const userCred = await createUserWithEmailAndPassword(auth, email, password);
+        const uid = userCred.user.uid;
 
-      await setDoc(doc(db, 'users', uid), {
-        uid: uid,
-        name: name,
-        companyName: companyName,
-        email: email,
-        role: 'client',
-        status: 'pending',
-        inviteCode: code,
-        businessId: inviteData.businessId
-      });
+        await setDoc(doc(db, 'users', uid), {
+          uid: uid,
+          name: name,
+          email: email,
+          role: 'client',
+          status: 'pending',
+          inviteCode: code,
+          businessId: inviteData.businessId
+        });
 
-      await updateDoc(doc(db, 'invites', inviteData.id), {
-        used: true
-      });
+        await updateDoc(doc(db, 'invites', inviteData.id), {
+          used: true
+        });
 
-      await sendEmailVerification(userCred.user);
-      await signOut(auth);
+        await sendEmailVerification(userCred.user);
+        await signOut(auth);
 
-      setIsSubmitted(true);
+        setIsSubmitted(true);
+      }
     } catch (err: any) {
       console.error(err);
-      setError(err.message || 'Ошибка регистрации');
+      if (err.code === 'auth/invalid-credential') {
+        setError('Неверный email или пароль');
+      } else if (err.code === 'auth/email-already-in-use') {
+        setError('Этот email уже зарегистрирован. Войдите в аккаунт.');
+      } else {
+        setError(err.message || 'Ошибка');
+      }
     } finally {
       setLoading(false);
     }
@@ -202,36 +251,38 @@ export default function Join() {
                 </div>
               )}
               
-              <form onSubmit={handleRegister} className="space-y-4">
-                <div className="space-y-1.5">
-                  <label className="text-[13px] font-medium text-text-main">Ваше имя</label>
-                  <div className="relative">
-                    <UserIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-                    <input
-                      type="text"
-                      required
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2.5 rounded-[10px] bg-surface border border-border-color text-text-main focus:border-brand-primary focus:ring-1 focus:ring-brand-primary outline-none transition-all placeholder:text-text-muted text-[13px] shadow-[0_1px_2px_rgba(16,24,40,0.04)]"
-                      placeholder="Иван Иванов"
-                    />
-                  </div>
-                </div>
+              <div className="flex bg-surface-alt rounded-[10px] p-1 mb-6">
+                 <button
+                   onClick={() => { setIsLogin(false); setError(''); }}
+                   className={`flex-1 py-1.5 text-[13px] font-medium rounded-md transition-all ${!isLogin ? 'bg-surface shadow-sm text-text-main' : 'text-text-muted hover:text-text-main'}`}
+                 >
+                   Регистрация
+                 </button>
+                 <button
+                   onClick={() => { setIsLogin(true); setError(''); }}
+                   className={`flex-1 py-1.5 text-[13px] font-medium rounded-md transition-all ${isLogin ? 'bg-surface shadow-sm text-text-main' : 'text-text-muted hover:text-text-main'}`}
+                 >
+                   Вход
+                 </button>
+              </div>
 
-                <div className="space-y-1.5">
-                  <label className="text-[13px] font-medium text-text-main">Название вашей компании</label>
-                  <div className="relative">
-                    <Building2 className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-                    <input
-                      type="text"
-                      required
-                      value={companyName}
-                      onChange={(e) => setCompanyName(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2.5 rounded-[10px] bg-surface border border-border-color text-text-main focus:border-brand-primary focus:ring-1 focus:ring-brand-primary outline-none transition-all placeholder:text-text-muted text-[13px] shadow-[0_1px_2px_rgba(16,24,40,0.04)]"
-                      placeholder="ООО Клиент"
-                    />
+              <form onSubmit={handleSubmit} className="space-y-4">
+                {!isLogin && (
+                  <div className="space-y-1.5">
+                    <label className="text-[13px] font-medium text-text-main">Ваше имя</label>
+                    <div className="relative">
+                      <UserIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+                      <input
+                        type="text"
+                        required={!isLogin}
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        className="w-full pl-10 pr-4 py-2.5 rounded-[10px] bg-surface border border-border-color text-text-main focus:border-brand-primary focus:ring-1 focus:ring-brand-primary outline-none transition-all placeholder:text-text-muted text-[13px] shadow-[0_1px_2px_rgba(16,24,40,0.04)]"
+                        placeholder="Иван Иванов"
+                      />
+                    </div>
                   </div>
-                </div>
+                )}
                 
                 <div className="space-y-1.5">
                   <label className="text-[13px] font-medium text-text-main">Email</label>
@@ -267,32 +318,34 @@ export default function Join() {
                   </div>
                 </div>
 
-                <div className="flex items-start gap-2.5 mt-6 mb-6 px-1">
-                  <div className="flex items-center h-5">
-                    <input
-                      id="privacy-join"
-                      type="checkbox"
-                      checked={agreePrivacy}
-                      onChange={(e) => setAgreePrivacy(e.target.checked)}
-                      className="w-4 h-4 rounded border-border-color text-brand-primary bg-surface focus:ring-brand-primary/20 cursor-pointer"
-                    />
+                {!isLogin && (
+                  <div className="flex items-start gap-2.5 mt-6 mb-6 px-1">
+                    <div className="flex items-center h-5">
+                      <input
+                        id="privacy-join"
+                        type="checkbox"
+                        checked={agreePrivacy}
+                        onChange={(e) => setAgreePrivacy(e.target.checked)}
+                        className="w-4 h-4 rounded border-border-color text-brand-primary bg-surface focus:ring-brand-primary/20 cursor-pointer"
+                      />
+                    </div>
+                    <label htmlFor="privacy-join" className="text-[12px] text-text-muted leading-snug cursor-pointer">
+                      Я соглашаюсь с <button type="button" onClick={() => setIsPrivacyModalOpen(true)} className="text-brand-primary hover:text-brand-light hover:underline font-medium">Политикой конфиденциальности</button>
+                    </label>
                   </div>
-                  <label htmlFor="privacy-join" className="text-[12px] text-text-muted leading-snug cursor-pointer">
-                    Я соглашаюсь с <button type="button" onClick={() => setIsPrivacyModalOpen(true)} className="text-brand-primary hover:text-brand-light hover:underline font-medium">Политикой конфиденциальности</button>
-                  </label>
-                </div>
+                )}
                 
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full bg-gradient-to-r from-brand-primary to-brand-light text-white py-2.5 px-4 rounded-[10px] font-medium hover:opacity-90 transition-opacity disabled:opacity-70 flex justify-center items-center shadow-sm text-[14px]"
+                  className="w-full bg-gradient-to-r from-brand-primary to-brand-light text-white py-2.5 px-4 rounded-[10px] font-medium hover:opacity-90 transition-opacity disabled:opacity-70 flex justify-center items-center shadow-sm text-[14px] mt-4"
                 >
-                  {loading ? 'Создание...' : 'Зарегистрироваться'}
+                  {loading ? (isLogin ? 'Вход...' : 'Создание...') : (isLogin ? 'Войти' : 'Зарегистрироваться')}
                 </button>
               </form>
 
-               <div className="mt-8 text-center text-[11px] text-text-muted font-medium">
-                  © {new Date().getFullYear()} Vantorix. All rights reserved.
+               <div className="mt-8 text-center text-[11px] text-text-muted font-medium uppercase tracking-[0.2em]">
+                  BY VANTORIX
                </div>
           </div>
         </div>

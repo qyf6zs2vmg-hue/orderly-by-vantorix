@@ -32,17 +32,8 @@ export default function Join() {
   
   useEffect(() => {
     if (user && appUser && inviteData) {
-      if (appUser.role === 'client') {
-         if (appUser.businessId === inviteData.businessId) {
-             navigate('/client', { replace: true });
-         } else {
-             // they might belong to another business, let's keep them here 
-             // but visually maybe they should log out first?
-             // Actually if they are logged in, just redirect to their dashboard
-             navigate('/client', { replace: true });
-         }
-      } else {
-         navigate('/admin', { replace: true });
+      if (appUser.role === 'client' && appUser.businessId === inviteData.businessId) {
+         navigate('/client', { replace: true });
       }
     }
   }, [user, appUser, inviteData, navigate]);
@@ -223,6 +214,42 @@ export default function Join() {
               Перейти ко входу
             </button>
 
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (user && appUser && inviteData) {
+    return (
+      <div className="min-h-screen bg-bg-base flex flex-col items-center justify-center p-6 font-sans relative overflow-hidden">
+        <div className="w-full max-w-[420px] relative z-10 my-8">
+          <div className="bg-surface rounded-[24px] p-10 shadow-[0_12px_28px_rgba(16,24,40,0.06)] border border-border-color flex flex-col items-center text-center">
+            
+            <div className="w-16 h-16 bg-brand-primary/10 text-brand-primary rounded-full flex items-center justify-center mb-6 border border-brand-primary/20">
+              <UserIcon className="w-8 h-8" />
+            </div>
+            
+            <h1 className="text-[22px] font-bold text-text-main tracking-tight mb-3">Вы уже авторизованы</h1>
+            <p className="text-[14px] text-text-muted mb-8 leading-relaxed">
+              Вы вошли в систему как <br /><span className="font-medium text-text-main">{appUser.email || user.email}</span>.<br/><br/>
+              Чтобы зарегистрироваться или войти по этому приглашению, необходимо выйти из текущего аккаунта.
+            </p>
+
+            <div className="w-full flex gap-3">
+               <button
+                 onClick={() => signOut(auth)}
+                 className="flex-1 bg-surface border border-border-color hover:bg-surface-alt text-text-main py-2.5 px-4 rounded-[10px] font-medium transition-colors shadow-sm text-[13px]"
+               >
+                 Выйти
+               </button>
+               <button
+                 onClick={() => navigate(appUser.role === 'client' ? '/client' : '/admin')}
+                 className="flex-1 bg-brand-primary text-white py-2.5 px-4 rounded-[10px] font-medium transition-opacity hover:opacity-90 shadow-sm text-[13px]"
+               >
+                 В панель
+               </button>
+            </div>
           </div>
         </div>
       </div>

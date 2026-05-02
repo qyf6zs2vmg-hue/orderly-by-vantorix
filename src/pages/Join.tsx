@@ -24,7 +24,6 @@ export default function Join() {
   const [loading, setLoading] = useState(false);
   const [agreePrivacy, setAgreePrivacy] = useState(false);
   const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState(false);
-  const [isSubmitted, setIsSubmitted] = useState(false);
   const [isLogin, setIsLogin] = useState(false);
   
   const navigate = useNavigate();
@@ -133,10 +132,8 @@ export default function Join() {
           used: true
         });
 
-        await sendEmailVerification(userCred.user);
-        await signOut(auth);
-
-        setIsSubmitted(true);
+        // Skip email verification and don't sign out. The AuthContext will pick up the user,
+        // and the useEffect above will redirect them to /client, which in turn will show PendingApproval.
       }
     } catch (err: any) {
       console.error(err);
@@ -186,34 +183,6 @@ export default function Join() {
              <div className="text-text-muted leading-relaxed text-[13px]">
                <PrivacyPolicyContent />
              </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (isSubmitted) {
-    return (
-      <div className="min-h-screen bg-bg-base flex flex-col items-center justify-center p-6 font-sans relative overflow-hidden">
-        <div className="w-full max-w-[420px] relative z-10 my-8">
-          <div className="bg-surface rounded-[24px] p-10 shadow-[0_12px_28px_rgba(16,24,40,0.06)] border border-border-color flex flex-col items-center text-center">
-            
-            <div className="w-16 h-16 bg-brand-success/10 text-brand-success rounded-full flex items-center justify-center mb-6 border border-brand-success/20">
-              <Mail className="w-8 h-8" />
-            </div>
-            
-            <h1 className="text-[22px] font-bold text-text-main tracking-tight mb-3">Проверьте вашу почту</h1>
-            <p className="text-[14px] text-text-muted mb-8 leading-relaxed">
-              Мы отправили письмо с подтверждением на <br/><span className="font-medium text-text-main">{email}</span>. Пожалуйста, перейдите по ссылке в письме для завершения регистрации.
-            </p>
-
-            <button
-              onClick={() => navigate('/login')}
-              className="w-full bg-surface border border-border-color hover:bg-surface-alt text-text-main py-2.5 px-4 rounded-[10px] font-medium transition-colors shadow-sm text-[14px]"
-            >
-              Перейти ко входу
-            </button>
-
           </div>
         </div>
       </div>
@@ -372,7 +341,7 @@ export default function Join() {
               </form>
 
                <div className="mt-8 text-center text-[11px] text-text-muted font-medium uppercase tracking-[0.2em]">
-                  BY VANTORIX
+                  BY VANTORIX LABS
                </div>
           </div>
         </div>

@@ -48,7 +48,7 @@ export default function WelcomeFlow() {
             </p>
 
             <div className="text-[11px] font-bold tracking-[0.2em] text-text-muted mt-2 mb-8 uppercase">
-              by VANTORIX
+              by VANTORIX LABS
             </div>
 
             <button 
@@ -77,7 +77,7 @@ export default function WelcomeFlow() {
                 <div className="text-center mb-8 w-full">
                   <div className="flex flex-col items-center mb-6">
                     <span className="font-bold tracking-[0.2em] text-[15px] text-text-main mb-1">Orderly</span>
-                    <span className="text-[10px] uppercase font-bold tracking-[0.2em] text-text-muted">by VANTORIX</span>
+                    <span className="text-[10px] uppercase font-bold tracking-[0.2em] text-text-muted">by VANTORIX LABS</span>
                   </div>
                   <h2 className="text-[22px] font-bold text-text-main tracking-tight mb-2">Начало работы</h2>
                   <p className="text-text-muted text-[13px]">Выберите вариант входа для продолжения</p>
@@ -100,7 +100,7 @@ export default function WelcomeFlow() {
                 </div>
 
                 <div className="mt-8 text-[11px] text-text-muted font-medium uppercase tracking-wider">
-                  by Vantorix
+                  by VANTORIX LABS
                 </div>
              </div>
           </motion.div>

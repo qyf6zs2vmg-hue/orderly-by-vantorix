@@ -32,7 +32,7 @@ export default function AdminDashboard() {
   const [pendingUsers, setPendingUsers] = useState<any[]>([]);
   const [activeUsers, setActiveUsers] = useState<any[]>([]);
   const [orders, setOrders] = useState<any[]>([]);
-  const [editingClient, setEditingClient] = useState<{id: string, name: string, companyName: string} | null>(null);
+  const [editingClient, setEditingClient] = useState<{id: string, name: string} | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
@@ -87,8 +87,7 @@ export default function AdminDashboard() {
   const handleSaveEdit = async () => {
     if (!editingClient) return;
     await updateDoc(doc(db, 'users', editingClient.id), {
-      name: editingClient.name,
-      companyName: editingClient.companyName
+      name: editingClient.name
     });
     setEditingClient(null);
   };
@@ -187,7 +186,7 @@ export default function AdminDashboard() {
            <button onClick={logout} className="w-full flex justify-center items-center py-2 px-4 rounded-[10px] text-[13px] font-medium text-text-muted hover:text-text-main hover:bg-surface-alt transition-colors">
              <LogOut className="w-4 h-4 mr-2" /> Log out
            </button>
-           <div className="text-[10px] text-text-muted font-medium">© {new Date().getFullYear()} Vantorix. All rights reserved.</div>
+           <div className="text-[10px] text-text-muted font-medium">© {new Date().getFullYear()} Vantorix Labs. All rights reserved.</div>
         </div>
       </div>
 
@@ -317,7 +316,7 @@ export default function AdminDashboard() {
                 <table className="w-full text-left text-[13px] min-w-[600px]">
                   <thead className="bg-[#FAF7F2] border-b border-border-color">
                     <tr>
-                      <th className="px-6 py-4 font-medium text-text-muted uppercase text-[11px] tracking-wider">Имя / Компания</th>
+                      <th className="px-6 py-4 font-medium text-text-muted uppercase text-[11px] tracking-wider">Имя</th>
                       <th className="px-6 py-4 font-medium text-text-muted uppercase text-[11px] tracking-wider">Email</th>
                       <th className="px-6 py-4 font-medium text-text-muted uppercase text-[11px] tracking-wider">Инвайт</th>
                       <th className="px-6 py-4 font-medium text-text-muted text-right uppercase text-[11px] tracking-wider">Действия</th>
@@ -333,15 +332,8 @@ export default function AdminDashboard() {
                                 type="text" 
                                 value={editingClient.name} 
                                 onChange={(e) => setEditingClient({...editingClient, name: e.target.value})}
-                                className="w-full bg-surface border border-border-color text-text-main rounded-md px-2.5 py-1.5 mb-2 focus:outline-none focus:border-brand-primary shadow-sm text-[13px]"
-                                placeholder="Имя"
-                              />
-                              <input 
-                                type="text" 
-                                value={editingClient.companyName} 
-                                onChange={(e) => setEditingClient({...editingClient, companyName: e.target.value})}
                                 className="w-full bg-surface border border-border-color text-text-main rounded-md px-2.5 py-1.5 focus:outline-none focus:border-brand-primary shadow-sm text-[13px]"
-                                placeholder="Название компании"
+                                placeholder="Имя"
                               />
                             </td>
                             <td className="px-6 py-4 text-text-muted">{user.email}</td>
@@ -359,7 +351,6 @@ export default function AdminDashboard() {
                           <>
                             <td className="px-6 py-4 text-text-main">
                               <div className="font-semibold">{user.name}</div>
-                              <div className="text-[12px] text-text-muted mt-0.5">{user.companyName || '-'}</div>
                             </td>
                             <td className="px-6 py-4 text-text-muted">{user.email}</td>
                             <td className="px-6 py-4 font-mono text-text-muted text-[12px]"><span className="bg-surface-alt px-1.5 py-0.5 border border-border-color rounded">{user.inviteCode}</span></td>
@@ -367,7 +358,7 @@ export default function AdminDashboard() {
                               <button onClick={() => handleApproveUser(user.id)} className="bg-brand-success/10 text-brand-success px-3 py-1.5 rounded-[8px] text-[12px] font-medium hover:bg-brand-success/20 transition-colors">
                                 Одобрить
                               </button>
-                              <button onClick={() => setEditingClient({ id: user.id, name: user.name, companyName: user.companyName || '' })} className="bg-surface border border-border-color text-text-main px-3 py-1.5 rounded-[8px] text-[12px] font-medium hover:bg-surface-alt transition-colors shadow-sm">
+                              <button onClick={() => setEditingClient({ id: user.id, name: user.name })} className="bg-surface border border-border-color text-text-main px-3 py-1.5 rounded-[8px] text-[12px] font-medium hover:bg-surface-alt transition-colors shadow-sm">
                                 Изменить
                               </button>
                               <button onClick={() => handleRejectUser(user.id)} className="bg-brand-danger/10 text-brand-danger px-3 py-1.5 rounded-[8px] text-[12px] font-medium hover:bg-brand-danger/20 transition-colors">
@@ -398,7 +389,7 @@ export default function AdminDashboard() {
                 <table className="w-full text-left text-[13px] min-w-[600px]">
                   <thead className="bg-[#FAF7F2] border-b border-border-color">
                     <tr>
-                      <th className="px-6 py-4 font-medium text-text-muted uppercase text-[11px] tracking-wider">Имя / Компания</th>
+                      <th className="px-6 py-4 font-medium text-text-muted uppercase text-[11px] tracking-wider">Имя</th>
                       <th className="px-6 py-4 font-medium text-text-muted uppercase text-[11px] tracking-wider">Email</th>
                       <th className="px-6 py-4 font-medium text-text-muted uppercase text-[11px] tracking-wider">Статус</th>
                       <th className="px-6 py-4 font-medium text-text-muted text-right uppercase text-[11px] tracking-wider">Действия</th>
@@ -409,7 +400,6 @@ export default function AdminDashboard() {
                       <tr key={user.id} className="hover:bg-[#FAF7F2]/50 transition-colors">
                         <td className="px-6 py-4 text-text-main">
                           <div className="font-semibold">{user.name}</div>
-                          <div className="text-[12px] text-text-muted mt-0.5">{user.companyName || '-'}</div>
                         </td>
                         <td className="px-6 py-4 text-text-muted">{user.email}</td>
                         <td className="px-6 py-4">

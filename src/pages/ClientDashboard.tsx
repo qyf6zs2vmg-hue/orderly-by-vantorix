@@ -2,10 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { collection, onSnapshot, query, where, addDoc, updateDoc, doc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { useAuth } from '../lib/AuthContext';
-import { LogOut, Store, ShoppingBag, Archive, Box, Plus, Minus, CreditCard, PackageCheck, ShoppingCart, Shield, Bell, Mail, ChevronDown, Menu } from 'lucide-react';
+import { LogOut, Store, ShoppingBag, Archive, Box, Plus, Minus, CreditCard, PackageCheck, ShoppingCart, Shield, Bell, Mail, ChevronDown, Menu, Search, Loader2, CheckCircle } from 'lucide-react';
 import clsx from 'clsx';
+import { motion, AnimatePresence } from 'motion/react';
 import PrivacyPolicyContent from '../components/PrivacyPolicyContent';
-import AnimatedSearch from '../components/AnimatedSearch';
 import { LogoSVG } from '../components/SharedLogo';
 
 const PRODUCTS = [
@@ -19,10 +19,12 @@ const PRODUCTS = [
 export default function ClientDashboard() {
   const { logout, appUser, business } = useAuth();
   const [activeTab, setActiveTab] = useState<'shop' | 'active' | 'archive' | 'privacy'>('shop');
+  const [searchQuery, setSearchQuery] = useState('');
   
   const [cart, setCart] = useState<{product: any, quantity: number}[]>([]);
   const [myOrders, setMyOrders] = useState<any[]>([]);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [checkoutState, setCheckoutState] = useState<'idle' | 'processing' | 'success'>('idle');
 
   useEffect(() => {
     if (!appUser?.uid) return;
@@ -83,6 +85,8 @@ export default function ClientDashboard() {
     if (cart.length === 0) return;
     if (!appUser?.businessId) return;
     
+    setCheckoutState('processing');
+
     const orderItems = cart.map(i => ({
       id: i.product.id,
       name: i.product.name,
@@ -90,18 +94,30 @@ export default function ClientDashboard() {
       quantity: i.quantity
     }));
 
-    await addDoc(collection(db, 'orders'), {
-      businessId: appUser.businessId,
-      clientId: appUser?.uid,
-      clientName: appUser?.name,
-      items: orderItems,
-      total: cartTotal,
-      status: 'active',
-      createdAt: Date.now()
-    });
+    try {
+      await addDoc(collection(db, 'orders'), {
+        businessId: appUser.businessId,
+        clientId: appUser?.uid,
+        clientName: appUser?.name,
+        items: orderItems,
+        total: cartTotal,
+        status: 'active',
+        createdAt: Date.now()
+      });
 
-    setCart([]);
-    setActiveTab('active');
+      setCart([]);
+      
+      setTimeout(() => {
+        setCheckoutState('success');
+        setTimeout(() => {
+          setCheckoutState('idle');
+          setActiveTab('active');
+        }, 4500);
+      }, 5500);
+    } catch (err) {
+      console.error(err);
+      setCheckoutState('idle');
+    }
   };
 
   const handleMarkReceived = async (orderId: string) => {
@@ -109,14 +125,54 @@ export default function ClientDashboard() {
   };
 
   return (
-    <div className="h-screen overflow-hidden bg-bg-base flex flex-row font-sans text-text-main">
-      {/* Mobile Backdrop */}
-      {isMobileMenuOpen && (
-        <div 
-          className="fixed inset-0 bg-black/50 z-40 md:hidden transition-opacity"
-          onClick={() => setIsMobileMenuOpen(false)}
-        />
-      )}
+    <>
+      <AnimatePresence>
+        {checkoutState !== 'idle' && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-bg-base"
+          >
+            {checkoutState === 'processing' ? (
+              <motion.div 
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                className="flex flex-col items-center text-center px-6"
+              >
+                 <Loader2 className="w-16 h-16 text-brand-primary animate-spin mb-6" />
+                 <h2 className="text-2xl font-bold text-text-main tracking-tight mb-2">Оформление заказа...</h2>
+                 <p className="text-text-muted">Пожалуйста, подождите, мы обрабатываем ваш запрос.</p>
+              </motion.div>
+            ) : (
+              <motion.div 
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                className="flex flex-col items-center text-center px-6"
+              >
+                 <motion.div 
+                    initial={{ scale: 0 }} 
+                    animate={{ scale: 1 }} 
+                    transition={{ type: 'spring', bounce: 0.5 }}
+                 >
+                   <CheckCircle className="w-20 h-20 text-brand-success mb-6" />
+                 </motion.div>
+                 <h2 className="text-2xl font-bold text-text-main tracking-tight mb-2">Заказ успешно оформлен!</h2>
+                 <p className="text-text-muted">Спасибо за ваш заказ. Возвращаемся в дашборд...</p>
+              </motion.div>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <div className="h-screen overflow-hidden bg-bg-base flex flex-row font-sans text-text-main">
+        {/* Mobile Backdrop */}
+        {isMobileMenuOpen && (
+          <div 
+            className="fixed inset-0 bg-black/50 z-40 md:hidden transition-opacity"
+            onClick={() => setIsMobileMenuOpen(false)}
+          />
+        )}
 
       {/* Sidebar */}
       <div className={clsx(
@@ -187,7 +243,7 @@ export default function ClientDashboard() {
            <button onClick={logout} className="w-full flex justify-center items-center py-2 px-4 rounded-[10px] text-[13px] font-medium text-text-muted hover:text-text-main hover:bg-surface-alt transition-colors">
              <LogOut className="w-4 h-4 mr-2" /> Log out
            </button>
-           <div className="text-[10px] text-text-muted font-medium">© {new Date().getFullYear()} Vantorix.</div>
+           <div className="text-[10px] text-text-muted font-medium">© {new Date().getFullYear()} Vantorix Labs.</div>
         </div>
       </div>
 
@@ -204,10 +260,6 @@ export default function ClientDashboard() {
               >
                  <Menu className="w-5 h-5" />
               </button>
-
-              <div className={clsx("hidden md:block", activeTab !== 'shop' && "invisible")}>
-                 <AnimatedSearch />
-              </div>
            </div>
            
            <div className="flex flex-row items-center gap-5 ml-auto">
@@ -240,8 +292,18 @@ export default function ClientDashboard() {
                  <h1 className="text-[24px] font-bold text-text-main tracking-tight">Каталог товаров</h1>
                  <p className="text-[13px] text-text-muted mt-1">Выберите необходимое оборудование</p>
               </div>
+              <div className="mb-6 relative">
+                 <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+                 <input 
+                   type="text" 
+                   value={searchQuery}
+                   onChange={(e) => setSearchQuery(e.target.value)}
+                   placeholder="Поиск товаров..." 
+                   className="w-full bg-surface border border-border-color rounded-[10px] py-2.5 pl-10 pr-4 text-[13px] text-text-main shadow-[0_1px_2px_rgba(16,24,40,0.04)] focus:border-brand-primary focus:ring-1 focus:ring-brand-primary outline-none transition-all placeholder:text-text-muted" 
+                 />
+              </div>
               <div className="flex flex-col gap-4">
-                {PRODUCTS.map(product => {
+                {PRODUCTS.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase())).map(product => {
                   const cartItem = cart.find(i => i.product.id === product.id);
                   const quantity = cartItem ? cartItem.quantity : 0;
                   
@@ -439,5 +501,6 @@ export default function ClientDashboard() {
         </main>
       </div>
     </div>
+    </>
   );
 }

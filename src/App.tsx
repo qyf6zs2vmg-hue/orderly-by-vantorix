@@ -5,6 +5,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'motion/react';
 import { AuthProvider, useAuth } from './lib/AuthContext';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -23,23 +24,6 @@ function ProtectedRoute({ children, requiredRole }: { children: React.ReactNode,
   if (!user) return <Navigate to="/welcome" replace />;
 
   if (!appUser) return <Navigate to="/welcome" replace />; // If no user document exists
-
-  if (!user.emailVerified && appUser.role === 'client') {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-bg-base font-sans p-4">
-        <h2 className="text-2xl font-bold text-text-main mb-2">Требуется подтверждение Email</h2>
-        <p className="text-text-muted mb-6 text-center max-w-md">
-          Пожалуйста, подтвердите ваш адрес электронной почты, перейдя по ссылке, которую мы вам отправили.
-        </p>
-        <button 
-          onClick={() => window.location.reload()}
-          className="bg-brand-primary text-white px-6 py-2.5 rounded-[10px] font-medium hover:opacity-90 transition-opacity"
-        >
-          Я подтвердил(а) email
-        </button>
-      </div>
-    );
-  }
 
   if (appUser.status === 'blocked') return <div className="min-h-screen flex items-center justify-center bg-bg-base text-brand-danger text-xl font-medium font-sans">Ваш аккаунт заблокирован.</div>;
 
@@ -76,42 +60,84 @@ function HomeRedirect() {
   return <Navigate to="/welcome" replace />;
 }
 
+function SplashScreen() {
+  return (
+    <motion.div 
+      initial={{ backgroundColor: '#000000', opacity: 0 }}
+      animate={{ backgroundColor: '#FAF9F6', opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.8, ease: "easeInOut" }}
+      className="fixed inset-0 z-[200] flex flex-col items-center justify-center font-sans overflow-hidden"
+    >
+      {/* Background soft gradients */}
+      <div className="absolute inset-0 z-0">
+        <div className="absolute top-[20%] left-[20%] w-[50vw] h-[50vw] bg-[#D17B5B]/5 rounded-full blur-[120px]" />
+        <div className="absolute bottom-[20%] right-[20%] w-[40vw] h-[40vw] bg-[#736E68]/5 rounded-full blur-[100px]" />
+      </div>
+      
+      {/* Micro noise texture */}
+      <div className="absolute inset-0 z-0 opacity-[0.03] pointer-events-none mix-blend-overlay" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.8%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E")' }} />
+
+      <div className="flex-1 flex flex-col items-center justify-center relative z-10 w-full mb-8">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1, ease: [0.16, 1, 0.3, 1], delay: 0.3 }}
+          className="flex flex-col items-center"
+        >
+          <div className="relative">
+            <h1 className="text-[56px] md:text-[72px] font-bold tracking-tight text-[#1A1815] relative drop-shadow-[0_8px_24px_rgba(209,123,91,0.15)]" style={{ fontFamily: 'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif' }}>
+              Orderly
+            </h1>
+            {/* Light sweep effect */}
+            <motion.div 
+              initial={{ left: "-100%" }}
+              animate={{ left: "200%" }}
+              transition={{ duration: 2, ease: "easeInOut", delay: 0.8 }}
+              className="absolute inset-0 w-[40%] h-full bg-gradient-to-r from-transparent via-white/80 to-transparent skew-x-[-20deg] z-20 pointer-events-none mix-blend-overlay"
+            />
+          </div>
+          
+          <motion.div
+             initial={{ opacity: 0, y: 10 }}
+             animate={{ opacity: 1, y: 0 }}
+             transition={{ duration: 0.8, ease: "easeOut", delay: 1 }}
+             className="mt-6"
+          >
+             <span className="text-[12px] md:text-[13px] font-medium tracking-[0.2em] text-[#736E68] uppercase">
+               Developed by Vantorix Labs
+             </span>
+          </motion.div>
+        </motion.div>
+      </div>
+    </motion.div>
+  );
+}
+
 export default function App() {
   const [initialLoading, setInitialLoading] = useState(true);
 
   useEffect(() => {
     const timer = setTimeout(() => {
       setInitialLoading(false);
-    }, 3000);
+    }, 5500);
     return () => clearTimeout(timer);
   }, []);
-
-  if (initialLoading) {
-    return (
-      <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[#F9F8F6] font-sans">
-        <div className="flex-1 flex items-center justify-center mt-[-40px]">
-          <div className="flex items-center gap-3.5">
-            <Loader2 className="w-11 h-11 animate-spin text-[#D97757]" strokeWidth={2.5} />
-            <h1 className="text-[46px] tracking-tight text-[#1A1A1A]" style={{ fontFamily: 'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif' }}>
-              Orderly
-            </h1>
-          </div>
-        </div>
-        
-        <div className="pb-10 absolute bottom-0 w-full flex justify-center">
-          <div className="text-[12px] font-bold tracking-[0.3em] text-[#807D7A] uppercase">
-            BY VANTORIX
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <AuthProvider>
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<HomeRedirect />} />
+        <AnimatePresence>
+          {initialLoading && <SplashScreen key="splash" />}
+        </AnimatePresence>
+        <motion.div 
+          initial={false}
+          animate={{ opacity: initialLoading ? 0 : 1 }}
+          transition={{ duration: 0.8, ease: "easeInOut" }}
+          style={{ display: initialLoading ? 'none' : 'block' }}
+        >
+          <Routes>
+            <Route path="/" element={<HomeRedirect />} />
           <Route path="/welcome" element={<WelcomeFlow />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
@@ -120,7 +146,8 @@ export default function App() {
           <Route path="/admin" element={<ProtectedRoute requiredRole="owner"><AdminDashboard /></ProtectedRoute>} />
           <Route path="/client" element={<ProtectedRoute requiredRole="client"><ClientDashboard /></ProtectedRoute>} />
           <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+          </Routes>
+        </motion.div>
       </BrowserRouter>
     </AuthProvider>
   );

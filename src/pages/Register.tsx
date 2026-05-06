@@ -7,6 +7,8 @@ import { Lock, Mail, User as UserIcon, EyeOff, Building2 } from 'lucide-react';
 import PrivacyPolicyContent from '../components/PrivacyPolicyContent';
 import { LogoSVG } from '../components/SharedLogo';
 
+import { motion } from 'motion/react';
+
 export default function Register() {
   const [businessName, setBusinessName] = useState('');
   const [name, setName] = useState('');
@@ -87,91 +89,78 @@ export default function Register() {
 
   return (
     <div className="min-h-screen bg-bg-base flex flex-col items-center justify-center p-6 font-sans relative overflow-hidden">
-      <div className="w-full max-w-[420px] relative z-10 my-8">
-        <div className="bg-surface rounded-[24px] p-10 shadow-[0_12px_28px_rgba(16,24,40,0.06)] border border-border-color flex flex-col items-center">
-          <div className="text-center mb-8 w-full flex flex-col items-center">
-            
-            <div className="flex flex-col items-center mb-6">
-                <LogoSVG className="w-10 h-10 mb-2" />
-                <span className="font-bold tracking-[0.2em] text-[15px] text-text-main">Vantorix Orders</span>
-            </div>
-            <h2 className="text-[22px] font-bold text-text-main tracking-tight mb-2">Создание бизнеса</h2>
-            <p className="text-[13px] text-text-muted">Заполните форму, чтобы начать работу</p>
+      {/* Dynamic Background */}
+      <div className="absolute inset-0 z-0 pointer-events-none">
+        <div className="absolute top-[10%] right-[10%] w-[30rem] h-[30rem] bg-brand-primary/5 rounded-full blur-[100px]" />
+        <div className="absolute bottom-[10%] left-[10%] w-[30rem] h-[30rem] bg-brand-accent/5 rounded-full blur-[100px]" />
+      </div>
+
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, ease: "easeOut" }}
+        className="w-full max-w-[440px] relative z-10 my-8"
+      >
+        <div className="bg-white/80 backdrop-blur-xl rounded-[32px] p-10 shadow-[0_20px_50px_rgba(0,0,0,0.05)] border border-white/20 flex flex-col items-center">
+          <div className="text-center mb-12 w-full flex flex-col items-center">
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 0.2, duration: 0.5 }}
+              className="mb-6"
+            >
+                <LogoSVG showTitle showSlogan showIcon={false} />
+            </motion.div>
           </div>
 
-          <div className="w-full">
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4 }}
+            className="w-full"
+          >
               {error && (
-                <div className="bg-brand-danger/10 border border-brand-danger/20 text-brand-danger p-3 rounded-[10px] text-[13px] font-medium mb-6 text-center">
+                <div className="bg-brand-danger/10 border border-brand-danger/20 text-brand-danger p-3 rounded-[12px] text-[13px] font-medium mb-6 text-center animate-shake">
                   {error}
                 </div>
               )}
               
-              <form onSubmit={registerOwner} className="space-y-4">
-                <div className="space-y-1.5">
-                  <label className="text-[13px] font-medium text-text-main">Название бизнеса</label>
-                  <div className="relative">
-                       <Building2 className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-                       <input
-                        type="text"
-                        required
-                        value={businessName}
-                        onChange={(e) => setBusinessName(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2.5 rounded-[10px] bg-surface border border-border-color text-text-main focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/10 outline-none transition-all placeholder:text-text-muted text-[13px] shadow-[0_1px_2px_rgba(16,24,40,0.04)]"
-                        placeholder="ООО Ромашка"
-                      />
-                  </div>
-                </div>
+              <form onSubmit={registerOwner} className="space-y-5">
+                {[
+                  { id: 'business', label: 'Название компании', icon: Building2, value: businessName, setter: setBusinessName, placeholder: 'Введите название организации' },
+                  { id: 'name', label: 'Контактное лицо', icon: UserIcon, value: name, setter: setName, placeholder: 'ФИО руководителя или менеджера' },
+                  { id: 'email', label: 'Электронная почта', icon: Mail, type: 'email', value: email, setter: setEmail, placeholder: 'work@company.com' },
+                  { id: 'password', label: 'Пароль для входа', icon: Lock, type: 'password', value: password, setter: setPassword, placeholder: 'Минимум 6 символов' }
+                ].map((field, idx) => (
+                  <motion.div 
+                    key={field.id}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.5 + idx * 0.1 }}
+                    className="space-y-1.5"
+                  >
+                    <label className="text-[12px] font-bold text-text-main uppercase tracking-wider ml-1">{field.label}</label>
+                    <div className="relative group">
+                         <field.icon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-brand-primary transition-colors" />
+                         <input
+                          type={field.type || 'text'}
+                          required
+                          value={field.value}
+                          onChange={(e) => field.setter(e.target.value)}
+                          className="w-full pl-11 pr-4 py-3.5 rounded-[14px] bg-bg-base/50 border border-border-color/50 text-text-main focus:bg-white focus:border-brand-primary focus:ring-4 focus:ring-brand-primary/5 outline-none transition-all placeholder:text-text-muted/60 text-[14px] shadow-sm"
+                          placeholder={field.placeholder}
+                          minLength={field.id === 'password' ? 6 : undefined}
+                        />
+                    </div>
+                  </motion.div>
+                ))}
 
-                <div className="space-y-1.5">
-                  <label className="text-[13px] font-medium text-text-main">Ваше имя</label>
-                  <div className="relative">
-                    <UserIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-                    <input
-                      type="text"
-                      required
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2.5 rounded-[10px] bg-surface border border-border-color text-text-main focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/10 outline-none transition-all placeholder:text-text-muted text-[13px] shadow-[0_1px_2px_rgba(16,24,40,0.04)]"
-                      placeholder="Иван Иванов"
-                    />
-                  </div>
-                </div>
-                
-                <div className="space-y-1.5">
-                  <label className="text-[13px] font-medium text-text-main">Email</label>
-                  <div className="relative">
-                    <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-                    <input
-                      type="email"
-                      required
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2.5 rounded-[10px] bg-surface border border-border-color text-text-main focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/10 outline-none transition-all placeholder:text-text-muted text-[13px] shadow-[0_1px_2_rgba(16,24,40,0.04)]"
-                      placeholder="ivan@example.com"
-                    />
-                  </div>
-                </div>
-                
-                <div className="space-y-1.5">
-                  <label className="text-[13px] font-medium text-text-main">Пароль</label>
-                  <div className="relative">
-                    <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-                    <input
-                      type="password"
-                      required
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="w-full pl-10 pr-10 py-2.5 rounded-[10px] bg-surface border border-border-color text-text-main focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/10 outline-none transition-all placeholder:text-text-muted text-[13px] shadow-[0_1px_2px_rgba(16,24,40,0.04)]"
-                      placeholder="Минимум 6 символов"
-                      minLength={6}
-                    />
-                     <button type="button" className="absolute right-3.5 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-main transition-colors">
-                        <EyeOff className="w-4 h-4" />
-                     </button>
-                  </div>
-                </div>
-
-                 <div className="flex items-start gap-2.5 mt-6 mb-6 px-1">
+                 <motion.div 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.9 }}
+                  className="flex items-start gap-2.5 mt-8 mb-8 px-1"
+                 >
                     <div className="flex items-center h-5">
                       <input
                           id="terms"
@@ -183,32 +172,38 @@ export default function Register() {
                       />
                     </div>
                     <label htmlFor="terms" className="text-[12px] text-text-muted leading-snug cursor-pointer">
-                       Я согласен с <button type="button" onClick={() => setIsPrivacyModalOpen(true)} className="text-brand-primary hover:text-brand-secondary hover:underline font-medium">Политикой конфиденциальности</button>
+                       Я согласен с <button type="button" onClick={() => setIsPrivacyModalOpen(true)} className="text-brand-primary hover:text-brand-secondary hover:underline font-bold">Политикой конфиденциальности</button>
                     </label>
-                </div>
+                </motion.div>
                 
-                <button
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                   type="submit"
                   disabled={loading}
-                  className="w-full bg-gradient-to-r from-brand-primary via-brand-secondary to-brand-accent text-white py-2.5 px-4 rounded-[10px] font-medium hover:opacity-90 transition-opacity disabled:opacity-70 flex justify-center items-center shadow-lg shadow-brand-primary/20 text-[14px]"
+                  className="w-full bg-gradient-to-r from-brand-primary via-brand-secondary to-brand-accent text-white py-4 px-6 rounded-[16px] font-bold hover:shadow-xl hover:shadow-brand-primary/20 transition-all disabled:opacity-70 flex justify-center items-center text-[15px] tracking-wide uppercase mt-8"
                 >
-                  {loading ? 'Создание...' : 'Создать бизнес'}
-                </button>
+                  {loading ? 'Регистрация...' : 'Зарегистрировать компанию'}
+                </motion.button>
               </form>
 
-              <div className="mt-8 flex justify-center text-[13px] text-text-muted">
-                Уже есть аккаунт?{' '}
-                <Link to="/login" className="font-medium text-brand-primary hover:text-brand-secondary transition-colors ml-1">
-                  Войти
-                </Link>
-              </div>
+              <div className="mt-10 flex flex-col items-center gap-4">
+                <div className="text-[13px] text-text-muted">
+                  Компания уже зарегистрирована?{' '}
+                  <Link to="/login" className="font-bold text-brand-primary hover:text-brand-secondary transition-colors underline underline-offset-4">
+                    Войти в кабинет
+                  </Link>
+                </div>
 
-               <div className="mt-8 text-center text-[11px] text-text-muted font-medium">
-                  © {new Date().getFullYear()} DEVELOPED BY VANTORIX LABS. All rights reserved.
-               </div>
-          </div>
+                <div className="pt-6 border-t border-border-color/50 w-full text-center">
+                    <span className="text-[10px] font-bold text-text-muted tracking-[0.3em] uppercase opacity-50">
+                      © {new Date().getFullYear()} Vantorix Labs
+                    </span>
+                </div>
+              </div>
+          </motion.div>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }

@@ -109,11 +109,9 @@ export default function AdminDashboard() {
       )}>
         
         {/* Logo */}
-        <div className="flex items-center gap-2 px-3 mb-1">
-          <LogoSVG className="w-6 h-6" />
-          <span className="font-bold tracking-widest text-[16px]">Vantorix Orders</span>
+        <div className="px-3 mb-6">
+          <LogoSVG className="w-40 h-28 -ml-6" />
         </div>
-        <div className="text-[10px] text-text-muted font-medium px-3 mb-8">Build. Automate. Scale.</div>
 
         {/* User Profile Summary in Sidebar */}
         <div className="flex items-center gap-3 px-3 mb-8">

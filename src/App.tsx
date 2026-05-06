@@ -65,7 +65,7 @@ function SplashScreen() {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.5 }}
-      className="fixed inset-0 z-[200] flex items-center justify-center bg-bg-base font-sans overflow-hidden"
+      className="fixed inset-0 z-[200] flex items-center justify-center bg-white font-sans overflow-hidden"
     >
       {/* Dynamic Background Elements */}
       <div className="absolute inset-0 z-0 pointer-events-none">
@@ -95,18 +95,7 @@ function SplashScreen() {
           transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
           className="mb-10"
         >
-          <LogoSVG className="w-24 h-24" />
-        </motion.div>
-
-        <motion.div 
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: "easeOut", delay: 0.3 }}
-          className="space-y-4"
-        >
-          <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-text-main">
-            Vantorix Orders
-          </h1>
+          <LogoSVG showTitle showSlogan showIcon={false} />
         </motion.div>
 
         {/* Loading Indicator */}

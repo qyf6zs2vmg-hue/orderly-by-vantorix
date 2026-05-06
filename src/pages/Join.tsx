@@ -231,9 +231,8 @@ export default function Join() {
         <div className="bg-surface rounded-[24px] p-10 shadow-[0_12px_28px_rgba(16,24,40,0.06)] border border-border-color flex flex-col items-center">
           <div className="text-center mb-8 w-full flex flex-col items-center">
             
-            <div className="flex flex-col items-center mb-6">
-                <LogoSVG className="w-10 h-10 mb-2" />
-                <span className="font-bold tracking-[0.2em] text-[15px] text-text-main">Vantorix Orders</span>
+            <div className="flex flex-col items-center mb-8">
+                <LogoSVG className="w-56 h-40" />
             </div>
               
             <h1 className="text-[18px] font-bold text-text-main tracking-tight mb-2 text-center">{inviteData?.businessName || "Загрузка..."}</h1>

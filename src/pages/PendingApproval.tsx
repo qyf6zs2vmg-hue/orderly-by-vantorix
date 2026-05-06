@@ -32,7 +32,7 @@ export default function PendingApproval() {
         </button>
 
          <div className="mt-8 text-center text-[11px] text-text-muted font-medium">
-             © {new Date().getFullYear()} Vantorix Labs.
+             © {new Date().getFullYear()} DEVELOPED BY VANTORIX LABS.
          </div>
       </div>
     </div>

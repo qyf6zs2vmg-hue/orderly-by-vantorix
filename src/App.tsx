@@ -13,7 +13,6 @@ import Join from './pages/Join';
 import AdminDashboard from './pages/AdminDashboard';
 import ClientDashboard from './pages/ClientDashboard';
 import PendingApproval from './pages/PendingApproval';
-import WelcomeFlow from './pages/WelcomeFlow';
 import { Loader2 } from 'lucide-react';
 
 function ProtectedRoute({ children, requiredRole }: { children: React.ReactNode, requiredRole?: 'owner' | 'client' }) {
@@ -108,9 +107,6 @@ function SplashScreen() {
           <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-text-main">
             Vantorix Orders
           </h1>
-          <p className="text-text-muted text-lg font-medium opacity-80">
-            Система управления B2B заказами
-          </p>
         </motion.div>
 
         {/* Loading Indicator */}
@@ -134,7 +130,7 @@ function SplashScreen() {
            className="mt-20"
         >
            <span className="text-[12px] font-bold tracking-[0.4em] text-text-muted uppercase">
-             Vantorix Labs
+             DEVELOPED BY VANTORIX LABS
            </span>
         </motion.div>
       </div>

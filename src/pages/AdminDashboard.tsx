@@ -186,7 +186,7 @@ export default function AdminDashboard() {
            <button onClick={logout} className="w-full flex justify-center items-center py-2 px-4 rounded-[10px] text-[13px] font-medium text-text-muted hover:text-text-main hover:bg-surface-alt transition-colors">
              <LogOut className="w-4 h-4 mr-2" /> Log out
            </button>
-           <div className="text-[10px] text-text-muted font-medium">© {new Date().getFullYear()} Vantorix Labs. All rights reserved.</div>
+           <div className="text-[10px] text-text-muted font-medium">© {new Date().getFullYear()} DEVELOPED BY VANTORIX LABS. All rights reserved.</div>
         </div>
       </div>
 

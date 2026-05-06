@@ -341,7 +341,7 @@ export default function Join() {
               </form>
 
                <div className="mt-8 text-center text-[11px] text-text-muted font-medium uppercase tracking-[0.2em]">
-                  BY VANTORIX LABS
+                  DEVELOPED BY VANTORIX LABS
                </div>
           </div>
         </div>

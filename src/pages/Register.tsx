@@ -204,7 +204,7 @@ export default function Register() {
               </div>
 
                <div className="mt-8 text-center text-[11px] text-text-muted font-medium">
-                  © {new Date().getFullYear()} Vantorix Labs. All rights reserved.
+                  © {new Date().getFullYear()} DEVELOPED BY VANTORIX LABS. All rights reserved.
                </div>
           </div>
         </div>

@@ -93,7 +93,7 @@ export default function Register() {
             
             <div className="flex flex-col items-center mb-6">
                 <LogoSVG className="w-10 h-10 mb-2" />
-                <span className="font-bold tracking-[0.2em] text-[15px] text-text-main">Orderly</span>
+                <span className="font-bold tracking-[0.2em] text-[15px] text-text-main">Vantorix Orders</span>
             </div>
             <h2 className="text-[22px] font-bold text-text-main tracking-tight mb-2">Создание бизнеса</h2>
             <p className="text-[13px] text-text-muted">Заполните форму, чтобы начать работу</p>
@@ -116,7 +116,7 @@ export default function Register() {
                         required
                         value={businessName}
                         onChange={(e) => setBusinessName(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2.5 rounded-[10px] bg-surface border border-border-color text-text-main focus:border-brand-primary focus:ring-1 focus:ring-brand-primary outline-none transition-all placeholder:text-text-muted text-[13px] shadow-[0_1px_2px_rgba(16,24,40,0.04)]"
+                        className="w-full pl-10 pr-4 py-2.5 rounded-[10px] bg-surface border border-border-color text-text-main focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/10 outline-none transition-all placeholder:text-text-muted text-[13px] shadow-[0_1px_2px_rgba(16,24,40,0.04)]"
                         placeholder="ООО Ромашка"
                       />
                   </div>
@@ -131,7 +131,7 @@ export default function Register() {
                       required
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2.5 rounded-[10px] bg-surface border border-border-color text-text-main focus:border-brand-primary focus:ring-1 focus:ring-brand-primary outline-none transition-all placeholder:text-text-muted text-[13px] shadow-[0_1px_2px_rgba(16,24,40,0.04)]"
+                      className="w-full pl-10 pr-4 py-2.5 rounded-[10px] bg-surface border border-border-color text-text-main focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/10 outline-none transition-all placeholder:text-text-muted text-[13px] shadow-[0_1px_2px_rgba(16,24,40,0.04)]"
                       placeholder="Иван Иванов"
                     />
                   </div>
@@ -146,7 +146,7 @@ export default function Register() {
                       required
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2.5 rounded-[10px] bg-surface border border-border-color text-text-main focus:border-brand-primary focus:ring-1 focus:ring-brand-primary outline-none transition-all placeholder:text-text-muted text-[13px] shadow-[0_1px_2px_rgba(16,24,40,0.04)]"
+                      className="w-full pl-10 pr-4 py-2.5 rounded-[10px] bg-surface border border-border-color text-text-main focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/10 outline-none transition-all placeholder:text-text-muted text-[13px] shadow-[0_1px_2_rgba(16,24,40,0.04)]"
                       placeholder="ivan@example.com"
                     />
                   </div>
@@ -161,7 +161,7 @@ export default function Register() {
                       required
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="w-full pl-10 pr-10 py-2.5 rounded-[10px] bg-surface border border-border-color text-text-main focus:border-brand-primary focus:ring-1 focus:ring-brand-primary outline-none transition-all placeholder:text-text-muted text-[13px] shadow-[0_1px_2px_rgba(16,24,40,0.04)]"
+                      className="w-full pl-10 pr-10 py-2.5 rounded-[10px] bg-surface border border-border-color text-text-main focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/10 outline-none transition-all placeholder:text-text-muted text-[13px] shadow-[0_1px_2px_rgba(16,24,40,0.04)]"
                       placeholder="Минимум 6 символов"
                       minLength={6}
                     />
@@ -178,19 +178,19 @@ export default function Register() {
                           type="checkbox"
                           checked={agreePrivacy}
                           onChange={(e) => setAgreePrivacy(e.target.checked)}
-                          className="w-4 h-4 rounded border-border-color text-brand-primary bg-surface focus:ring-brand-primary/20 cursor-pointer"
+                          className="w-4 h-4 rounded border-border-color text-brand-primary bg-surface focus:ring-brand-primary/10 cursor-pointer"
                           required
                       />
                     </div>
                     <label htmlFor="terms" className="text-[12px] text-text-muted leading-snug cursor-pointer">
-                       Я согласен с <button type="button" onClick={() => setIsPrivacyModalOpen(true)} className="text-brand-primary hover:text-brand-light hover:underline font-medium">Политикой конфиденциальности</button>
+                       Я согласен с <button type="button" onClick={() => setIsPrivacyModalOpen(true)} className="text-brand-primary hover:text-brand-secondary hover:underline font-medium">Политикой конфиденциальности</button>
                     </label>
                 </div>
                 
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full bg-gradient-to-r from-brand-primary to-brand-light text-white py-2.5 px-4 rounded-[10px] font-medium hover:opacity-90 transition-opacity disabled:opacity-70 flex justify-center items-center shadow-sm text-[14px]"
+                  className="w-full bg-gradient-to-r from-brand-primary via-brand-secondary to-brand-accent text-white py-2.5 px-4 rounded-[10px] font-medium hover:opacity-90 transition-opacity disabled:opacity-70 flex justify-center items-center shadow-lg shadow-brand-primary/20 text-[14px]"
                 >
                   {loading ? 'Создание...' : 'Создать бизнес'}
                 </button>
@@ -198,7 +198,7 @@ export default function Register() {
 
               <div className="mt-8 flex justify-center text-[13px] text-text-muted">
                 Уже есть аккаунт?{' '}
-                <Link to="/login" className="font-medium text-brand-primary hover:text-brand-light transition-colors ml-1">
+                <Link to="/login" className="font-medium text-brand-primary hover:text-brand-secondary transition-colors ml-1">
                   Войти
                 </Link>
               </div>

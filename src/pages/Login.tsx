@@ -72,7 +72,7 @@ export default function Login() {
           <div className="text-center mb-8 w-full flex flex-col items-center">
             <div className="flex flex-col items-center mb-6">
                <LogoSVG className="w-10 h-10 mb-2" />
-               <span className="font-bold tracking-[0.2em] text-[15px] text-text-main">Orderly</span>
+               <span className="font-bold tracking-[0.2em] text-[15px] text-text-main">Vantorix Orders</span>
             </div>
             
             <h2 className="text-[22px] font-bold text-text-main tracking-tight mb-2">Вход в систему</h2>
@@ -96,7 +96,7 @@ export default function Login() {
                       required
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2.5 rounded-[10px] bg-surface border border-border-color text-text-main focus:border-brand-primary focus:ring-1 focus:ring-brand-primary outline-none transition-all placeholder:text-text-muted text-[13px] shadow-[0_1px_2px_rgba(16,24,40,0.04)]"
+                      className="w-full pl-10 pr-4 py-2.5 rounded-[10px] bg-surface border border-border-color text-text-main focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/10 outline-none transition-all placeholder:text-text-muted text-[13px] shadow-[0_1px_2px_rgba(16,24,40,0.04)]"
                       placeholder="Введите ваш email"
                     />
                   </div>
@@ -105,7 +105,7 @@ export default function Login() {
                 <div className="space-y-1.5">
                   <div className="flex justify-between items-center">
                      <label className="text-[13px] font-medium text-text-main">Пароль</label>
-                     <a href="#" className="text-[12px] text-brand-primary hover:text-brand-light transition-colors">Забыли пароль?</a>
+                     <a href="#" className="text-[12px] text-brand-primary hover:text-brand-secondary transition-colors">Забыли пароль?</a>
                   </div>
                   <div className="relative">
                     <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
@@ -114,7 +114,7 @@ export default function Login() {
                       required
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="w-full pl-10 pr-10 py-2.5 rounded-[10px] bg-surface border border-border-color text-text-main focus:border-brand-primary focus:ring-1 focus:ring-brand-primary outline-none transition-all placeholder:text-text-muted text-[13px] shadow-[0_1px_2px_rgba(16,24,40,0.04)]"
+                      className="w-full pl-10 pr-10 py-2.5 rounded-[10px] bg-surface border border-border-color text-text-main focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/10 outline-none transition-all placeholder:text-text-muted text-[13px] shadow-[0_1px_2px_rgba(16,24,40,0.04)]"
                       placeholder="Введите пароль"
                     />
                      <button type="button" className="absolute right-3.5 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-main transition-colors">
@@ -126,7 +126,7 @@ export default function Login() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full bg-gradient-to-r from-brand-primary to-brand-light text-white py-2.5 px-4 rounded-[10px] font-medium hover:opacity-90 transition-opacity disabled:opacity-70 flex justify-center items-center shadow-sm text-[14px] mt-6"
+                  className="w-full bg-gradient-to-r from-brand-primary via-brand-secondary to-brand-accent text-white py-2.5 px-4 rounded-[10px] font-medium hover:opacity-90 transition-opacity disabled:opacity-70 flex justify-center items-center shadow-lg shadow-brand-primary/20 text-[14px] mt-6"
                 >
                   {loading ? 'Вход...' : 'Войти'}
                 </button>
@@ -134,7 +134,7 @@ export default function Login() {
               
               <div className="mt-8 text-center text-[13px] text-text-muted">
                 Нет аккаунта?{' '}
-                <Link to="/register" className="font-medium text-brand-primary hover:text-brand-light transition-colors">
+                <Link to="/register" className="font-medium text-brand-primary hover:text-brand-secondary transition-colors">
                   Регистрация
                 </Link>
               </div>

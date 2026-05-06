@@ -111,7 +111,7 @@ export default function AdminDashboard() {
         {/* Logo */}
         <div className="flex items-center gap-2 px-3 mb-1">
           <LogoSVG className="w-6 h-6" />
-          <span className="font-bold tracking-widest text-[16px]">Orderly</span>
+          <span className="font-bold tracking-widest text-[16px]">Vantorix Orders</span>
         </div>
         <div className="text-[10px] text-text-muted font-medium px-3 mb-8">Build. Automate. Scale.</div>
 
@@ -130,14 +130,14 @@ export default function AdminDashboard() {
         <nav className="flex flex-col gap-1 flex-1 px-1">
           <button
             onClick={() => setActiveTab('invites')}
-            className={clsx("flex items-center px-4 py-2.5 rounded-[10px] text-[13px] font-medium transition-colors", activeTab === 'invites' ? "bg-[#F3EBE1] text-brand-primary" : "text-text-muted hover:text-text-main hover:bg-[#FAF7F2]")}
+            className={clsx("flex items-center px-4 py-2.5 rounded-[10px] text-[13px] font-medium transition-colors", activeTab === 'invites' ? "bg-brand-primary/10 text-brand-primary" : "text-text-muted hover:text-text-main hover:bg-surface-alt")}
           >
             <Key className={clsx("w-4 h-4 mr-3", activeTab === 'invites' ? "text-brand-primary" : "text-text-muted")} />
             Инвайт-коды
           </button>
           <button
             onClick={() => setActiveTab('requests')}
-            className={clsx("flex items-center justify-between px-4 py-2.5 rounded-[10px] text-[13px] font-medium transition-colors", activeTab === 'requests' ? "bg-[#F3EBE1] text-brand-primary" : "text-text-muted hover:text-text-main hover:bg-[#FAF7F2]")}
+            className={clsx("flex items-center justify-between px-4 py-2.5 rounded-[10px] text-[13px] font-medium transition-colors", activeTab === 'requests' ? "bg-brand-primary/10 text-brand-primary" : "text-text-muted hover:text-text-main hover:bg-surface-alt")}
           >
             <div className="flex items-center">
               <RefreshCcw className={clsx("w-4 h-4 mr-3", activeTab === 'requests' ? "text-brand-primary" : "text-text-muted")} />
@@ -149,7 +149,7 @@ export default function AdminDashboard() {
           </button>
           <button
             onClick={() => setActiveTab('users')}
-            className={clsx("flex items-center justify-between px-4 py-2.5 rounded-[10px] text-[13px] font-medium transition-colors", activeTab === 'users' ? "bg-[#F3EBE1] text-brand-primary" : "text-text-muted hover:text-text-main hover:bg-[#FAF7F2]")}
+            className={clsx("flex items-center justify-between px-4 py-2.5 rounded-[10px] text-[13px] font-medium transition-colors", activeTab === 'users' ? "bg-brand-primary/10 text-brand-primary" : "text-text-muted hover:text-text-main hover:bg-surface-alt")}
           >
             <div className="flex items-center">
               <Users className={clsx("w-4 h-4 mr-3", activeTab === 'users' ? "text-brand-primary" : "text-text-muted")} />
@@ -161,21 +161,21 @@ export default function AdminDashboard() {
           </button>
           <button
             onClick={() => setActiveTab('orders')}
-            className={clsx("flex items-center px-4 py-2.5 rounded-[10px] text-[13px] font-medium transition-colors", activeTab === 'orders' ? "bg-[#F3EBE1] text-brand-primary" : "text-text-muted hover:text-text-main hover:bg-[#FAF7F2]")}
+            className={clsx("flex items-center px-4 py-2.5 rounded-[10px] text-[13px] font-medium transition-colors", activeTab === 'orders' ? "bg-brand-primary/10 text-brand-primary" : "text-text-muted hover:text-text-main hover:bg-surface-alt")}
           >
             <ShoppingCart className={clsx("w-4 h-4 mr-3", activeTab === 'orders' ? "text-brand-primary" : "text-text-muted")} />
             Заказы
           </button>
           <button
             onClick={() => setActiveTab('products')}
-            className={clsx("flex items-center px-4 py-2.5 rounded-[10px] text-[13px] font-medium transition-colors", activeTab === 'products' ? "bg-[#F3EBE1] text-brand-primary" : "text-text-muted hover:text-text-main hover:bg-[#FAF7F2]")}
+            className={clsx("flex items-center px-4 py-2.5 rounded-[10px] text-[13px] font-medium transition-colors", activeTab === 'products' ? "bg-brand-primary/10 text-brand-primary" : "text-text-muted hover:text-text-main hover:bg-surface-alt")}
           >
             <Store className={clsx("w-4 h-4 mr-3", activeTab === 'products' ? "text-brand-primary" : "text-text-muted")} />
             Товары
           </button>
           <button
             onClick={() => setActiveTab('privacy')}
-            className={clsx("flex items-center px-4 py-2.5 rounded-[10px] text-[13px] font-medium transition-colors", activeTab === 'privacy' ? "bg-[#F3EBE1] text-brand-primary" : "text-text-muted hover:text-text-main hover:bg-[#FAF7F2]")}
+            className={clsx("flex items-center px-4 py-2.5 rounded-[10px] text-[13px] font-medium transition-colors", activeTab === 'privacy' ? "bg-brand-primary/10 text-brand-primary" : "text-text-muted hover:text-text-main hover:bg-surface-alt")}
           >
             <Shield className={clsx("w-4 h-4 mr-3", activeTab === 'privacy' ? "text-brand-primary" : "text-text-muted")} />
             Приватность
@@ -249,24 +249,24 @@ export default function AdminDashboard() {
                 </div>
                 <button 
                   onClick={handleCreateInvite} 
-                  className="bg-gradient-to-r from-brand-primary to-brand-light hover:opacity-90 text-white px-4 py-2 rounded-[10px] text-[13px] font-medium transition-all flex items-center shadow-sm"
+                  className="bg-gradient-to-r from-brand-primary via-brand-secondary to-brand-accent hover:opacity-90 text-white px-4 py-2 rounded-[10px] text-[13px] font-medium transition-all flex items-center shadow-lg shadow-brand-primary/20"
                 >
                   <Plus className="w-4 h-4 mr-2" /> Сгенерировать код
                 </button>
               </div>
               
-              <div className="bg-surface border border-border-color rounded-[16px] overflow-hidden shadow-[0_4px_12px_rgba(16,24,40,0.03)]">
+              <div className="bg-surface border border-border-color rounded-[16px] overflow-hidden shadow-sm">
                 <table className="w-full text-left text-[13px]">
-                  <thead className="bg-[#FAF7F2] border-b border-border-color">
+                  <thead className="bg-surface-alt border-b border-border-color">
                     <tr>
                       <th className="px-6 py-4 font-medium text-text-muted uppercase text-[11px] tracking-wider">Код / Ссылка</th>
                       <th className="px-6 py-4 font-medium text-text-muted uppercase text-[11px] tracking-wider">Статус</th>
                       <th className="px-6 py-4 font-medium text-text-muted uppercase text-[11px] tracking-wider">Создан</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-border-color">
+                  <tbody className="divide-y divide-border-color text-text-main">
                     {invites.sort((a,b) => b.createdAt - a.createdAt).map(invite => (
-                      <tr key={invite.id} className="hover:bg-[#FAF7F2]/50 transition-colors">
+                      <tr key={invite.id} className="hover:bg-surface-alt/50 transition-colors">
                         <td className="px-6 py-4 text-text-main flex items-center">
                           <div className="flex flex-col">
                             <span className="font-mono font-medium text-[13px]">{invite.id}</span>
@@ -312,9 +312,9 @@ export default function AdminDashboard() {
                 <h1 className="text-[24px] font-bold text-text-main tracking-tight">Заявки</h1>
                 <p className="text-[13px] text-text-muted mt-1">Новые регистрации ожидающие подтверждения</p>
               </div>
-              <div className="bg-surface border border-border-color rounded-[16px] shadow-[0_4px_12px_rgba(16,24,40,0.03)] overflow-x-auto">
+              <div className="bg-surface border border-border-color rounded-[16px] shadow-sm overflow-x-auto">
                 <table className="w-full text-left text-[13px] min-w-[600px]">
-                  <thead className="bg-[#FAF7F2] border-b border-border-color">
+                  <thead className="bg-surface-alt border-b border-border-color">
                     <tr>
                       <th className="px-6 py-4 font-medium text-text-muted uppercase text-[11px] tracking-wider">Имя</th>
                       <th className="px-6 py-4 font-medium text-text-muted uppercase text-[11px] tracking-wider">Email</th>
@@ -322,9 +322,9 @@ export default function AdminDashboard() {
                       <th className="px-6 py-4 font-medium text-text-muted text-right uppercase text-[11px] tracking-wider">Действия</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-border-color">
+                  <tbody className="divide-y divide-border-color text-text-main">
                     {pendingUsers.map(user => (
-                       <tr key={user.id} className="hover:bg-[#FAF7F2]/50 transition-colors">
+                       <tr key={user.id} className="hover:bg-surface-alt/50 transition-colors">
                         {editingClient?.id === user.id ? (
                           <>
                             <td className="px-6 py-4">
@@ -385,9 +385,9 @@ export default function AdminDashboard() {
                 <h1 className="text-[24px] font-bold text-text-main tracking-tight">Клиенты</h1>
                 <p className="text-[13px] text-text-muted mt-1">Управление активными клиентами и их доступом</p>
               </div>
-              <div className="bg-surface border border-border-color rounded-[16px] shadow-[0_4px_12px_rgba(16,24,40,0.03)] overflow-x-auto">
+              <div className="bg-surface border border-border-color rounded-[16px] shadow-sm overflow-x-auto">
                 <table className="w-full text-left text-[13px] min-w-[600px]">
-                  <thead className="bg-[#FAF7F2] border-b border-border-color">
+                  <thead className="bg-surface-alt border-b border-border-color">
                     <tr>
                       <th className="px-6 py-4 font-medium text-text-muted uppercase text-[11px] tracking-wider">Имя</th>
                       <th className="px-6 py-4 font-medium text-text-muted uppercase text-[11px] tracking-wider">Email</th>
@@ -395,9 +395,9 @@ export default function AdminDashboard() {
                       <th className="px-6 py-4 font-medium text-text-muted text-right uppercase text-[11px] tracking-wider">Действия</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-border-color">
+                  <tbody className="divide-y divide-border-color text-text-main">
                     {activeUsers.map(user => (
-                      <tr key={user.id} className="hover:bg-[#FAF7F2]/50 transition-colors">
+                      <tr key={user.id} className="hover:bg-surface-alt/50 transition-colors">
                         <td className="px-6 py-4 text-text-main">
                           <div className="font-semibold">{user.name}</div>
                         </td>
@@ -436,9 +436,9 @@ export default function AdminDashboard() {
                 <h1 className="text-[24px] font-bold text-text-main tracking-tight">Заказы</h1>
                 <p className="text-[13px] text-text-muted mt-1">Все транзакции и их статус</p>
               </div>
-              <div className="bg-surface border border-border-color rounded-[16px] shadow-[0_4px_12px_rgba(16,24,40,0.03)] overflow-x-auto">
+              <div className="bg-surface border border-border-color rounded-[16px] shadow-sm overflow-x-auto">
                 <table className="w-full text-left text-[13px] min-w-[700px]">
-                  <thead className="bg-[#FAF7F2] border-b border-border-color">
+                  <thead className="bg-surface-alt border-b border-border-color">
                     <tr>
                       <th className="px-6 py-4 font-medium text-text-muted uppercase text-[11px] tracking-wider">ID / Дата</th>
                       <th className="px-6 py-4 font-medium text-text-muted uppercase text-[11px] tracking-wider">Клиент</th>
@@ -447,9 +447,9 @@ export default function AdminDashboard() {
                       <th className="px-6 py-4 font-medium text-text-muted pl-8 uppercase text-[11px] tracking-wider">Статус</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-border-color">
+                  <tbody className="divide-y divide-border-color text-text-main">
                     {orders.sort((a,b) => b.createdAt - a.createdAt).map(order => (
-                      <tr key={order.id} className="hover:bg-[#FAF7F2]/50 transition-colors">
+                      <tr key={order.id} className="hover:bg-surface-alt/50 transition-colors">
                         <td className="px-6 py-4">
                           <div className="font-mono text-[11px] text-text-muted bg-surface-alt border border-border-color inline-block px-1.5 py-0.5 rounded mb-1.5 tracking-wider">{order.id.slice(0, 8).toUpperCase()}</div>
                           <div className="text-text-main text-[13px]">{new Date(order.createdAt).toLocaleDateString('ru-RU')}</div>
@@ -487,8 +487,8 @@ export default function AdminDashboard() {
               <div className="flex flex-col gap-4">
                 {PRODUCTS.map(product => {
                   return (
-                    <div key={product.id} className="bg-surface p-5 rounded-[16px] border border-border-color flex items-center gap-5 hover:bg-[#FAF7F2] transition-colors shadow-[0_2px_8px_rgba(16,24,40,0.02)]">
-                      <div className="w-12 h-12 bg-surface-alt text-brand-primary opacity-80 rounded-[12px] flex items-center justify-center flex-shrink-0 border border-border-color">
+                    <div key={product.id} className="bg-surface p-5 rounded-[16px] border border-border-color flex items-center gap-5 hover:bg-surface-alt transition-colors shadow-sm">
+                      <div className="w-12 h-12 bg-surface-alt text-brand-primary rounded-[12px] flex items-center justify-center flex-shrink-0 border border-border-color">
                         <product.icon className="w-6 h-6" />
                       </div>
                       <div className="flex-1 min-w-0">

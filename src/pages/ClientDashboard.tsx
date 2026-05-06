@@ -183,7 +183,7 @@ export default function ClientDashboard() {
         {/* Logo */}
         <div className="flex items-center gap-2 px-3 mb-1">
           <LogoSVG className="w-6 h-6" />
-          <span className="font-bold tracking-widest text-[16px]">Orderly</span>
+          <span className="font-bold tracking-widest text-[16px]">Vantorix Orders</span>
         </div>
         <div className="text-[10px] text-text-muted font-medium px-3 mb-8">Build. Automate. Scale.</div>
 
@@ -201,7 +201,7 @@ export default function ClientDashboard() {
         <nav className="flex flex-col gap-1 flex-1 px-1">
           <button
             onClick={() => setActiveTab('shop')}
-            className={clsx("flex items-center px-4 py-2.5 rounded-[10px] text-[13px] font-medium transition-colors", activeTab === 'shop' ? "bg-[#F3EBE1] text-brand-primary" : "text-text-muted hover:text-text-main hover:bg-[#FAF7F2]")}
+            className={clsx("flex items-center px-4 py-2.5 rounded-[10px] text-[13px] font-medium transition-colors", activeTab === 'shop' ? "bg-brand-primary/10 text-brand-primary" : "text-text-muted hover:text-text-main hover:bg-surface-alt")}
           >
             <Store className={clsx("w-4 h-4 mr-3", activeTab === 'shop' ? "text-brand-primary" : "text-text-muted")} />
             Товары (Заказ)
@@ -209,7 +209,7 @@ export default function ClientDashboard() {
           
           <button
             onClick={() => setActiveTab('active')}
-            className={clsx("flex items-center justify-between px-4 py-2.5 rounded-[10px] text-[13px] font-medium transition-colors", activeTab === 'active' ? "bg-[#F3EBE1] text-brand-primary" : "text-text-muted hover:text-text-main hover:bg-[#FAF7F2]")}
+            className={clsx("flex items-center justify-between px-4 py-2.5 rounded-[10px] text-[13px] font-medium transition-colors", activeTab === 'active' ? "bg-brand-primary/10 text-brand-primary" : "text-text-muted hover:text-text-main hover:bg-surface-alt")}
           >
             <div className="flex items-center">
               <ShoppingBag className={clsx("w-4 h-4 mr-3", activeTab === 'active' ? "text-brand-primary" : "text-text-muted")} />
@@ -224,7 +224,7 @@ export default function ClientDashboard() {
 
           <button
             onClick={() => setActiveTab('archive')}
-            className={clsx("flex items-center px-4 py-2.5 rounded-[10px] text-[13px] font-medium transition-colors", activeTab === 'archive' ? "bg-[#F3EBE1] text-brand-primary" : "text-text-muted hover:text-text-main hover:bg-[#FAF7F2]")}
+            className={clsx("flex items-center px-4 py-2.5 rounded-[10px] text-[13px] font-medium transition-colors", activeTab === 'archive' ? "bg-brand-primary/10 text-brand-primary" : "text-text-muted hover:text-text-main hover:bg-surface-alt")}
           >
             <Archive className={clsx("w-4 h-4 mr-3", activeTab === 'archive' ? "text-brand-primary" : "text-text-muted")} />
             Архив заказов
@@ -232,7 +232,7 @@ export default function ClientDashboard() {
 
           <button
             onClick={() => setActiveTab('privacy')}
-            className={clsx("flex items-center px-4 py-2.5 rounded-[10px] text-[13px] font-medium transition-colors", activeTab === 'privacy' ? "bg-[#F3EBE1] text-brand-primary" : "text-text-muted hover:text-text-main hover:bg-[#FAF7F2]")}
+            className={clsx("flex items-center px-4 py-2.5 rounded-[10px] text-[13px] font-medium transition-colors", activeTab === 'privacy' ? "bg-brand-primary/10 text-brand-primary" : "text-text-muted hover:text-text-main hover:bg-surface-alt")}
           >
             <Shield className={clsx("w-4 h-4 mr-3", activeTab === 'privacy' ? "text-brand-primary" : "text-text-muted")} />
             Приватность
@@ -308,8 +308,8 @@ export default function ClientDashboard() {
                   const quantity = cartItem ? cartItem.quantity : 0;
                   
                   return (
-                    <div key={product.id} className="bg-surface p-5 rounded-[16px] border border-border-color flex items-center gap-5 hover:bg-[#FAF7F2] transition-colors shadow-[0_2px_8px_rgba(16,24,40,0.02)]">
-                      <div className="w-12 h-12 bg-surface-alt text-brand-primary opacity-80 rounded-[12px] flex items-center justify-center flex-shrink-0 border border-border-color">
+                    <div key={product.id} className="bg-surface p-5 rounded-[16px] border border-border-color flex items-center gap-5 hover:bg-surface-alt transition-colors shadow-sm">
+                      <div className="w-12 h-12 bg-surface-alt text-brand-primary rounded-[12px] flex items-center justify-center flex-shrink-0 border border-border-color">
                         <product.icon className="w-6 h-6" />
                       </div>
                       <div className="flex-1 min-w-0">
@@ -409,7 +409,7 @@ export default function ClientDashboard() {
 
                   <button 
                     onClick={handleCheckout}
-                    className="w-full bg-gradient-to-r from-brand-primary to-brand-light hover:opacity-90 text-white font-medium py-3 px-4 rounded-[10px] transition-all flex justify-center items-center shadow-sm text-[13px]"
+                    className="w-full bg-gradient-to-r from-brand-primary via-brand-secondary to-brand-accent hover:opacity-90 text-white font-medium py-3 px-4 rounded-[10px] transition-all flex justify-center items-center shadow-lg shadow-brand-primary/20 text-[13px]"
                   >
                     <CreditCard className="w-4 h-4 mr-2" />
                     Оформить заказ
@@ -428,7 +428,7 @@ export default function ClientDashboard() {
             </div>
             <div className="space-y-4">
               {myOrders.filter(o => o.status === 'active').sort((a,b) => b.createdAt - a.createdAt).map(order => (
-                <div key={order.id} className="bg-surface p-6 rounded-[16px] shadow-[0_4px_12px_rgba(16,24,40,0.03)] border border-border-color flex flex-col md:flex-row md:items-center justify-between gap-6 hover:bg-[#FAF7F2] transition-colors">
+                <div key={order.id} className="bg-surface p-6 rounded-[16px] shadow-sm border border-border-color flex flex-col md:flex-row md:items-center justify-between gap-6 hover:bg-surface-alt transition-colors">
                   <div>
                     <div className="flex items-center gap-3 mb-3">
                       <span className="bg-brand-primary/10 text-brand-primary border border-brand-primary/20 text-[11px] font-semibold px-2 py-0.5 rounded-[6px]">В обработке</span>

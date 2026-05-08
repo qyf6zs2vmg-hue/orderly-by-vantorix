@@ -6,6 +6,7 @@ import { LogOut, Store, ShoppingBag, Archive, Box, Plus, Minus, CreditCard, Pack
 import clsx from 'clsx';
 import { motion, AnimatePresence } from 'motion/react';
 import PrivacyPolicyContent from '../components/PrivacyPolicyContent';
+import { SplashScreen } from '../components/SplashScreen';
 
 const PRODUCTS = [
   { id: 'p1', name: 'Серверный шкаф 42U', price: 850, icon: Box, stock: 15 },
@@ -135,15 +136,7 @@ export default function ClientDashboard() {
             className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-bg-base"
           >
             {checkoutState === 'processing' ? (
-              <motion.div 
-                initial={{ scale: 0.9, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                className="flex flex-col items-center text-center px-6"
-              >
-                 <Loader2 className="w-16 h-16 text-brand-primary animate-spin mb-6" />
-                 <h2 className="text-2xl font-bold text-text-main tracking-tight mb-2">Оформление заказа...</h2>
-                 <p className="text-text-muted">Пожалуйста, подождите, мы обрабатываем ваш запрос.</p>
-              </motion.div>
+              <SplashScreen />
             ) : (
               <motion.div 
                 initial={{ scale: 0.9, opacity: 0 }}
@@ -181,6 +174,11 @@ export default function ClientDashboard() {
       )}>
           
         {/* User Profile Summary in Sidebar */}
+        <div className="flex items-center gap-2 px-3 mb-8">
+           <img src="https://drive.google.com/thumbnail?id=1VG9rOLyli4T9AnEPCm4EX0KkFB49BdqL&sz=w1000" alt="Vantorix Logo" className="w-8 h-auto object-contain" style={{ mixBlendMode: 'multiply' }} />
+           <span className="font-bold tracking-widest uppercase text-[15px] text-text-main">Vantorix OMS</span>
+        </div>
+
         <div className="flex items-center gap-3 px-3 mb-8">
             <div className="h-10 w-10 bg-surface-alt rounded-full flex items-center justify-center font-bold text-brand-primary border border-border-color shadow-sm object-cover">
               {appUser?.name?.[0]?.toUpperCase() || 'C'}
@@ -456,7 +454,7 @@ export default function ClientDashboard() {
                       onClick={() => setSettingsTab('privacy')}
                       className={clsx("text-left px-4 py-2.5 rounded-[10px] text-[13px] font-medium transition-colors", settingsTab === 'privacy' ? "bg-brand-primary/10 text-brand-primary font-semibold shadow-sm border border-brand-primary/20" : "text-text-muted hover:text-text-main hover:bg-surface-alt/50 border border-transparent")}
                     >
-                      Политика конфиденциальности
+                      Политика конфиденциальность Vantorix
                     </button>
                  </div>
                  
@@ -470,7 +468,7 @@ export default function ClientDashboard() {
                     )}
                     {settingsTab === 'privacy' && (
                        <div className="bg-surface rounded-[24px] p-8 shadow-[0_4px_12px_rgba(16,24,40,0.06)] border border-border-color">
-                         <h3 className="text-[18px] font-bold text-text-main tracking-tight mb-6">Политика конфиденциальности</h3>
+                         <h3 className="text-[18px] font-bold text-text-main tracking-tight mb-6">Политика конфиденциальность Vantorix</h3>
                          <div className="text-text-muted leading-relaxed text-[13px]">
                            <PrivacyPolicyContent />
                          </div>

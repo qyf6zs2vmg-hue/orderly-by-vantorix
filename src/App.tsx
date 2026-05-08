@@ -13,12 +13,12 @@ import Join from './pages/Join';
 import AdminDashboard from './pages/AdminDashboard';
 import ClientDashboard from './pages/ClientDashboard';
 import PendingApproval from './pages/PendingApproval';
-import { Loader2 } from 'lucide-react';
+import { SplashScreen } from './components/SplashScreen';
 
 function ProtectedRoute({ children, requiredRole }: { children: React.ReactNode, requiredRole?: 'owner' | 'client' }) {
   const { user, appUser, loading } = useAuth();
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center bg-bg-base font-sans"><Loader2 className="animate-spin w-8 h-8 text-brand-primary" /></div>;
+  if (loading) return <SplashScreen />;
 
   if (!user) return <Navigate to="/welcome" replace />;
 
@@ -44,7 +44,7 @@ function ProtectedRoute({ children, requiredRole }: { children: React.ReactNode,
 function HomeRedirect() {
   const { user, appUser, loading } = useAuth();
   
-  if (loading) return <div className="min-h-screen flex items-center justify-center bg-bg-base font-sans"><Loader2 className="animate-spin w-8 h-8 text-brand-primary" /></div>;
+  if (loading) return <SplashScreen />;
   
   if (!user || !appUser) {
     const hasVisited = localStorage.getItem('vantorix_visited');
@@ -59,15 +59,6 @@ function HomeRedirect() {
 }
 
 import Landing from './pages/Landing';
-
-function SplashScreen() {
-  return (
-    <div className="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-white font-sans overflow-hidden">
-      <img src="/logo.png" alt="Vantorix Logo" className="w-48 h-auto mb-6 object-contain" style={{ mixBlendMode: 'multiply' }} />
-      <h1 className="text-3xl font-black text-text-main tracking-tight">Vantorix OMS</h1>
-    </div>
-  );
-}
 
 export default function App() {
   const [initialLoading, setInitialLoading] = useState(true);

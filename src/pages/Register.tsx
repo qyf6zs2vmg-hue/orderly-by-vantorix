@@ -76,7 +76,7 @@ export default function Register() {
              Назад к регистрации
           </button>
           <div className="bg-surface rounded-[24px] p-8 sm:p-10 shadow-[0_4px_12px_rgba(16,24,40,0.06)] border border-border-color">
-             <h1 className="text-[22px] font-bold text-text-main tracking-tight mb-8">Политика конфиденциальности</h1>
+             <h1 className="text-[22px] font-bold text-text-main tracking-tight mb-8">Политика конфиденциальность Vantorix</h1>
              <div className="text-text-muted leading-relaxed text-[13px]">
                <PrivacyPolicyContent />
              </div>
@@ -143,7 +143,9 @@ export default function Register() {
           className="w-full max-w-[440px] relative z-10"
         >
           <div className="bg-white/80 backdrop-blur-xl rounded-[32px] p-8 md:p-10 shadow-[0_20px_50px_rgba(0,0,0,0.05)] border border-white/20 flex flex-col items-center text-left">
-            <h3 className="text-[20px] font-black tracking-tight text-text-main mb-8 w-full uppercase">Создание компании</h3>
+            <img src="https://drive.google.com/thumbnail?id=1VG9rOLyli4T9AnEPCm4EX0KkFB49BdqL&sz=w1000" alt="Vantorix Logo" className="w-24 h-auto mb-2 object-contain" style={{ mixBlendMode: 'multiply' }} />
+            <h1 className="text-2xl font-black text-text-main tracking-tight mb-8">Vantorix OMS</h1>
+            <h3 className="text-[20px] font-black tracking-tight text-text-main mb-8 w-full uppercase text-center">Создание компании</h3>
 
             <motion.div 
               initial={{ opacity: 0 }}

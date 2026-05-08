@@ -6,6 +6,7 @@ import { useNavigate, useSearchParams, useParams, Navigate } from 'react-router-
 import { Lock, Mail, User as UserIcon, EyeOff, Building2 } from 'lucide-react';
 import { useAuth } from '../lib/AuthContext';
 import PrivacyPolicyContent from '../components/PrivacyPolicyContent';
+import { SplashScreen } from '../components/SplashScreen';
 
 export default function Join() {
   const [searchParams] = useSearchParams();
@@ -149,11 +150,7 @@ export default function Join() {
   };
 
   if (loadingInvite) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-bg-base">
-        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-brand-primary"></div>
-      </div>
-    );
+    return <SplashScreen />;
   }
 
   if (inviteError) {
@@ -178,7 +175,7 @@ export default function Join() {
              Назад к регистрации
           </button>
           <div className="bg-surface rounded-[24px] p-8 sm:p-10 shadow-[0_4px_12px_rgba(16,24,40,0.06)] border border-border-color">
-             <h1 className="text-[22px] font-bold text-text-main tracking-tight mb-8">Политика конфиденциальности</h1>
+             <h1 className="text-[22px] font-bold text-text-main tracking-tight mb-8">Политика конфиденциальность Vantorix</h1>
              <div className="text-text-muted leading-relaxed text-[13px]">
                <PrivacyPolicyContent />
              </div>

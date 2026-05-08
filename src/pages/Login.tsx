@@ -80,6 +80,9 @@ export default function Login() {
       >
         <div className="bg-white/80 backdrop-blur-xl rounded-[32px] p-10 shadow-[0_20px_50px_rgba(0,0,0,0.05)] border border-white/20 flex flex-col items-center">
           
+          <img src="https://drive.google.com/thumbnail?id=1VG9rOLyli4T9AnEPCm4EX0KkFB49BdqL&sz=w1000" alt="Vantorix Logo" className="w-24 h-auto mb-2 object-contain" style={{ mixBlendMode: 'multiply' }} />
+          <h1 className="text-2xl font-black text-text-main tracking-tight mb-8">Vantorix OMS</h1>
+
           <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}

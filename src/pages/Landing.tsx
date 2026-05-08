@@ -29,11 +29,9 @@ export default function Landing() {
 
       {/* Header */}
       <header className="absolute top-0 w-full p-6 lg:px-12 flex justify-between items-center z-50">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-primary to-brand-accent flex items-center justify-center text-white font-black text-xl shadow-lg shadow-brand-primary/20">
-            V
-          </div>
-          <span className="font-bold tracking-widest uppercase text-lg">Vantorix</span>
+        <div className="flex items-center gap-3">
+          <img src="https://drive.google.com/thumbnail?id=1VG9rOLyli4T9AnEPCm4EX0KkFB49BdqL&sz=w1000" alt="Vantorix Logo" className="w-10 h-auto object-contain" style={{ mixBlendMode: 'multiply' }} />
+          <span className="font-bold tracking-widest uppercase text-xl">Vantorix OMS</span>
         </div>
         
         <button 
@@ -289,7 +287,7 @@ export default function Landing() {
          <div className="max-w-7xl mx-auto px-6 lg:px-12 flex flex-col md:flex-row justify-between items-center gap-6">
             <div className="flex flex-col items-center md:items-start gap-2">
                <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 rounded bg-gradient-to-br from-brand-primary to-brand-accent flex items-center justify-center text-white font-black text-xs">V</div>
+                  <img src="https://drive.google.com/thumbnail?id=1VG9rOLyli4T9AnEPCm4EX0KkFB49BdqL&sz=w1000" alt="Vantorix Logo" className="w-8 h-auto object-contain" style={{ mixBlendMode: 'multiply' }} />
                   <span className="font-bold tracking-widest uppercase text-sm">Vantorix Labs</span>
                </div>
                <span className="text-[10px] uppercase tracking-[0.3em] bg-clip-text text-transparent bg-gradient-to-r from-brand-primary to-brand-accent font-black">Make it possible</span>

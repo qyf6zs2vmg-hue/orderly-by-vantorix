@@ -63,7 +63,7 @@ import Landing from './pages/Landing';
 function SplashScreen() {
   return (
     <div className="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-white font-sans overflow-hidden">
-      <img src="https://drive.google.com/uc?export=view&id=1VG9rOLyli4T9AnEPCm4EX0KkFB49BdqL" alt="Vantorix Logo" className="w-32 h-auto mb-4" />
+      <img src="/logo.png" alt="Vantorix Logo" className="w-48 h-auto mb-6 object-contain" style={{ mixBlendMode: 'multiply' }} />
       <h1 className="text-3xl font-black text-text-main tracking-tight">Vantorix OMS</h1>
     </div>
   );

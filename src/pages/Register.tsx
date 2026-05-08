@@ -5,7 +5,6 @@ import { auth, db } from '../lib/firebase';
 import { Link, useNavigate } from 'react-router-dom';
 import { Lock, Mail, User as UserIcon, EyeOff, Building2 } from 'lucide-react';
 import PrivacyPolicyContent from '../components/PrivacyPolicyContent';
-import { LogoSVG } from '../components/SharedLogo';
 
 import { motion } from 'motion/react';
 
@@ -88,37 +87,70 @@ export default function Register() {
   }
 
   return (
-    <div className="min-h-screen bg-bg-base flex flex-col items-center justify-center p-6 font-sans relative overflow-hidden">
-      {/* Dynamic Background */}
-      <div className="absolute inset-0 z-0 pointer-events-none">
-        <div className="absolute top-[10%] right-[10%] w-[30rem] h-[30rem] bg-brand-primary/5 rounded-full blur-[100px]" />
-        <div className="absolute bottom-[10%] left-[10%] w-[30rem] h-[30rem] bg-brand-accent/5 rounded-full blur-[100px]" />
+    <div className="min-h-screen bg-bg-base flex flex-col md:flex-row font-sans overflow-x-hidden">
+      
+      {/* Desktop Branding Column */}
+      <div className="hidden md:flex md:w-[45%] lg:w-[50%] bg-surface border-r border-border-color flex-col justify-center px-10 xl:px-20 relative overflow-hidden">
+        {/* Background blobs for desktop */}
+        <div className="absolute inset-0 z-0 pointer-events-none">
+          <div className="absolute top-[10%] left-[10%] w-[40rem] h-[40rem] bg-brand-primary/10 rounded-full blur-[120px]" />
+          <div className="absolute bottom-[10%] right-[10%] w-[30rem] h-[30rem] bg-brand-accent/10 rounded-full blur-[100px]" />
+        </div>
+        
+        <div className="relative z-10 max-w-lg">
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8 }}
+          >
+            <h2 className="mt-16 text-3xl lg:text-4xl font-bold text-text-main tracking-tight leading-tight">
+              Ваш B2B портал готов к запуску.
+            </h2>
+            <p className="mt-6 text-text-muted text-[15px] leading-relaxed">
+              Vantorix OMS предоставляет все необходимые инструменты для автоматизации оптовых продаж: удобные каталоги, управление заказами и клиентской базой.
+            </p>
+            
+            <div className="mt-12 flex flex-col gap-6">
+              {[
+                  "Удобные каталоги и актуальные остатки",
+                  "Работа только с проверенными клиентами по инвайт-кодам",
+                  "Полный контроль над статусами заказов"
+              ].map((text, i) => (
+                <div key={i} className="flex items-center gap-4">
+                   <div className="w-10 h-10 rounded-2xl bg-brand-primary/10 flex items-center justify-center flex-shrink-0 text-brand-primary font-bold shadow-sm border border-brand-primary/20">
+                      {(i + 1).toString().padStart(2, '0')}
+                   </div>
+                   <span className="font-bold text-text-main text-[14px]">{text}</span>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        </div>
       </div>
 
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, ease: "easeOut" }}
-        className="w-full max-w-[440px] relative z-10 my-8"
-      >
-        <div className="bg-white/80 backdrop-blur-xl rounded-[32px] p-10 shadow-[0_20px_50px_rgba(0,0,0,0.05)] border border-white/20 flex flex-col items-center">
-          <div className="text-center mb-12 w-full flex flex-col items-center">
-            <motion.div
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ delay: 0.2, duration: 0.5 }}
-              className="mb-6"
-            >
-                <LogoSVG showTitle showSlogan showIcon={false} />
-            </motion.div>
-          </div>
+      {/* Form Column */}
+      <div className="w-full md:w-[55%] lg:w-[50%] flex flex-col items-center justify-center p-6 md:p-12 relative min-h-screen">
+        {/* Mobile Background blobs */}
+        <div className="absolute inset-0 z-0 pointer-events-none md:hidden">
+          <div className="absolute top-[5%] right-[5%] w-[20rem] h-[20rem] bg-brand-primary/10 rounded-full blur-[80px]" />
+          <div className="absolute bottom-[5%] left-[5%] w-[20rem] h-[20rem] bg-brand-accent/10 rounded-full blur-[80px]" />
+        </div>
 
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.4 }}
-            className="w-full"
-          >
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
+          className="w-full max-w-[440px] relative z-10"
+        >
+          <div className="bg-white/80 backdrop-blur-xl rounded-[32px] p-8 md:p-10 shadow-[0_20px_50px_rgba(0,0,0,0.05)] border border-white/20 flex flex-col items-center text-left">
+            <h3 className="text-[20px] font-black tracking-tight text-text-main mb-8 w-full uppercase">Создание компании</h3>
+
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.2 }}
+              className="w-full"
+            >
               {error && (
                 <div className="bg-brand-danger/10 border border-brand-danger/20 text-brand-danger p-3 rounded-[12px] text-[13px] font-medium mb-6 text-center animate-shake">
                   {error}
@@ -201,9 +233,10 @@ export default function Register() {
                     </span>
                 </div>
               </div>
-          </motion.div>
-        </div>
-      </motion.div>
+            </motion.div>
+          </div>
+        </motion.div>
+      </div>
     </div>
   );
 }

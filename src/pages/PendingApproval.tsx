@@ -1,6 +1,5 @@
 import { useAuth } from '../lib/AuthContext';
 import { LogOut, Clock } from 'lucide-react';
-import { LogoSVG } from '../components/SharedLogo';
 
 export default function PendingApproval() {
   const { logout, business } = useAuth();
@@ -9,10 +8,6 @@ export default function PendingApproval() {
     <div className="min-h-screen bg-bg-base flex items-center justify-center p-6 font-sans relative overflow-hidden">
       <div className="max-w-[420px] w-full bg-surface rounded-[24px] shadow-[0_12px_28px_rgba(16,24,40,0.06)] border border-border-color p-10 text-center relative z-10">
         
-        <div className="flex flex-col items-center mb-10">
-            <LogoSVG className="w-56 h-40" />
-        </div>
-
         <div className="w-16 h-16 bg-brand-primary/10 text-brand-primary border border-brand-primary/20 rounded-2xl flex items-center justify-center mx-auto mb-6">
           <Clock className="w-8 h-8" />
         </div>

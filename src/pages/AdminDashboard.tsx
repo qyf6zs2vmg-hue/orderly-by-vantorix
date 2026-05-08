@@ -2,9 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { collection, onSnapshot, query, where, doc, updateDoc, deleteDoc, setDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { useAuth } from '../lib/AuthContext';
-import { LogOut, Key, Users, Copy, RefreshCcw, ShoppingCart, Shield, Bell, Mail, ChevronDown, Search, Plus, Store, Box, Menu } from 'lucide-react';
+import { LogOut, Key, Users, Copy, RefreshCcw, ShoppingCart, Settings, Bell, Mail, ChevronDown, Search, Plus, Store, Box, Menu } from 'lucide-react';
 import clsx from 'clsx';
-import { LogoSVG } from '../components/SharedLogo';
 import PrivacyPolicyContent from '../components/PrivacyPolicyContent';
 
 function generateRandomCode(length = 24) {
@@ -26,7 +25,9 @@ const PRODUCTS = [
 
 export default function AdminDashboard() {
   const { logout, appUser, business } = useAuth();
-  const [activeTab, setActiveTab] = useState<'invites' | 'requests' | 'users' | 'orders' | 'products' | 'privacy'>('invites');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [settingsTab, setSettingsTab] = useState<'general' | 'privacy'>('general');
+  const [activeTab, setActiveTab] = useState<'invites' | 'requests' | 'users' | 'orders' | 'products' | 'settings'>('invites');
   
   const [invites, setInvites] = useState<any[]>([]);
   const [pendingUsers, setPendingUsers] = useState<any[]>([]);
@@ -108,11 +109,6 @@ export default function AdminDashboard() {
         isMobileMenuOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
       )}>
         
-        {/* Logo */}
-        <div className="px-3 mb-6">
-          <LogoSVG className="w-40 h-28 -ml-6" />
-        </div>
-
         {/* User Profile Summary in Sidebar */}
         <div className="flex items-center gap-3 px-3 mb-8">
           <div className="h-10 w-10 bg-surface-alt rounded-full flex items-center justify-center font-bold text-brand-primary border border-border-color shadow-sm object-cover">
@@ -172,11 +168,11 @@ export default function AdminDashboard() {
             Товары
           </button>
           <button
-            onClick={() => setActiveTab('privacy')}
-            className={clsx("flex items-center px-4 py-2.5 rounded-[10px] text-[13px] font-medium transition-colors", activeTab === 'privacy' ? "bg-brand-primary/10 text-brand-primary" : "text-text-muted hover:text-text-main hover:bg-surface-alt")}
+            onClick={() => setActiveTab('settings')}
+            className={clsx("flex items-center px-4 py-2.5 rounded-[10px] text-[13px] font-medium transition-colors", activeTab === 'settings' ? "bg-brand-primary/10 text-brand-primary" : "text-text-muted hover:text-text-main hover:bg-surface-alt")}
           >
-            <Shield className={clsx("w-4 h-4 mr-3", activeTab === 'privacy' ? "text-brand-primary" : "text-text-muted")} />
-            Приватность
+            <Settings className={clsx("w-4 h-4 mr-3", activeTab === 'settings' ? "text-brand-primary" : "text-text-muted")} />
+            Настройки
           </button>
         </nav>
 
@@ -206,7 +202,9 @@ export default function AdminDashboard() {
                 <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
                 <input 
                   type="text" 
-                  placeholder="Search anything..." 
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Поиск товаров..." 
                   className="w-full bg-surface border border-border-color rounded-[10px] py-2.5 pl-10 pr-10 text-[13px] text-text-main shadow-[0_1px_2px_rgba(16,24,40,0.04)] focus:border-brand-primary focus:ring-1 focus:ring-brand-primary outline-none transition-all placeholder:text-text-muted" 
                 />
                 <kbd className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] bg-surface-alt border border-border-color rounded px-1.5 py-0.5 text-text-muted font-sans font-medium">⌘K</kbd>
@@ -442,7 +440,6 @@ export default function AdminDashboard() {
                       <th className="px-6 py-4 font-medium text-text-muted uppercase text-[11px] tracking-wider">Клиент</th>
                       <th className="px-6 py-4 font-medium text-text-muted uppercase text-[11px] tracking-wider">Товары</th>
                       <th className="px-6 py-4 font-medium text-text-muted text-right uppercase text-[11px] tracking-wider">Сумма</th>
-                      <th className="px-6 py-4 font-medium text-text-muted pl-8 uppercase text-[11px] tracking-wider">Статус</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border-color text-text-main">
@@ -457,17 +454,10 @@ export default function AdminDashboard() {
                           {order.items.map((it:any) => <div key={it.id} className="mb-0.5 truncate">{it.quantity}x {it.name}</div>)}
                         </td>
                         <td className="px-6 py-4 font-bold text-text-main text-right text-[14px]">${order.total.toLocaleString()}</td>
-                        <td className="px-6 py-4 pl-8">
-                          {order.status === 'active' ? (
-                            <span className="px-2 py-0.5 rounded-[6px] text-[11px] font-medium inline-block bg-brand-primary/10 text-brand-primary border border-brand-primary/20">В работе</span>
-                          ) : (
-                            <span className="px-2 py-0.5 rounded-[6px] text-[11px] font-medium inline-block bg-surface-alt text-text-muted border border-border-color">Архив</span>
-                          )}
-                        </td>
                       </tr>
                     ))}
                     {orders.length === 0 && (
-                      <tr><td colSpan={5} className="px-6 py-12 text-center text-text-muted text-[13px]">У вас пока нет заказов.</td></tr>
+                      <tr><td colSpan={4} className="px-6 py-12 text-center text-text-muted text-[13px]">У вас пока нет заказов.</td></tr>
                     )}
                   </tbody>
                 </table>
@@ -482,8 +472,18 @@ export default function AdminDashboard() {
                  <h1 className="text-[24px] font-bold text-text-main tracking-tight">Каталог товаров (Preview)</h1>
                  <p className="text-[13px] text-text-muted mt-1">Товары, доступные вашим клиентам</p>
               </div>
+              <div className="mb-6 relative md:hidden">
+                 <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+                 <input 
+                   type="text" 
+                   value={searchQuery}
+                   onChange={(e) => setSearchQuery(e.target.value)}
+                   placeholder="Поиск товаров..." 
+                   className="w-full bg-surface border border-border-color rounded-[10px] py-2.5 pl-10 pr-4 text-[13px] text-text-main shadow-[0_1px_2px_rgba(16,24,40,0.04)] focus:border-brand-primary focus:ring-1 focus:ring-brand-primary outline-none transition-all placeholder:text-text-muted" 
+                 />
+              </div>
               <div className="flex flex-col gap-4">
-                {PRODUCTS.map(product => {
+                {PRODUCTS.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase())).map(product => {
                   return (
                     <div key={product.id} className="bg-surface p-5 rounded-[16px] border border-border-color flex items-center gap-5 hover:bg-surface-alt transition-colors shadow-sm">
                       <div className="w-12 h-12 bg-surface-alt text-brand-primary rounded-[12px] flex items-center justify-center flex-shrink-0 border border-border-color">
@@ -503,13 +503,47 @@ export default function AdminDashboard() {
             </div>
           )}
 
-          {/* Privacy Tab */}
-          {activeTab === 'privacy' && (
-            <div className="max-w-3xl w-full mx-auto animate-in fade-in duration-300">
-               <div className="bg-surface rounded-[24px] p-8 sm:p-10 shadow-[0_4px_12px_rgba(16,24,40,0.06)] border border-border-color">
-                 <h1 className="text-[22px] font-bold text-text-main tracking-tight mb-8">Политика конфиденциальности</h1>
-                 <div className="text-text-muted leading-relaxed text-[13px]">
-                   <PrivacyPolicyContent />
+          {/* Settings Tab */}
+          {activeTab === 'settings' && (
+            <div className="max-w-5xl w-full mx-auto animate-in fade-in duration-300">
+               <div className="mb-6">
+                 <h1 className="text-[24px] font-bold text-text-main tracking-tight">Настройки</h1>
+                 <p className="text-[13px] text-text-muted mt-1">Управление параметрами портала</p>
+               </div>
+               
+               <div className="flex flex-col md:flex-row gap-8 items-start">
+                 {/* Settings Sidebar */}
+                 <div className="w-full md:w-64 flex flex-col gap-1 shrink-0 bg-surface rounded-[16px] p-2 border border-border-color shadow-sm">
+                    <button 
+                      onClick={() => setSettingsTab('general')}
+                      className={clsx("text-left px-4 py-2.5 rounded-[10px] text-[13px] font-medium transition-colors", settingsTab === 'general' ? "bg-surface-alt text-text-main font-semibold shadow-sm border border-border-color" : "text-text-muted hover:text-text-main hover:bg-surface-alt/50 border border-transparent")}
+                    >
+                      Общие профиля
+                    </button>
+                    <button 
+                      onClick={() => setSettingsTab('privacy')}
+                      className={clsx("text-left px-4 py-2.5 rounded-[10px] text-[13px] font-medium transition-colors", settingsTab === 'privacy' ? "bg-brand-primary/10 text-brand-primary font-semibold shadow-sm border border-brand-primary/20" : "text-text-muted hover:text-text-main hover:bg-surface-alt/50 border border-transparent")}
+                    >
+                      Политика конфиденциальности
+                    </button>
+                 </div>
+                 
+                 {/* Settings Content */}
+                 <div className="flex-1 min-w-0 w-full">
+                    {settingsTab === 'general' && (
+                       <div className="bg-surface rounded-[24px] p-8 shadow-[0_4px_12px_rgba(16,24,40,0.06)] border border-border-color">
+                         <h3 className="text-[18px] font-bold text-text-main tracking-tight mb-6">Базовые параметры</h3>
+                         <p className="text-text-muted text-[13px]">Здесь появятся основные настройки компании.</p>
+                       </div>
+                    )}
+                    {settingsTab === 'privacy' && (
+                       <div className="bg-surface rounded-[24px] p-8 shadow-[0_4px_12px_rgba(16,24,40,0.06)] border border-border-color">
+                         <h3 className="text-[18px] font-bold text-text-main tracking-tight mb-6">Политика конфиденциальности</h3>
+                         <div className="text-text-muted leading-relaxed text-[13px]">
+                           <PrivacyPolicyContent />
+                         </div>
+                       </div>
+                    )}
                  </div>
                </div>
             </div>

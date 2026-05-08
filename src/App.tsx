@@ -47,6 +47,8 @@ function HomeRedirect() {
   if (loading) return <div className="min-h-screen flex items-center justify-center bg-bg-base font-sans"><Loader2 className="animate-spin w-8 h-8 text-brand-primary" /></div>;
   
   if (!user || !appUser) {
+    const hasVisited = localStorage.getItem('vantorix_visited');
+    if (!hasVisited) return <Navigate to="/welcome" replace />;
     return <Navigate to="/login" replace />;
   }
 
@@ -56,74 +58,14 @@ function HomeRedirect() {
   return <Navigate to="/welcome" replace />;
 }
 
-import { LogoSVG } from './components/SharedLogo';
+import Landing from './pages/Landing';
 
 function SplashScreen() {
   return (
-    <motion.div 
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.5 }}
-      className="fixed inset-0 z-[200] flex items-center justify-center bg-white font-sans overflow-hidden"
-    >
-      {/* Dynamic Background Elements */}
-      <div className="absolute inset-0 z-0 pointer-events-none">
-        <motion.div 
-          animate={{ 
-            scale: [1, 1.2, 1],
-            opacity: [0.3, 0.5, 0.3]
-          }}
-          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute top-[20%] left-[10%] w-[60vw] h-[60vw] bg-brand-primary/5 rounded-full blur-[120px]" 
-        />
-        <motion.div 
-          animate={{ 
-            scale: [1.2, 1, 1.2],
-            opacity: [0.2, 0.4, 0.2]
-          }}
-          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-          className="absolute bottom-[20%] right-[5%] w-[50vw] h-[50vw] bg-brand-accent/5 rounded-full blur-[100px]" 
-        />
-      </div>
-      
-      {/* Content Container - Flex Centered */}
-      <div className="relative z-10 flex flex-col items-center justify-center p-6 text-center">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-          className="mb-10"
-        >
-          <LogoSVG showTitle showSlogan showIcon={false} />
-        </motion.div>
-
-        {/* Loading Indicator */}
-        <div className="mt-14 w-64 h-[2px] bg-surface-alt rounded-full overflow-hidden relative">
-          <motion.div 
-            initial={{ left: "-100%" }}
-            animate={{ left: "100%" }}
-            transition={{ 
-              duration: 2.2, 
-              repeat: Infinity, 
-              ease: "easeInOut" 
-            }}
-            className="absolute inset-0 w-1/2 bg-gradient-to-r from-brand-primary via-brand-secondary to-brand-accent h-full"
-          />
-        </div>
-
-        <motion.div
-           initial={{ opacity: 0 }}
-           animate={{ opacity: 1 }}
-           transition={{ duration: 1, delay: 1.2 }}
-           className="mt-20"
-        >
-           <span className="text-[12px] font-bold tracking-[0.4em] text-text-muted uppercase">
-             DEVELOPED BY VANTORIX LABS
-           </span>
-        </motion.div>
-      </div>
-    </motion.div>
+    <div className="fixed inset-0 z-[200] flex flex-col items-center justify-center bg-white font-sans overflow-hidden">
+      <img src="https://drive.google.com/uc?export=view&id=1VG9rOLyli4T9AnEPCm4EX0KkFB49BdqL" alt="Vantorix Logo" className="w-32 h-auto mb-4" />
+      <h1 className="text-3xl font-black text-text-main tracking-tight">Vantorix OMS</h1>
+    </div>
   );
 }
 
@@ -133,7 +75,7 @@ export default function App() {
   useEffect(() => {
     const timer = setTimeout(() => {
       setInitialLoading(false);
-    }, 5500);
+    }, 3000);
     return () => clearTimeout(timer);
   }, []);
 
@@ -151,6 +93,7 @@ export default function App() {
         >
           <Routes>
             <Route path="/" element={<HomeRedirect />} />
+            <Route path="/welcome" element={<Landing />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/join" element={<Join />} />

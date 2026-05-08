@@ -5,7 +5,6 @@ import { auth, db } from '../lib/firebase';
 import { Link, useNavigate, Navigate } from 'react-router-dom';
 import { Lock, Mail, EyeOff } from 'lucide-react';
 import { useAuth } from '../lib/AuthContext';
-import { LogoSVG } from '../components/SharedLogo';
 import { motion } from 'motion/react';
 
 export default function Login() {
@@ -80,17 +79,6 @@ export default function Login() {
         className="w-full max-w-[440px] relative z-10"
       >
         <div className="bg-white/80 backdrop-blur-xl rounded-[32px] p-10 shadow-[0_20px_50px_rgba(0,0,0,0.05)] border border-white/20 flex flex-col items-center">
-          
-          <div className="text-center mb-12 w-full flex flex-col items-center">
-            <motion.div
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ delay: 0.2, duration: 0.5 }}
-              className="mb-6"
-            >
-               <LogoSVG showTitle showSlogan showIcon={false} />
-            </motion.div>
-          </div>
           
           <motion.div 
             initial={{ opacity: 0 }}

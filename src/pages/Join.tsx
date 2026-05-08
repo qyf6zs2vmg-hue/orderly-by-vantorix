@@ -6,7 +6,6 @@ import { useNavigate, useSearchParams, useParams, Navigate } from 'react-router-
 import { Lock, Mail, User as UserIcon, EyeOff, Building2 } from 'lucide-react';
 import { useAuth } from '../lib/AuthContext';
 import PrivacyPolicyContent from '../components/PrivacyPolicyContent';
-import { LogoSVG } from '../components/SharedLogo';
 
 export default function Join() {
   const [searchParams] = useSearchParams();
@@ -230,11 +229,6 @@ export default function Join() {
       <div className="w-full max-w-[420px] relative z-10 my-8">
         <div className="bg-surface rounded-[24px] p-10 shadow-[0_12px_28px_rgba(16,24,40,0.06)] border border-border-color flex flex-col items-center">
           <div className="text-center mb-8 w-full flex flex-col items-center">
-            
-            <div className="flex flex-col items-center mb-8">
-                <LogoSVG className="w-56 h-40" />
-            </div>
-              
             <h1 className="text-[18px] font-bold text-text-main tracking-tight mb-2 text-center">{inviteData?.businessName || "Загрузка..."}</h1>
             <p className="text-[13px] text-text-muted mb-4 text-center" style={{ textWrap: "balance" }}>Завершение регистрации: заполните форму, чтобы присоединиться</p>
           </div>

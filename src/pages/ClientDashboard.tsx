@@ -2,11 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { collection, onSnapshot, query, where, addDoc, updateDoc, doc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { useAuth } from '../lib/AuthContext';
-import { LogOut, Store, ShoppingBag, Archive, Box, Plus, Minus, CreditCard, PackageCheck, ShoppingCart, Shield, Bell, Mail, ChevronDown, Menu, Search, Loader2, CheckCircle } from 'lucide-react';
+import { LogOut, Store, ShoppingBag, Archive, Box, Plus, Minus, CreditCard, PackageCheck, ShoppingCart, Settings, Bell, Mail, ChevronDown, Menu, Search, Loader2, CheckCircle } from 'lucide-react';
 import clsx from 'clsx';
 import { motion, AnimatePresence } from 'motion/react';
 import PrivacyPolicyContent from '../components/PrivacyPolicyContent';
-import { LogoSVG } from '../components/SharedLogo';
 
 const PRODUCTS = [
   { id: 'p1', name: 'Серверный шкаф 42U', price: 850, icon: Box, stock: 15 },
@@ -18,7 +17,8 @@ const PRODUCTS = [
 
 export default function ClientDashboard() {
   const { logout, appUser, business } = useAuth();
-  const [activeTab, setActiveTab] = useState<'shop' | 'active' | 'archive' | 'privacy'>('shop');
+  const [activeTab, setActiveTab] = useState<'shop' | 'orders' | 'settings'>('shop');
+  const [settingsTab, setSettingsTab] = useState<'general' | 'privacy'>('general');
   const [searchQuery, setSearchQuery] = useState('');
   
   const [cart, setCart] = useState<{product: any, quantity: number}[]>([]);
@@ -180,11 +180,6 @@ export default function ClientDashboard() {
         isMobileMenuOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
       )}>
           
-        {/* Logo */}
-        <div className="px-3 mb-6">
-          <LogoSVG className="w-40 h-28 -ml-6" />
-        </div>
-
         {/* User Profile Summary in Sidebar */}
         <div className="flex items-center gap-3 px-3 mb-8">
             <div className="h-10 w-10 bg-surface-alt rounded-full flex items-center justify-center font-bold text-brand-primary border border-border-color shadow-sm object-cover">
@@ -206,34 +201,26 @@ export default function ClientDashboard() {
           </button>
           
           <button
-            onClick={() => setActiveTab('active')}
-            className={clsx("flex items-center justify-between px-4 py-2.5 rounded-[10px] text-[13px] font-medium transition-colors", activeTab === 'active' ? "bg-brand-primary/10 text-brand-primary" : "text-text-muted hover:text-text-main hover:bg-surface-alt")}
+            onClick={() => setActiveTab('orders')}
+            className={clsx("flex items-center justify-between px-4 py-2.5 rounded-[10px] text-[13px] font-medium transition-colors", activeTab === 'orders' ? "bg-brand-primary/10 text-brand-primary" : "text-text-muted hover:text-text-main hover:bg-surface-alt")}
           >
             <div className="flex items-center">
-              <ShoppingBag className={clsx("w-4 h-4 mr-3", activeTab === 'active' ? "text-brand-primary" : "text-text-muted")} />
+              <ShoppingBag className={clsx("w-4 h-4 mr-3", activeTab === 'orders' ? "text-brand-primary" : "text-text-muted")} />
               Мои заказы
             </div>
-            {myOrders.filter(o => o.status === 'active').length > 0 && (
+            {myOrders.length > 0 && (
               <span className="bg-brand-primary text-white text-[10px] px-2 py-0.5 rounded-[6px] font-bold ml-auto shadow-sm">
-                {myOrders.filter(o => o.status === 'active').length}
+                {myOrders.length}
               </span>
             )}
           </button>
 
           <button
-            onClick={() => setActiveTab('archive')}
-            className={clsx("flex items-center px-4 py-2.5 rounded-[10px] text-[13px] font-medium transition-colors", activeTab === 'archive' ? "bg-brand-primary/10 text-brand-primary" : "text-text-muted hover:text-text-main hover:bg-surface-alt")}
+            onClick={() => setActiveTab('settings')}
+            className={clsx("flex items-center px-4 py-2.5 rounded-[10px] text-[13px] font-medium transition-colors", activeTab === 'settings' ? "bg-brand-primary/10 text-brand-primary" : "text-text-muted hover:text-text-main hover:bg-surface-alt")}
           >
-            <Archive className={clsx("w-4 h-4 mr-3", activeTab === 'archive' ? "text-brand-primary" : "text-text-muted")} />
-            Архив заказов
-          </button>
-
-          <button
-            onClick={() => setActiveTab('privacy')}
-            className={clsx("flex items-center px-4 py-2.5 rounded-[10px] text-[13px] font-medium transition-colors", activeTab === 'privacy' ? "bg-brand-primary/10 text-brand-primary" : "text-text-muted hover:text-text-main hover:bg-surface-alt")}
-          >
-            <Shield className={clsx("w-4 h-4 mr-3", activeTab === 'privacy' ? "text-brand-primary" : "text-text-muted")} />
-            Приватность
+            <Settings className={clsx("w-4 h-4 mr-3", activeTab === 'settings' ? "text-brand-primary" : "text-text-muted")} />
+            Настройки
           </button>
         </nav>
         
@@ -418,18 +405,17 @@ export default function ClientDashboard() {
           </div>
         )}
 
-        {activeTab === 'active' && (
+        {activeTab === 'orders' && (
           <div className="max-w-4xl relative z-10 w-full mx-auto animate-in fade-in duration-300">
             <div className="mb-6">
-              <h1 className="text-[24px] font-bold text-text-main tracking-tight">Активные заказы</h1>
-              <p className="text-[13px] text-text-muted mt-1">Отслеживайте статус ваших текущих покупок</p>
+              <h1 className="text-[24px] font-bold text-text-main tracking-tight">Мои заказы</h1>
+              <p className="text-[13px] text-text-muted mt-1">Все ваши покупки</p>
             </div>
             <div className="space-y-4">
-              {myOrders.filter(o => o.status === 'active').sort((a,b) => b.createdAt - a.createdAt).map(order => (
+              {myOrders.sort((a,b) => b.createdAt - a.createdAt).map(order => (
                 <div key={order.id} className="bg-surface p-6 rounded-[16px] shadow-sm border border-border-color flex flex-col md:flex-row md:items-center justify-between gap-6 hover:bg-surface-alt transition-colors">
                   <div>
                     <div className="flex items-center gap-3 mb-3">
-                      <span className="bg-brand-primary/10 text-brand-primary border border-brand-primary/20 text-[11px] font-semibold px-2 py-0.5 rounded-[6px]">В обработке</span>
                       <span className="text-[12px] text-text-muted">{new Date(order.createdAt).toLocaleDateString('ru-RU')}</span>
                     </div>
                     <div className="text-[13px] text-text-main mb-2 font-medium">
@@ -437,64 +423,62 @@ export default function ClientDashboard() {
                     </div>
                     <div className="font-semibold text-text-main text-[14px]">Итого: <span className="text-brand-primary tracking-tight">${order.total.toLocaleString()}</span></div>
                   </div>
-                  <button 
-                    onClick={() => handleMarkReceived(order.id)}
-                    className="bg-surface hover:bg-surface-alt border border-border-color text-text-main py-2.5 px-4 rounded-[10px] font-medium transition-colors flex items-center justify-center shrink-0 shadow-[0_1px_2px_rgba(16,24,40,0.04)] text-[13px]"
-                  >
-                    <PackageCheck className="w-[18px] h-[18px] mr-2" />
-                    Заказ получен
-                  </button>
                 </div>
               ))}
-              {myOrders.filter(o => o.status === 'active').length === 0 && (
+              {myOrders.length === 0 && (
                 <div className="bg-surface p-12 rounded-[16px] shadow-[0_4px_12px_rgba(16,24,40,0.03)] border border-border-color text-center flex flex-col items-center">
                   <PackageCheck className="w-10 h-10 text-text-muted mb-3 opacity-30" />
-                  <p className="text-text-muted text-[13px] font-medium">У вас нет активных заказов</p>
+                  <p className="text-text-muted text-[13px] font-medium">У вас пока нет заказов</p>
                 </div>
               )}
             </div>
           </div>
         )}
 
-        {activeTab === 'archive' && (
-          <div className="max-w-4xl relative z-10 w-full mx-auto animate-in fade-in duration-300">
-            <div className="mb-6">
-              <h1 className="text-[24px] font-bold text-text-main tracking-tight">История заказов</h1>
-              <p className="text-[13px] text-text-muted mt-1">Все ваши завершенные транзакции</p>
-            </div>
-            <div className="space-y-4">
-              {myOrders.filter(o => o.status === 'archived').sort((a,b) => b.createdAt - a.createdAt).map(order => (
-                <div key={order.id} className="bg-surface p-6 rounded-[16px] shadow-[0_2px_8px_rgba(16,24,40,0.02)] border border-border-color opacity-90 hover:opacity-100 transition-opacity">
-                  <div className="flex items-center gap-3 mb-3">
-                    <span className="bg-surface-alt text-text-muted border border-border-color text-[11px] font-semibold px-2 py-0.5 rounded-[6px]">Завершен</span>
-                    <span className="text-[12px] text-text-muted">{new Date(order.createdAt).toLocaleDateString('ru-RU')}</span>
-                  </div>
-                  <div className="text-[13px] text-text-muted mb-2 font-medium">
-                    {order.items.map((i:any) => `${i.quantity}x ${i.name}`).join(', ')}
-                  </div>
-                  <div className="font-semibold text-text-main text-[14px]">Итого: <span className="text-text-main tracking-tight">${order.total.toLocaleString()}</span></div>
-                </div>
-              ))}
-              {myOrders.filter(o => o.status === 'archived').length === 0 && (
-                <div className="bg-surface p-12 rounded-[16px] shadow-[0_4px_12px_rgba(16,24,40,0.03)] border border-border-color text-center flex flex-col items-center">
-                  <Archive className="w-10 h-10 text-text-muted opacity-30 mb-3" />
-                  <p className="text-text-muted text-[13px] font-medium">История покупок пуста</p>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Privacy Tab */}
-        {activeTab === 'privacy' && (
-          <div className="max-w-3xl w-full mx-auto animate-in fade-in duration-300">
-             <div className="bg-surface rounded-[24px] p-8 sm:p-10 shadow-[0_4px_12px_rgba(16,24,40,0.06)] border border-border-color">
-               <h1 className="text-[22px] font-bold text-text-main tracking-tight mb-8">Политика конфиденциальности</h1>
-               <div className="text-text-muted leading-relaxed text-[13px]">
-                 <PrivacyPolicyContent />
+        {/* Settings Tab */}
+        {activeTab === 'settings' && (
+            <div className="max-w-5xl w-full mx-auto animate-in fade-in duration-300">
+               <div className="mb-6">
+                 <h1 className="text-[24px] font-bold text-text-main tracking-tight">Настройки</h1>
+                 <p className="text-[13px] text-text-muted mt-1">Управление параметрами портала</p>
                </div>
-             </div>
-          </div>
+               
+               <div className="flex flex-col md:flex-row gap-8 items-start">
+                 {/* Settings Sidebar */}
+                 <div className="w-full md:w-64 flex flex-col gap-1 shrink-0 bg-surface rounded-[16px] p-2 border border-border-color shadow-sm">
+                    <button 
+                      onClick={() => setSettingsTab('general')}
+                      className={clsx("text-left px-4 py-2.5 rounded-[10px] text-[13px] font-medium transition-colors", settingsTab === 'general' ? "bg-surface-alt text-text-main font-semibold shadow-sm border border-border-color" : "text-text-muted hover:text-text-main hover:bg-surface-alt/50 border border-transparent")}
+                    >
+                      Общие профиля
+                    </button>
+                    <button 
+                      onClick={() => setSettingsTab('privacy')}
+                      className={clsx("text-left px-4 py-2.5 rounded-[10px] text-[13px] font-medium transition-colors", settingsTab === 'privacy' ? "bg-brand-primary/10 text-brand-primary font-semibold shadow-sm border border-brand-primary/20" : "text-text-muted hover:text-text-main hover:bg-surface-alt/50 border border-transparent")}
+                    >
+                      Политика конфиденциальности
+                    </button>
+                 </div>
+                 
+                 {/* Settings Content */}
+                 <div className="flex-1 min-w-0 w-full">
+                    {settingsTab === 'general' && (
+                       <div className="bg-surface rounded-[24px] p-8 shadow-[0_4px_12px_rgba(16,24,40,0.06)] border border-border-color">
+                         <h3 className="text-[18px] font-bold text-text-main tracking-tight mb-6">Базовые параметры</h3>
+                         <p className="text-text-muted text-[13px]">Здесь появятся основные настройки компании.</p>
+                       </div>
+                    )}
+                    {settingsTab === 'privacy' && (
+                       <div className="bg-surface rounded-[24px] p-8 shadow-[0_4px_12px_rgba(16,24,40,0.06)] border border-border-color">
+                         <h3 className="text-[18px] font-bold text-text-main tracking-tight mb-6">Политика конфиденциальности</h3>
+                         <div className="text-text-muted leading-relaxed text-[13px]">
+                           <PrivacyPolicyContent />
+                         </div>
+                       </div>
+                    )}
+                 </div>
+               </div>
+            </div>
         )}
         </main>
       </div>

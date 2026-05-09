@@ -78,9 +78,9 @@ export default function Login() {
         transition={{ duration: 0.8, ease: "easeOut" }}
         className="w-full max-w-[440px] relative z-10"
       >
-        <div className="bg-white/80 backdrop-blur-xl rounded-[32px] p-10 shadow-[0_20px_50px_rgba(0,0,0,0.05)] border border-white/20 flex flex-col items-center">
+        <div className="bg-surface/80 backdrop-blur-xl rounded-[32px] p-10 shadow-[0_20px_50px_rgba(0,0,0,0.05)] border border-white/20 flex flex-col items-center">
           
-          <img src="https://drive.google.com/thumbnail?id=1VG9rOLyli4T9AnEPCm4EX0KkFB49BdqL&sz=w1000" alt="Vantorix Logo" className="w-24 h-auto mb-2 object-contain" style={{ mixBlendMode: 'multiply' }} />
+          <img src="https://drive.google.com/thumbnail?id=1Zzhxcg4wGu4HCBSmPptAhuTqb-s8yb3D&sz=w1000" alt="Vantorix Logo" className="w-24 h-auto mb-2 object-contain" />
           <h1 className="text-2xl font-black text-text-main tracking-tight mb-8">Vantorix OMS</h1>
 
           <motion.div 
@@ -110,7 +110,7 @@ export default function Login() {
                       required
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="w-full pl-11 pr-4 py-3.5 rounded-[14px] bg-bg-base/50 border border-border-color/50 text-text-main focus:bg-white focus:border-brand-primary focus:ring-4 focus:ring-brand-primary/5 outline-none transition-all placeholder:text-text-muted/60 text-[14px] shadow-sm"
+                      className="w-full pl-11 pr-4 py-3.5 rounded-[14px] bg-bg-base/50 border border-border-color/50 text-text-main focus:bg-surface focus:border-brand-primary focus:ring-4 focus:ring-brand-primary/5 outline-none transition-all placeholder:text-text-muted/60 text-[14px] shadow-sm"
                       placeholder="Введите ваш email"
                     />
                   </div>
@@ -133,7 +133,7 @@ export default function Login() {
                       required
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="w-full pl-11 pr-11 py-3.5 rounded-[14px] bg-bg-base/50 border border-border-color/50 text-text-main focus:bg-white focus:border-brand-primary focus:ring-4 focus:ring-brand-primary/5 outline-none transition-all placeholder:text-text-muted/60 text-[14px] shadow-sm"
+                      className="w-full pl-11 pr-11 py-3.5 rounded-[14px] bg-bg-base/50 border border-border-color/50 text-text-main focus:bg-surface focus:border-brand-primary focus:ring-4 focus:ring-brand-primary/5 outline-none transition-all placeholder:text-text-muted/60 text-[14px] shadow-sm"
                       placeholder="Введите пароль"
                     />
                      <button type="button" className="absolute right-4 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-main transition-colors">

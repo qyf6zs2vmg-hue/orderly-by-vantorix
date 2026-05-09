@@ -30,7 +30,7 @@ export default function Landing() {
       {/* Header */}
       <header className="absolute top-0 w-full p-6 lg:px-12 flex justify-between items-center z-50">
         <div className="flex items-center gap-3">
-          <img src="https://drive.google.com/thumbnail?id=1VG9rOLyli4T9AnEPCm4EX0KkFB49BdqL&sz=w1000" alt="Vantorix Logo" className="w-10 h-auto object-contain" style={{ mixBlendMode: 'multiply' }} />
+          <img src="https://drive.google.com/thumbnail?id=1Zzhxcg4wGu4HCBSmPptAhuTqb-s8yb3D&sz=w1000" alt="Vantorix Logo" className="w-10 h-auto object-contain" />
           <span className="font-bold tracking-widest uppercase text-xl">Vantorix OMS</span>
         </div>
         
@@ -263,7 +263,7 @@ export default function Landing() {
 
         {/* CTA Banner */}
         <section className="rounded-[32px] bg-brand-primary/10 border border-brand-primary/20 p-8 md:p-12 text-center relative overflow-hidden">
-           <div className="absolute inset-0 bg-gradient-to-br from-brand-primary/5 to-brand-accent/5" />
+           <div className="absolute inset-0 bg-gradient-to-br from-brand-primary/5 via-brand-secondary/5 to-brand-accent/5" />
            <div className="relative z-10 flex flex-col items-center">
              <h3 className="text-2xl font-bold mb-4 text-white">Готовы к цифровой трансформации?</h3>
              <p className="text-blue-200/70 max-w-2xl text-[15px] mb-8 leading-relaxed">
@@ -287,10 +287,10 @@ export default function Landing() {
          <div className="max-w-7xl mx-auto px-6 lg:px-12 flex flex-col md:flex-row justify-between items-center gap-6">
             <div className="flex flex-col items-center md:items-start gap-2">
                <div className="flex items-center gap-2">
-                  <img src="https://drive.google.com/thumbnail?id=1VG9rOLyli4T9AnEPCm4EX0KkFB49BdqL&sz=w1000" alt="Vantorix Logo" className="w-8 h-auto object-contain" style={{ mixBlendMode: 'multiply' }} />
+                  <img src="https://drive.google.com/thumbnail?id=1Zzhxcg4wGu4HCBSmPptAhuTqb-s8yb3D&sz=w1000" alt="Vantorix Logo" className="w-8 h-auto object-contain" />
                   <span className="font-bold tracking-widest uppercase text-sm">Vantorix Labs</span>
                </div>
-               <span className="text-[10px] uppercase tracking-[0.3em] bg-clip-text text-transparent bg-gradient-to-r from-brand-primary to-brand-accent font-black">Make it possible</span>
+               <span className="text-[10px] uppercase tracking-[0.3em] bg-clip-text text-transparent bg-gradient-to-r from-brand-primary via-brand-secondary to-brand-accent font-black">Make it possible</span>
             </div>
             
             <div className="flex gap-6 text-[13px] text-text-muted font-medium">

@@ -51,7 +51,9 @@ export default function Join() {
           setInviteError('Неверный код приглашения');
         } else {
           const data = inviteDoc.data();
-          if (data.used) {
+          if (data.blocked) {
+            setInviteError('Этот инвайт-код заблокирован');
+          } else if (data.used) {
             setInviteError('Этот инвайт-код уже использован');
           } else {
             if (data.businessId) {

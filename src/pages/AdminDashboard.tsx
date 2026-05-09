@@ -65,8 +65,17 @@ export default function AdminDashboard() {
     await setDoc(doc(db, 'invites', code), {
       businessId: appUser.businessId,
       used: false,
+      blocked: false,
       createdAt: Date.now()
     });
+  };
+
+  const handleBlockInvite = async (inviteId: string) => {
+    try {
+      await updateDoc(doc(db, 'invites', inviteId), { blocked: true });
+    } catch (error) {
+      console.error("Error blocking invite:", error);
+    }
   };
 
   const handleApproveUser = async (userId: string) => {
@@ -111,7 +120,7 @@ export default function AdminDashboard() {
         
         {/* User Profile Summary in Sidebar */}
         <div className="flex items-center gap-2 px-3 mb-8">
-           <img src="https://drive.google.com/thumbnail?id=1VG9rOLyli4T9AnEPCm4EX0KkFB49BdqL&sz=w1000" alt="Vantorix Logo" className="w-8 h-auto object-contain" style={{ mixBlendMode: 'multiply' }} />
+           <img src="https://drive.google.com/thumbnail?id=1Zzhxcg4wGu4HCBSmPptAhuTqb-s8yb3D&sz=w1000" alt="Vantorix Logo" className="w-8 h-auto object-contain" />
            <span className="font-bold tracking-widest uppercase text-[15px] text-text-main">Vantorix OMS</span>
         </div>
 
@@ -133,18 +142,6 @@ export default function AdminDashboard() {
           >
             <Key className={clsx("w-4 h-4 mr-3", activeTab === 'invites' ? "text-brand-primary" : "text-text-muted")} />
             Инвайт-коды
-          </button>
-          <button
-            onClick={() => setActiveTab('requests')}
-            className={clsx("flex items-center justify-between px-4 py-2.5 rounded-[10px] text-[13px] font-medium transition-colors", activeTab === 'requests' ? "bg-brand-primary/10 text-brand-primary" : "text-text-muted hover:text-text-main hover:bg-surface-alt")}
-          >
-            <div className="flex items-center">
-              <RefreshCcw className={clsx("w-4 h-4 mr-3", activeTab === 'requests' ? "text-brand-primary" : "text-text-muted")} />
-              Заявки
-            </div>
-            {pendingUsers.length > 0 && (
-              <span className="bg-brand-primary text-white text-[10px] px-2 py-0.5 rounded-full font-bold ml-auto">{pendingUsers.length}</span>
-            )}
           </button>
           <button
             onClick={() => setActiveTab('users')}
@@ -263,6 +260,7 @@ export default function AdminDashboard() {
                       <th className="px-6 py-4 font-medium text-text-muted uppercase text-[11px] tracking-wider">Код / Ссылка</th>
                       <th className="px-6 py-4 font-medium text-text-muted uppercase text-[11px] tracking-wider">Статус</th>
                       <th className="px-6 py-4 font-medium text-text-muted uppercase text-[11px] tracking-wider">Создан</th>
+                      <th className="px-6 py-4 font-medium text-text-muted uppercase text-[11px] tracking-wider text-right">Действия</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border-color text-text-main">
@@ -282,7 +280,11 @@ export default function AdminDashboard() {
                           </button>
                         </td>
                         <td className="px-6 py-4">
-                          {invite.used ? (
+                          {invite.blocked ? (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-[6px] text-[11px] font-medium bg-brand-danger/10 text-brand-danger border border-brand-danger/20">
+                              Заблокирован
+                            </span>
+                          ) : invite.used ? (
                             <span className="inline-flex items-center px-2 py-0.5 rounded-[6px] text-[11px] font-medium bg-surface-alt text-text-muted border border-border-color">
                               Использован
                             </span>
@@ -295,83 +297,20 @@ export default function AdminDashboard() {
                         <td className="px-6 py-4 text-text-muted">
                           {new Date(invite.createdAt).toLocaleString('ru-RU')}
                         </td>
+                        <td className="px-6 py-4 text-right">
+                          {!invite.blocked && !invite.used && (
+                            <button 
+                              onClick={() => handleBlockInvite(invite.id)}
+                              className="text-[11px] font-medium text-brand-danger hover:text-red-700 transition-colors"
+                            >
+                              Заблокировать
+                            </button>
+                          )}
+                        </td>
                       </tr>
                     ))}
                     {invites.length === 0 && (
-                      <tr><td colSpan={3} className="px-6 py-12 text-center text-text-muted text-[13px]">Нажмите «Сгенерировать код» чтобы создать первый инвайт.</td></tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-
-          {/* Requests Tab */}
-          {activeTab === 'requests' && (
-            <div className="max-w-5xl w-full mx-auto animate-in fade-in duration-300">
-              <div className="mb-6">
-                <h1 className="text-[24px] font-bold text-text-main tracking-tight">Заявки</h1>
-                <p className="text-[13px] text-text-muted mt-1">Новые регистрации ожидающие подтверждения</p>
-              </div>
-              <div className="bg-surface border border-border-color rounded-[16px] shadow-sm overflow-x-auto">
-                <table className="w-full text-left text-[13px] min-w-[600px]">
-                  <thead className="bg-surface-alt border-b border-border-color">
-                    <tr>
-                      <th className="px-6 py-4 font-medium text-text-muted uppercase text-[11px] tracking-wider">Имя</th>
-                      <th className="px-6 py-4 font-medium text-text-muted uppercase text-[11px] tracking-wider">Email</th>
-                      <th className="px-6 py-4 font-medium text-text-muted uppercase text-[11px] tracking-wider">Инвайт</th>
-                      <th className="px-6 py-4 font-medium text-text-muted text-right uppercase text-[11px] tracking-wider">Действия</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border-color text-text-main">
-                    {pendingUsers.map(user => (
-                       <tr key={user.id} className="hover:bg-surface-alt/50 transition-colors">
-                        {editingClient?.id === user.id ? (
-                          <>
-                            <td className="px-6 py-4">
-                              <input 
-                                type="text" 
-                                value={editingClient.name} 
-                                onChange={(e) => setEditingClient({...editingClient, name: e.target.value})}
-                                className="w-full bg-surface border border-border-color text-text-main rounded-md px-2.5 py-1.5 focus:outline-none focus:border-brand-primary shadow-sm text-[13px]"
-                                placeholder="Имя"
-                              />
-                            </td>
-                            <td className="px-6 py-4 text-text-muted">{user.email}</td>
-                            <td className="px-6 py-4 font-mono text-text-muted text-[13px]">{user.inviteCode}</td>
-                            <td className="px-6 py-4 text-right flex justify-end gap-2">
-                               <button onClick={handleSaveEdit} className="bg-brand-primary text-white px-3 py-1.5 rounded-[8px] text-[12px] font-medium hover:opacity-90 transition-opacity shadow-sm">
-                                 Сохранить
-                               </button>
-                               <button onClick={() => setEditingClient(null)} className="bg-surface border border-border-color text-text-main px-3 py-1.5 rounded-[8px] text-[12px] font-medium hover:bg-surface-alt transition-colors shadow-sm">
-                                 Отмена
-                               </button>
-                            </td>
-                          </>
-                        ) : (
-                          <>
-                            <td className="px-6 py-4 text-text-main">
-                              <div className="font-semibold">{user.name}</div>
-                            </td>
-                            <td className="px-6 py-4 text-text-muted">{user.email}</td>
-                            <td className="px-6 py-4 font-mono text-text-muted text-[12px]"><span className="bg-surface-alt px-1.5 py-0.5 border border-border-color rounded">{user.inviteCode}</span></td>
-                            <td className="px-6 py-4 text-right flex items-center justify-end gap-2">
-                              <button onClick={() => handleApproveUser(user.id)} className="bg-brand-success/10 text-brand-success px-3 py-1.5 rounded-[8px] text-[12px] font-medium hover:bg-brand-success/20 transition-colors">
-                                Одобрить
-                              </button>
-                              <button onClick={() => setEditingClient({ id: user.id, name: user.name })} className="bg-surface border border-border-color text-text-main px-3 py-1.5 rounded-[8px] text-[12px] font-medium hover:bg-surface-alt transition-colors shadow-sm">
-                                Изменить
-                              </button>
-                              <button onClick={() => handleRejectUser(user.id)} className="bg-brand-danger/10 text-brand-danger px-3 py-1.5 rounded-[8px] text-[12px] font-medium hover:bg-brand-danger/20 transition-colors">
-                                Отклонить
-                              </button>
-                            </td>
-                          </>
-                        )}
-                      </tr>
-                    ))}
-                    {pendingUsers.length === 0 && (
-                      <tr><td colSpan={4} className="px-6 py-12 text-center text-text-muted text-[13px]">Нет новых заявок на рассмотрении.</td></tr>
+                      <tr><td colSpan={4} className="px-6 py-12 text-center text-text-muted text-[13px]">Нажмите «Сгенерировать код» чтобы создать первый инвайт.</td></tr>
                     )}
                   </tbody>
                 </table>

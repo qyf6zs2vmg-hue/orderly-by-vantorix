@@ -2,16 +2,21 @@ import React, { useState, useEffect } from 'react';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification, signOut } from 'firebase/auth';
 import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { auth, db } from '../lib/firebase';
-import { useNavigate, useSearchParams, useParams, Navigate } from 'react-router-dom';
-import { Lock, Mail, User as UserIcon, EyeOff, Building2 } from 'lucide-react';
+import { useNavigate, useSearchParams, useParams, Navigate, Link } from 'react-router-dom';
+import { Lock, Mail, User as UserIcon, EyeOff, Building2, Globe, ChevronRight } from 'lucide-react';
 import { useAuth } from '../lib/AuthContext';
 import PrivacyPolicyContent from '../components/PrivacyPolicyContent';
 import { SplashScreen } from '../components/SplashScreen';
+import { SecurityConfirmationModal } from '../components/SecurityConfirmationModal';
+import { LanguageToggle } from '../components/LanguageToggle';
+import { translations, Language } from '../constants/translations';
 
 export default function Join() {
   const [searchParams] = useSearchParams();
   const params = useParams();
   const code = params.code || searchParams.get('code');
+  const [lang, setLang] = useState<Language>('RU');
+  const t = translations[lang];
   
   const [inviteData, setInviteData] = useState<any>(null);
   const [loadingInvite, setLoadingInvite] = useState(true);
@@ -24,6 +29,7 @@ export default function Join() {
   const [loading, setLoading] = useState(false);
   const [agreePrivacy, setAgreePrivacy] = useState(false);
   const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState(false);
+  const [isSecurityModalOpen, setIsSecurityModalOpen] = useState(false);
   const [isLogin, setIsLogin] = useState(false);
   
   const navigate = useNavigate();
@@ -40,7 +46,7 @@ export default function Join() {
   useEffect(() => {
     async function checkInvite() {
       if (!code) {
-        setInviteError('Код приглашения не указан');
+        setInviteError(lang === 'RU' ? 'Код приглашения не указан' : 'Taklif kodi ko\'rsatilmagan');
         setLoadingInvite(false);
         return;
       }
@@ -48,45 +54,54 @@ export default function Join() {
       try {
         const inviteDoc = await getDoc(doc(db, 'invites', code));
         if (!inviteDoc.exists()) {
-          setInviteError('Неверный код приглашения');
+          setInviteError(lang === 'RU' ? 'Неверный код приглашения' : 'Taklif kodi noto\'g\'ri');
         } else {
           const data = inviteDoc.data();
           if (data.blocked) {
-            setInviteError('Этот инвайт-код заблокирован');
+            setInviteError(lang === 'RU' ? 'Этот инвайт-код заблокирован' : 'Ushbu taklif kodi bloklangan');
           } else if (data.used) {
-            setInviteError('Этот инвайт-код уже использован');
+            setInviteError(lang === 'RU' ? 'Этот инвайт-код уже использован' : 'Ushbu taklif kodi allaqachon ishlatilgan');
           } else {
             if (data.businessId) {
               const busDoc = await getDoc(doc(db, 'businesses', data.businessId));
               if (busDoc.exists()) {
                 setInviteData({ id: inviteDoc.id, businessName: busDoc.data().name, ...data });
               } else {
-                setInviteData({ id: inviteDoc.id, businessName: 'Неизвестный бизнес', ...data });
+                setInviteData({ id: inviteDoc.id, businessName: lang === 'RU' ? 'Неизвестный бизнес' : 'Noma\'lum biznes', ...data });
               }
             } else {
-              setInviteData({ id: inviteDoc.id, businessName: 'Неизвестный бизнес', ...data });
+              setInviteData({ id: inviteDoc.id, businessName: lang === 'RU' ? 'Неизвестный бизнес' : 'Noma\'lum biznes', ...data });
             }
           }
         }
       } catch (err: any) {
         console.error(err);
-        setInviteError('Ошибка проверки кода');
+        setInviteError(lang === 'RU' ? 'Ошибка проверки кода' : 'Kodni tekshirishda xatolik');
       } finally {
         setLoadingInvite(false);
       }
     }
 
     checkInvite();
-  }, [code]);
+  }, [code, lang]);
 
-  const handleSubmit = async (e: React.FormEvent | React.MouseEvent) => {
+  const handleJoinSubmit = (e: React.FormEvent) => {
     if (e && e.preventDefault) e.preventDefault();
     if (!inviteData) return;
     if (!isLogin && !agreePrivacy) {
-      setError('Вы должны согласиться с Политикой конфиденциальности');
+      setError(lang === 'RU' ? 'Вы должны согласиться с Политикой конфиденциальности' : 'Maxfiylik siyosatiga rozilik berishingiz kerak');
       return;
     }
     
+    if (!isLogin) {
+      setIsSecurityModalOpen(true);
+    } else {
+      processSubmit();
+    }
+  };
+
+  const processSubmit = async () => {
+    setIsSecurityModalOpen(false);
     setError('');
     setLoading(true);
 
@@ -120,15 +135,17 @@ export default function Join() {
         const userCred = await createUserWithEmailAndPassword(auth, email, password);
         const uid = userCred.user.uid;
 
-        await setDoc(doc(db, 'users', uid), {
-          uid: uid,
-          name: name,
-          email: email,
-          role: 'client',
-          status: 'pending',
-          inviteCode: code,
-          businessId: inviteData.businessId
-        });
+          await setDoc(doc(db, 'users', uid), {
+            uid: uid,
+            name: name,
+            email: email,
+            role: 'client',
+            status: 'pending',
+            inviteCode: code,
+            businessId: inviteData.businessId,
+            securityAcknowledged: true,
+            onboardingComplete: false
+          });
 
         await updateDoc(doc(db, 'invites', inviteData.id), {
           used: true
@@ -140,11 +157,11 @@ export default function Join() {
     } catch (err: any) {
       console.error(err);
       if (err.code === 'auth/invalid-credential') {
-        setError('Неверный email или пароль');
+        setError(lang === 'RU' ? 'Неверный email или пароль' : 'Email yoki parol noto\'g\'ri');
       } else if (err.code === 'auth/email-already-in-use') {
-        setError('Этот email уже зарегистрирован. Войдите в аккаунт.');
+        setError(lang === 'RU' ? 'Этот email уже зарегистрирован. Войдите в аккаунт.' : 'Ushbu email allaqachon ro\'yxatdan o\'tgan. Hisobga kiring.');
       } else {
-        setError(err.message || 'Ошибка');
+        setError(err.message || (lang === 'RU' ? 'Ошибка' : 'Xatolik'));
       }
     } finally {
       setLoading(false);
@@ -206,13 +223,13 @@ export default function Join() {
             <div className="w-full flex gap-3">
                <button
                  onClick={() => signOut(auth)}
-                 className="flex-1 bg-surface border border-border-color hover:bg-surface-alt text-text-main py-2.5 px-4 rounded-[10px] font-medium transition-colors shadow-sm text-[13px]"
+                 className="flex-1 bg-surface border border-border-color hover:bg-surface-alt text-text-main py-2.5 px-4 rounded-[10px] font-medium transition-colors shadow-sm text-[13px] btn-secondary"
                >
                  Выйти
                </button>
                <button
                  onClick={() => navigate(appUser.role === 'client' ? '/client' : '/admin')}
-                 className="flex-1 bg-brand-primary text-white py-2.5 px-4 rounded-[10px] font-medium transition-opacity hover:opacity-90 shadow-sm text-[13px]"
+                 className="flex-1 btn-primary  py-2.5 px-4 rounded-[10px] font-medium transition-opacity hover:opacity-90 shadow-sm text-[13px]"
                >
                  В панель
                </button>
@@ -225,11 +242,17 @@ export default function Join() {
 
   return (
     <div className="min-h-screen bg-bg-base flex flex-col items-center justify-center p-6 font-sans relative overflow-hidden">
+      <div className="absolute top-6 right-6 z-50">
+        <LanguageToggle currentLang={lang} onLangChange={setLang} />
+      </div>
+
       <div className="w-full max-w-[420px] relative z-10 my-8">
         <div className="bg-surface rounded-[24px] p-10 shadow-[0_12px_28px_rgba(16,24,40,0.06)] border border-border-color flex flex-col items-center">
           <div className="text-center mb-8 w-full flex flex-col items-center">
             <h1 className="text-[18px] font-bold text-text-main tracking-tight mb-2 text-center">{inviteData?.businessName || "Загрузка..."}</h1>
-            <p className="text-[13px] text-text-muted mb-4 text-center" style={{ textWrap: "balance" }}>Завершение регистрации: заполните форму, чтобы присоединиться</p>
+            <p className="text-[13px] text-text-muted font-medium mb-4 text-center" style={{ textWrap: "balance" }}>
+               {lang === 'RU' ? 'Завершение регистрации: заполните форму, чтобы присоединиться' : 'Ro\'yxatdan o\'tishni yakunlash: qo\'shilish uchun shaklni to\'ldiring'}
+            </p>
           </div>
 
           <div className="w-full">
@@ -239,105 +262,125 @@ export default function Join() {
                 </div>
               )}
               
-              <div className="flex bg-surface-alt rounded-[10px] p-1 mb-6">
+              <div className="flex bg-surface-alt rounded-[12px] p-1.5 mb-8 border border-border-color">
                  <button
                    onClick={() => { setIsLogin(false); setError(''); }}
-                   className={`flex-1 py-1.5 text-[13px] font-medium rounded-md transition-all ${!isLogin ? 'bg-surface shadow-sm text-text-main' : 'text-text-muted hover:text-text-main'}`}
+                   className={`flex-1 py-2 text-[13px] font-bold rounded-lg transition-all ${!isLogin ? 'bg-surface shadow-sm text-brand-primary' : 'text-text-muted hover:text-text-main'}`}
                  >
-                   Регистрация
+                   {lang === 'RU' ? 'Регистрация' : 'Ro\'yxatdan o\'tish'}
                  </button>
                  <button
                    onClick={() => { setIsLogin(true); setError(''); }}
-                   className={`flex-1 py-1.5 text-[13px] font-medium rounded-md transition-all ${isLogin ? 'bg-surface shadow-sm text-text-main' : 'text-text-muted hover:text-text-main'}`}
+                   className={`flex-1 py-2 text-[13px] font-bold rounded-lg transition-all ${isLogin ? 'bg-surface shadow-sm text-brand-primary' : 'text-text-muted hover:text-text-main'}`}
                  >
-                   Вход
+                   {lang === 'RU' ? 'Вход' : 'Kirish'}
                  </button>
               </div>
 
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={handleJoinSubmit} className="space-y-4">
                 {!isLogin && (
                   <div className="space-y-1.5">
-                    <label className="text-[13px] font-medium text-text-main">Ваше имя</label>
+                    <label className="text-[13px] font-bold text-text-main ml-1">{lang === 'RU' ? 'Ваше имя' : 'Ismingiz'}</label>
                     <div className="relative">
-                      <UserIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+                      <UserIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
                       <input
                         type="text"
                         required={!isLogin}
                         value={name}
                         onChange={(e) => setName(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2.5 rounded-[10px] bg-surface border border-border-color text-text-main focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/10 outline-none transition-all placeholder:text-text-muted text-[13px] shadow-[0_1px_2px_rgba(16,24,40,0.04)]"
-                        placeholder="Иван Иванов"
+                        className="w-full pl-11 pr-4 py-3 rounded-xl bg-surface border border-border-color text-text-main focus:border-brand-primary focus:ring-4 focus:ring-brand-primary/10 outline-none transition-all placeholder:text-text-muted text-[13px] shadow-sm"
+                        placeholder={lang === 'RU' ? "Иван Иванов" : "Ism Familiya"}
                       />
                     </div>
                   </div>
                 )}
                 
                 <div className="space-y-1.5">
-                  <label className="text-[13px] font-medium text-text-main">Email</label>
+                  <label className="text-[13px] font-bold text-text-main ml-1">Email</label>
                   <div className="relative">
-                    <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
                     <input
                       type="email"
                       required
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2.5 rounded-[10px] bg-surface border border-border-color text-text-main focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/10 outline-none transition-all placeholder:text-text-muted text-[13px] shadow-[0_1px_2px_rgba(16,24,40,0.04)]"
-                      placeholder="ivan@example.com"
+                      className="w-full pl-11 pr-4 py-3 rounded-xl bg-surface border border-border-color text-text-main focus:border-brand-primary focus:ring-4 focus:ring-brand-primary/10 outline-none transition-all placeholder:text-text-muted text-[13px] shadow-sm"
+                      placeholder="example@vantorix.com"
                     />
                   </div>
                 </div>
                 
                 <div className="space-y-1.5">
-                  <label className="text-[13px] font-medium text-text-main">Пароль</label>
+                  <label className="text-[13px] font-bold text-text-main ml-1">{lang === 'RU' ? 'Пароль' : 'Parol'}</label>
                   <div className="relative">
-                    <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
                     <input
                       type="password"
                       required
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="w-full pl-10 pr-10 py-2.5 rounded-[10px] bg-surface border border-border-color text-text-main focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/10 outline-none transition-all placeholder:text-text-muted text-[13px] shadow-[0_1px_2px_rgba(16,24,40,0.04)]"
-                      placeholder="Минимум 6 символов"
+                      className="w-full pl-11 pr-4 py-3 rounded-xl bg-surface border border-border-color text-text-main focus:border-brand-primary focus:ring-4 focus:ring-brand-primary/10 outline-none transition-all placeholder:text-text-muted text-[13px] shadow-sm"
+                      placeholder={lang === 'RU' ? "Минимум 6 символов" : "Kamida 6 belgi"}
                       minLength={6}
                     />
-                     <button type="button" className="absolute right-3.5 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-main transition-colors">
-                        <EyeOff className="w-4 h-4" />
-                     </button>
                   </div>
                 </div>
 
                 {!isLogin && (
-                  <div className="flex items-start gap-2.5 mt-6 mb-6 px-1">
-                    <div className="flex items-center h-5">
-                      <input
-                        id="privacy-join"
-                        type="checkbox"
-                        checked={agreePrivacy}
-                        onChange={(e) => setAgreePrivacy(e.target.checked)}
-                        className="w-4 h-4 rounded border-border-color text-brand-primary bg-surface focus:ring-brand-primary/20 cursor-pointer"
-                      />
-                    </div>
-                    <label htmlFor="privacy-join" className="text-[12px] text-text-muted leading-snug cursor-pointer">
-                      Я соглашаюсь с <button type="button" onClick={() => setIsPrivacyModalOpen(true)} className="text-brand-primary hover:text-brand-secondary hover:underline font-medium">Политикой конфиденциальности</button>
-                    </label>
-                  </div>
+                   <div className="pt-2 px-1">
+                      <label className="flex items-start gap-4 group cursor-pointer">
+                        <div className={`mt-0.5 w-5 h-5 flex items-center justify-center rounded-lg border transition-all ${agreePrivacy ? 'bg-brand-primary border-brand-primary shadow-[0_0_10px_rgba(79,124,255,0.2)]' : 'bg-surface-alt border-border-color group-hover:border-text-muted'}`}>
+                          {agreePrivacy && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" className="text-white"><polyline points="20 6 9 17 4 12"/></svg>}
+                        </div>
+                        <input 
+                          type="checkbox" 
+                          className="hidden" 
+                          checked={agreePrivacy}
+                          onChange={(e) => setAgreePrivacy(e.target.checked)}
+                        />
+                        <span className="text-[12px] text-text-muted leading-relaxed group-hover:text-text-main transition-colors select-none">
+                          {lang === 'RU' ? 'Я согласен с ' : 'Men '}<button type="button" onClick={(e) => { e.stopPropagation(); setIsPrivacyModalOpen(true); }} className="text-brand-primary hover:underline font-bold">{lang === 'RU' ? 'Политикой конфиденциальности' : 'Maxfiylik siyosatiga roziman'}</button>
+                        </span>
+                      </label>
+                   </div>
                 )}
                 
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full bg-gradient-to-r from-brand-primary via-brand-secondary to-brand-accent text-white py-2.5 px-4 rounded-[10px] font-medium hover:opacity-90 transition-opacity disabled:opacity-70 flex justify-center items-center shadow-lg shadow-brand-primary/20 text-[14px] mt-4"
+                  className="w-full bg-brand-primary hover:bg-brand-primary-hover text-white font-bold h-12 rounded-xl text-[14px] mt-6 transition-all shadow-lg shadow-brand-primary/20 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 group"
                 >
-                  {loading ? (isLogin ? 'Вход...' : 'Создание...') : (isLogin ? 'Войти' : 'Зарегистрироваться')}
+                  {loading ? (
+                    <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                  ) : (
+                    <>
+                      {isLogin ? (lang === 'RU' ? 'Войти' : 'Kirish') : (lang === 'RU' ? 'Создать аккаунт' : 'Hisob yaratish')}
+                      <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                    </>
+                  )}
                 </button>
               </form>
 
-               <div className="mt-8 text-center text-[11px] text-text-muted font-medium uppercase tracking-[0.2em]">
-                  DEVELOPED BY VANTORIX LABS
+               <div className="mt-8 text-center text-[11px] text-text-muted font-medium uppercase tracking-[0.2em] flex flex-col items-center gap-4">
+                  <Link 
+                    to="/welcome" 
+                    className="text-[13px] font-bold text-brand-primary hover:text-brand-secondary transition-colors underline underline-offset-4 normal-case tracking-normal"
+                  >
+                    Подробная информация о сайте
+                  </Link>
+                  <span>DEVELOPED BY VANTORIX LABS</span>
                </div>
           </div>
         </div>
       </div>
+      <SecurityConfirmationModal 
+        isOpen={isSecurityModalOpen} 
+        onConfirm={processSubmit} 
+        lang={lang}
+      />
     </div>
   );
 }

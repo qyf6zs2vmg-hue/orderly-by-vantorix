@@ -6,6 +6,7 @@ import { Link, useNavigate, Navigate } from 'react-router-dom';
 import { Lock, Mail, EyeOff } from 'lucide-react';
 import { useAuth } from '../lib/AuthContext';
 import { motion } from 'motion/react';
+import { ThemeToggle } from '../components/ThemeToggle';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -72,13 +73,14 @@ export default function Login() {
         <div className="absolute bottom-[10%] left-[10%] w-[30rem] h-[30rem] bg-brand-accent/5 rounded-full blur-[100px]" />
       </div>
 
+      <div className="absolute top-6 right-6 z-50"><ThemeToggle /></div>
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, ease: "easeOut" }}
         className="w-full max-w-[440px] relative z-10"
       >
-        <div className="bg-surface/80 backdrop-blur-xl rounded-[32px] p-10 shadow-[0_20px_50px_rgba(0,0,0,0.05)] border border-white/20 flex flex-col items-center">
+        <div className="bg-surface/80 backdrop-blur-xl card-large p-10 shadow-[0_20px_50px_rgba(17,24,39,0.05)] border border-white/20 flex flex-col items-center">
           
           <img src="https://drive.google.com/thumbnail?id=1Zzhxcg4wGu4HCBSmPptAhuTqb-s8yb3D&sz=w1000" alt="Vantorix Logo" className="w-24 h-auto mb-2 object-contain" />
           <h1 className="text-2xl font-black text-text-main tracking-tight mb-8">Vantorix OMS</h1>
@@ -147,7 +149,7 @@ export default function Login() {
                   whileTap={{ scale: 0.98 }}
                   type="submit"
                   disabled={loading}
-                  className="w-full bg-gradient-to-r from-brand-primary via-brand-secondary to-brand-accent text-white py-4 px-6 rounded-[16px] font-bold hover:shadow-xl hover:shadow-brand-primary/20 transition-all disabled:opacity-70 flex justify-center items-center text-[15px] tracking-wide uppercase mt-8"
+                  className="w-full btn-primary text-white py-4 px-6 rounded-[16px] font-bold hover:shadow-xl card-premium-hover transition-all disabled:opacity-70 flex justify-center items-center text-[15px] tracking-wide uppercase mt-8"
                 >
                   {loading ? 'Вход...' : 'Войти в систему'}
                 </motion.button>
@@ -160,6 +162,13 @@ export default function Login() {
                     Создать компанию
                   </Link>
                 </div>
+
+                <Link 
+                  to="/welcome" 
+                  className="text-[13px] font-bold text-brand-primary hover:text-brand-secondary transition-colors underline underline-offset-4 mt-2"
+                >
+                  Подробная информация о сайте
+                </Link>
 
                 <div className="pt-6 border-t border-border-color/50 w-full text-center">
                     <span className="text-[10px] font-bold text-text-muted tracking-[0.3em] uppercase opacity-50">

@@ -22,7 +22,14 @@ function ProtectedRoute({ children, requiredRole }: { children: React.ReactNode,
 
   if (!user) return <Navigate to="/welcome" replace />;
 
-  if (!appUser) return <Navigate to="/welcome" replace />; // If no user document exists
+  if (loading) return <SplashScreen />;
+
+  if (!appUser) {
+    // If we have a firebase user but no firestore profile yet, 
+    // we might be in the middle of registration.
+    // Let's show the splash screen instead of immediately redirecting.
+    return <SplashScreen />;
+  }
 
   if (appUser.status === 'blocked') return <div className="min-h-screen flex items-center justify-center bg-bg-base text-brand-danger text-xl font-medium font-sans">Ваш аккаунт заблокирован.</div>;
 
@@ -46,10 +53,12 @@ function HomeRedirect() {
   
   if (loading) return <SplashScreen />;
   
-  if (!user || !appUser) {
-    const hasVisited = localStorage.getItem('vantorix_visited');
-    if (!hasVisited) return <Navigate to="/welcome" replace />;
-    return <Navigate to="/login" replace />;
+  if (!user) {
+    return <Navigate to="/welcome" replace />;
+  }
+
+  if (loading || !appUser) {
+    return <SplashScreen />;
   }
 
   if (appUser.role === 'owner' || appUser.role === 'admin') return <Navigate to="/admin" replace />;

@@ -2,9 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { collection, onSnapshot, query, where, doc, updateDoc, deleteDoc, setDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { useAuth } from '../lib/AuthContext';
-import { LogOut, Key, Users, Copy, RefreshCcw, ShoppingCart, Settings, Bell, Mail, ChevronDown, Search, Plus, Store, Box, Menu } from 'lucide-react';
+import { ThemeToggle } from '../components/ThemeToggle';
+import { LogOut, Key, Users, Copy, RefreshCcw, ShoppingCart, Settings, Bell, Mail, ChevronDown, Search, Plus, Store, Box, Menu, Shield, BarChart3, Globe, User, FileText, Palette } from 'lucide-react';
 import clsx from 'clsx';
 import PrivacyPolicyContent from '../components/PrivacyPolicyContent';
+import { SecuritySettings } from '../components/SecuritySettings';
+import { PostRegistrationSecurityDialog } from '../components/PostRegistrationSecurityDialog';
+import { SecurityIndicator } from '../components/SecurityIndicator';
+import { LanguageToggle } from '../components/LanguageToggle';
+import { translations, Language } from '../constants/translations';
 
 function generateRandomCode(length = 24) {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
@@ -26,10 +32,30 @@ const PRODUCTS = [
 export default function AdminDashboard() {
   const { logout, appUser, business } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
-  const [settingsTab, setSettingsTab] = useState<'general' | 'privacy'>('general');
+  const [settingsTab, setSettingsTab] = useState<'general' | 'privacy' | 'appearance' | 'security'>('general');
+  const [lang, setLang] = useState<Language>('RU');
+  const t = translations[lang];
   const [activeTab, setActiveTab] = useState<'invites' | 'requests' | 'users' | 'orders' | 'products' | 'settings'>('invites');
+  const [isSecurityDialogOpen, setIsSecurityDialogOpen] = useState(false);
   
   const [invites, setInvites] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (appUser && appUser.onboardingComplete === false) {
+      setIsSecurityDialogOpen(true);
+    }
+  }, [appUser]);
+
+  const handleCloseSecurityDialog = async () => {
+    setIsSecurityDialogOpen(false);
+    if (appUser?.uid) {
+      try {
+        await updateDoc(doc(db, 'users', appUser.uid), { onboardingComplete: true });
+      } catch (err) {
+        console.error(err);
+      }
+    }
+  };
   const [pendingUsers, setPendingUsers] = useState<any[]>([]);
   const [activeUsers, setActiveUsers] = useState<any[]>([]);
   const [orders, setOrders] = useState<any[]>([]);
@@ -125,64 +151,67 @@ export default function AdminDashboard() {
         </div>
 
         <div className="flex items-center gap-3 px-3 mb-8">
-          <div className="h-10 w-10 bg-surface-alt rounded-full flex items-center justify-center font-bold text-brand-primary border border-border-color shadow-sm object-cover">
+          <div className="h-10 w-10 bg-brand-primary/10 rounded-xl flex items-center justify-center font-bold text-brand-primary border border-brand-primary/20 shadow-sm relative overflow-hidden group">
+             <div className="absolute inset-0 bg-brand-primary opacity-0 group-hover:opacity-10 transition-opacity" />
              {appUser?.name?.[0]?.toUpperCase() || 'A'}
           </div>
-          <div className="flex flex-col">
-            <span className="text-[13px] font-semibold text-text-main leading-tight">{appUser?.name || 'Administrator'}</span>
-            <span className="text-[11px] text-text-muted mt-0.5 leading-tight">{business ? business.name : "Загрузка..."}</span>
+          <div className="flex flex-col min-w-0">
+            <span className="text-[13px] font-bold text-text-main leading-tight truncate">{appUser?.name || 'Administrator'}</span>
+            <span className="text-[11px] text-text-muted mt-0.5 leading-tight truncate font-medium uppercase tracking-wider">{business ? business.name : "..."}</span>
           </div>
         </div>
 
         {/* Nav Links */}
-        <nav className="flex flex-col gap-1 flex-1 px-1">
+        <nav className="flex flex-col gap-1.5 flex-1 px-1">
           <button
             onClick={() => setActiveTab('invites')}
-            className={clsx("flex items-center px-4 py-2.5 rounded-[10px] text-[13px] font-medium transition-colors", activeTab === 'invites' ? "bg-brand-primary/10 text-brand-primary" : "text-text-muted hover:text-text-main hover:bg-surface-alt")}
+            className={clsx("flex items-center px-4 py-3 rounded-xl text-[13px] font-bold transition-all duration-200 border-2", activeTab === 'invites' ? "bg-brand-primary/5 text-brand-primary border-brand-primary/20 shadow-lg shadow-brand-primary/5" : "text-text-muted hover:text-text-main hover:bg-surface-alt border-transparent")}
           >
-            <Key className={clsx("w-4 h-4 mr-3", activeTab === 'invites' ? "text-brand-primary" : "text-text-muted")} />
-            Инвайт-коды
+            <Key className={clsx("w-4 h-4 mr-3 transition-transform", activeTab === 'invites' ? "text-brand-primary scale-110" : "text-text-muted")} />
+            {t.tabs.invites}
           </button>
           <button
             onClick={() => setActiveTab('users')}
-            className={clsx("flex items-center justify-between px-4 py-2.5 rounded-[10px] text-[13px] font-medium transition-colors", activeTab === 'users' ? "bg-brand-primary/10 text-brand-primary" : "text-text-muted hover:text-text-main hover:bg-surface-alt")}
+            className={clsx("flex items-center justify-between px-4 py-3 rounded-xl text-[13px] font-bold transition-all duration-200 border-2", activeTab === 'users' ? "bg-brand-primary/5 text-brand-primary border-brand-primary/20 shadow-lg shadow-brand-primary/5" : "text-text-muted hover:text-text-main hover:bg-surface-alt border-transparent")}
           >
             <div className="flex items-center">
-              <Users className={clsx("w-4 h-4 mr-3", activeTab === 'users' ? "text-brand-primary" : "text-text-muted")} />
-              Клиенты
+              <Users className={clsx("w-4 h-4 mr-3 transition-transform", activeTab === 'users' ? "text-brand-primary scale-110" : "text-text-muted")} />
+              {t.tabs.users}
             </div>
             {activeUsers.length > 0 && (
-              <span className="bg-surface text-text-main text-[10px] px-2 py-0.5 rounded-full font-bold ml-auto border border-border-color">{activeUsers.length}</span>
+              <span className="bg-brand-primary text-white text-[10px] px-2 py-0.5 rounded-full font-bold ml-auto border border-brand-primary/20 shadow-sm">{activeUsers.length}</span>
             )}
           </button>
           <button
             onClick={() => setActiveTab('orders')}
-            className={clsx("flex items-center px-4 py-2.5 rounded-[10px] text-[13px] font-medium transition-colors", activeTab === 'orders' ? "bg-brand-primary/10 text-brand-primary" : "text-text-muted hover:text-text-main hover:bg-surface-alt")}
+            className={clsx("flex items-center px-4 py-3 rounded-xl text-[13px] font-bold transition-all duration-200 border-2", activeTab === 'orders' ? "bg-brand-primary/5 text-brand-primary border-brand-primary/20 shadow-lg shadow-brand-primary/5" : "text-text-muted hover:text-text-main hover:bg-surface-alt border-transparent")}
           >
-            <ShoppingCart className={clsx("w-4 h-4 mr-3", activeTab === 'orders' ? "text-brand-primary" : "text-text-muted")} />
-            Заказы
+            <ShoppingCart className={clsx("w-4 h-4 mr-3 transition-transform", activeTab === 'orders' ? "text-brand-primary scale-110" : "text-text-muted")} />
+            {t.tabs.orders}
           </button>
           <button
             onClick={() => setActiveTab('products')}
-            className={clsx("flex items-center px-4 py-2.5 rounded-[10px] text-[13px] font-medium transition-colors", activeTab === 'products' ? "bg-brand-primary/10 text-brand-primary" : "text-text-muted hover:text-text-main hover:bg-surface-alt")}
+            className={clsx("flex items-center px-4 py-3 rounded-xl text-[13px] font-bold transition-all duration-200 border-2", activeTab === 'products' ? "bg-brand-primary/5 text-brand-primary border-brand-primary/20 shadow-lg shadow-brand-primary/5" : "text-text-muted hover:text-text-main hover:bg-surface-alt border-transparent")}
           >
-            <Store className={clsx("w-4 h-4 mr-3", activeTab === 'products' ? "text-brand-primary" : "text-text-muted")} />
-            Товары
+            <Store className={clsx("w-4 h-4 mr-3 transition-transform", activeTab === 'products' ? "text-brand-primary scale-110" : "text-text-muted")} />
+            {t.tabs.products}
           </button>
           <button
             onClick={() => setActiveTab('settings')}
-            className={clsx("flex items-center px-4 py-2.5 rounded-[10px] text-[13px] font-medium transition-colors", activeTab === 'settings' ? "bg-brand-primary/10 text-brand-primary" : "text-text-muted hover:text-text-main hover:bg-surface-alt")}
+            className={clsx("flex items-center px-4 py-3 rounded-xl text-[13px] font-bold transition-all duration-200 border-2", activeTab === 'settings' ? "bg-brand-primary/5 text-brand-primary border-brand-primary/20 shadow-lg shadow-brand-primary/5" : "text-text-muted hover:text-text-main hover:bg-surface-alt border-transparent")}
           >
-            <Settings className={clsx("w-4 h-4 mr-3", activeTab === 'settings' ? "text-brand-primary" : "text-text-muted")} />
-            Настройки
+            <Settings className={clsx("w-4 h-4 mr-3 transition-transform", activeTab === 'settings' ? "text-brand-primary scale-110" : "text-text-muted")} />
+            {t.tabs.settings}
           </button>
         </nav>
 
-        <div className="hidden md:flex flex-col items-center justify-center mt-auto gap-2">
-           <button onClick={logout} className="w-full flex justify-center items-center py-2 px-4 rounded-[10px] text-[13px] font-medium text-text-muted hover:text-text-main hover:bg-surface-alt transition-colors">
-             <LogOut className="w-4 h-4 mr-2" /> Log out
+        <div className="hidden md:flex flex-col items-center justify-center mt-auto gap-4 pt-6 border-t border-border-color/50">
+           <button onClick={logout} className="w-full flex justify-center items-center py-3 px-4 rounded-xl text-[13px] font-bold text-brand-danger hover:bg-brand-danger/5 border border-transparent hover:border-brand-danger/10 transition-all active:scale-[0.98]">
+             <LogOut className="w-4 h-4 mr-2" /> {t.common.logout}
            </button>
-           <div className="text-[10px] text-text-muted font-medium">© {new Date().getFullYear()} DEVELOPED BY VANTORIX LABS. All rights reserved.</div>
+           <div className="text-[10px] text-text-muted font-bold tracking-widest opacity-60 uppercase text-center px-2">
+             © {new Date().getFullYear()} VANTORIX LABS
+           </div>
         </div>
       </div>
 
@@ -201,22 +230,32 @@ export default function AdminDashboard() {
 
              {/* Search */}
              <div className={clsx("relative w-[360px] hidden md:block", activeTab !== 'products' && "invisible")}>
-                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
                 <input 
                   type="text" 
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Поиск товаров..." 
-                  className="w-full bg-surface border border-border-color rounded-[10px] py-2.5 pl-10 pr-10 text-[13px] text-text-main shadow-[0_1px_2px_rgba(16,24,40,0.04)] focus:border-brand-primary focus:ring-1 focus:ring-brand-primary outline-none transition-all placeholder:text-text-muted" 
+                  placeholder={t.common.search} 
+                  className="w-full bg-surface-alt/50 border border-border-color rounded-[14px] py-3 pl-11 pr-11 text-[13px] text-text-main shadow-sm focus:border-brand-primary focus:ring-4 focus:ring-brand-primary/10 outline-none transition-all placeholder:text-text-muted font-medium" 
                 />
-                <kbd className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] bg-surface-alt border border-border-color rounded px-1.5 py-0.5 text-text-muted font-sans font-medium">⌘K</kbd>
+                <kbd className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] bg-surface border border-border-color rounded-lg px-2 py-1 text-text-muted font-sans font-bold shadow-sm">⌘K</kbd>
              </div>
              
              {/* Icons */}
-             <div className="flex items-center gap-5 ml-auto">
-                <button className="relative text-text-muted hover:text-text-main transition-colors">
+             <div className="flex items-center gap-4 ml-auto">
+                <div className="hidden lg:flex items-center gap-2 mr-2">
+                  <ThemeToggle />
+                  <LanguageToggle currentLang={lang} onLangChange={setLang} variant="minimal" />
+                </div>
+                <div className="hidden lg:block">
+                  <SecurityIndicator variant="shield" />
+                </div>
+                <div className="hidden md:block">
+                  <ThemeToggle />
+                </div>
+                <button className="relative w-10 h-10 flex items-center justify-center rounded-xl hover:bg-surface-alt transition-colors text-text-muted hover:text-text-main border border-transparent hover:border-border-color">
                    <Bell className="w-[18px] h-[18px]" />
-                   <span className="absolute -top-0.5 -right-0.5 w-[6px] h-[6px] bg-brand-danger rounded-full border border-bg-base"></span>
+                   <span className="absolute top-2 right-2 w-[8px] h-[8px] bg-brand-danger rounded-full border-2 border-surface"></span>
                 </button>
                 <button className="relative text-text-muted hover:text-text-main transition-colors">
                    <Mail className="w-[18px] h-[18px]" />
@@ -253,57 +292,59 @@ export default function AdminDashboard() {
                 </button>
               </div>
               
-              <div className="bg-surface border border-border-color rounded-[16px] overflow-hidden shadow-sm">
-                <table className="w-full text-left text-[13px]">
-                  <thead className="bg-surface-alt border-b border-border-color">
+              <div className="bg-surface border border-border-color rounded-[32px] overflow-hidden shadow-accent card-premium backdrop-blur-sm">
+                <table className="w-full text-left text-[14px]">
+                  <thead className="bg-surface-alt/50 border-b border-border-color">
                     <tr>
-                      <th className="px-6 py-4 font-medium text-text-muted uppercase text-[11px] tracking-wider">Код / Ссылка</th>
-                      <th className="px-6 py-4 font-medium text-text-muted uppercase text-[11px] tracking-wider">Статус</th>
-                      <th className="px-6 py-4 font-medium text-text-muted uppercase text-[11px] tracking-wider">Создан</th>
-                      <th className="px-6 py-4 font-medium text-text-muted uppercase text-[11px] tracking-wider text-right">Действия</th>
+                      <th className="px-8 py-5 font-bold text-text-muted uppercase text-[11px] tracking-[0.2em]">Код / Ссылка</th>
+                      <th className="px-8 py-5 font-bold text-text-muted uppercase text-[11px] tracking-[0.2em]">Статус</th>
+                      <th className="px-8 py-5 font-bold text-text-muted uppercase text-[11px] tracking-[0.2em]">Создан</th>
+                      <th className="px-8 py-5 font-bold text-text-muted uppercase text-[11px] tracking-[0.2em] text-right">Действия</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-border-color text-text-main">
+                  <tbody className="divide-y divide-border-color/50 text-text-main">
                     {invites.sort((a,b) => b.createdAt - a.createdAt).map(invite => (
-                      <tr key={invite.id} className="hover:bg-surface-alt/50 transition-colors">
-                        <td className="px-6 py-4 text-text-main flex items-center">
-                          <div className="flex flex-col">
-                            <span className="font-mono font-medium text-[13px]">{invite.id}</span>
-                            <span className="text-[11px] text-text-muted truncate max-w-[200px] mt-0.5 font-sans">{window.location.origin}/join?code={invite.id}</span>
+                      <tr key={invite.id} className="hover:bg-surface-alt/30 transition-all group">
+                        <td className="px-8 py-5 text-text-main">
+                          <div className="flex flex-col gap-1">
+                            <span className="font-mono font-bold text-[14px] text-brand-primary group-hover:glow-accent transition-all">{invite.id}</span>
+                            <div className="flex items-center group/link">
+                              <span className="text-[11px] text-text-muted truncate max-w-[200px] font-sans opacity-70 group-hover/link:opacity-100 transition-opacity">{window.location.origin}/join?code={invite.id}</span>
+                              <button 
+                                onClick={() => navigator.clipboard.writeText(`${window.location.origin}/join?code=${invite.id}`)} 
+                                className="ml-2 p-1 text-text-muted hover:text-brand-primary transition-colors"
+                                title="Копировать ссылку"
+                              >
+                                <Copy className="w-3 h-3" />
+                              </button>
+                            </div>
                           </div>
-                          <button 
-                            onClick={() => navigator.clipboard.writeText(`${window.location.origin}/join?code=${invite.id}`)} 
-                            className="ml-4 p-1.5 bg-surface rounded-md border border-border-color text-text-muted hover:text-text-main transition-colors shadow-[0_1px_2px_rgba(16,24,40,0.04)]"
-                            title="Копировать ссылку"
-                          >
-                            <Copy className="w-3.5 h-3.5" />
-                          </button>
                         </td>
-                        <td className="px-6 py-4">
+                        <td className="px-8 py-5">
                           {invite.blocked ? (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-[6px] text-[11px] font-medium bg-brand-danger/10 text-brand-danger border border-brand-danger/20">
+                            <span className="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-brand-danger/10 text-brand-danger border border-brand-danger/20">
                               Заблокирован
                             </span>
                           ) : invite.used ? (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-[6px] text-[11px] font-medium bg-surface-alt text-text-muted border border-border-color">
+                            <span className="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-surface-alt text-text-muted border border-border-color">
                               Использован
                             </span>
                           ) : (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-[6px] text-[11px] font-medium bg-brand-success/10 text-brand-success border border-brand-success/20">
+                            <span className="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-brand-primary/10 text-brand-primary border border-brand-primary/20 glow-accent">
                               Свободен
                             </span>
                           )}
                         </td>
-                        <td className="px-6 py-4 text-text-muted">
-                          {new Date(invite.createdAt).toLocaleString('ru-RU')}
+                        <td className="px-8 py-5 text-text-muted font-medium">
+                          {new Date(invite.createdAt).toLocaleString('ru-RU', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
                         </td>
-                        <td className="px-6 py-4 text-right">
+                        <td className="px-8 py-5 text-right">
                           {!invite.blocked && !invite.used && (
                             <button 
                               onClick={() => handleBlockInvite(invite.id)}
-                              className="text-[11px] font-medium text-brand-danger hover:text-red-700 transition-colors"
+                              className="text-[11px] font-bold text-brand-danger/60 hover:text-brand-danger transition-colors uppercase tracking-widest"
                             >
-                              Заблокировать
+                              Отменить
                             </button>
                           )}
                         </td>
@@ -325,35 +366,35 @@ export default function AdminDashboard() {
                 <h1 className="text-[24px] font-bold text-text-main tracking-tight">Клиенты</h1>
                 <p className="text-[13px] text-text-muted mt-1">Управление активными клиентами и их доступом</p>
               </div>
-              <div className="bg-surface border border-border-color rounded-[16px] shadow-sm overflow-x-auto">
-                <table className="w-full text-left text-[13px] min-w-[600px]">
-                  <thead className="bg-surface-alt border-b border-border-color">
+              <div className="bg-surface border border-border-color rounded-[32px] shadow-accent overflow-x-auto card-premium backdrop-blur-sm">
+                <table className="w-full text-left text-[14px] min-w-[600px]">
+                  <thead className="bg-surface-alt/50 border-b border-border-color">
                     <tr>
-                      <th className="px-6 py-4 font-medium text-text-muted uppercase text-[11px] tracking-wider">Имя</th>
-                      <th className="px-6 py-4 font-medium text-text-muted uppercase text-[11px] tracking-wider">Email</th>
-                      <th className="px-6 py-4 font-medium text-text-muted uppercase text-[11px] tracking-wider">Статус</th>
-                      <th className="px-6 py-4 font-medium text-text-muted text-right uppercase text-[11px] tracking-wider">Действия</th>
+                      <th className="px-8 py-5 font-bold text-text-muted uppercase text-[11px] tracking-[0.2em]">Имя</th>
+                      <th className="px-8 py-5 font-bold text-text-muted uppercase text-[11px] tracking-[0.2em]">Email</th>
+                      <th className="px-8 py-5 font-bold text-text-muted uppercase text-[11px] tracking-[0.2em]">Статус</th>
+                      <th className="px-8 py-5 font-bold text-text-muted text-right uppercase text-[11px] tracking-[0.2em]">Действия</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-border-color text-text-main">
+                  <tbody className="divide-y divide-border-color/50 text-text-main">
                     {activeUsers.map(user => (
-                      <tr key={user.id} className="hover:bg-surface-alt/50 transition-colors">
-                        <td className="px-6 py-4 text-text-main">
-                          <div className="font-semibold">{user.name}</div>
+                      <tr key={user.id} className="hover:bg-surface-alt/30 transition-all">
+                        <td className="px-8 py-5 text-text-main">
+                          <div className="font-bold tracking-tight">{user.name}</div>
                         </td>
-                        <td className="px-6 py-4 text-text-muted">{user.email}</td>
-                        <td className="px-6 py-4">
+                        <td className="px-8 py-5 text-text-muted font-medium">{user.email}</td>
+                        <td className="px-8 py-5">
                           {user.status === 'blocked' ? (
-                            <span className="px-2 py-0.5 rounded-[6px] text-[11px] font-medium inline-block bg-brand-danger/10 text-brand-danger border border-brand-danger/20">Заблокирован</span>
+                            <span className="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-brand-danger/10 text-brand-danger border border-brand-danger/20">Заблокирован</span>
                           ) : (
-                            <span className="px-2 py-0.5 rounded-[6px] text-[11px] font-medium inline-block bg-brand-success/10 text-brand-success border border-brand-success/20">Активен</span>
+                            <span className="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-brand-success/10 text-brand-success border border-brand-success/20">Активен</span>
                           )}
                         </td>
-                        <td className="px-6 py-4 text-right">
+                        <td className="px-8 py-5 text-right">
                           {user.status === 'blocked' ? (
-                             <button onClick={() => handleUnblockUser(user.id)} className="bg-surface border border-border-color text-text-main px-3 py-1.5 rounded-[8px] text-[12px] font-medium hover:bg-surface-alt transition-colors shadow-[0_1px_2px_rgba(16,24,40,0.04)]">Разблокировать</button>
+                             <button onClick={() => handleUnblockUser(user.id)} className="bg-surface-alt border border-border-color text-text-main px-4 py-2 rounded-xl text-[12px] font-bold hover:bg-surface transition-all shadow-sm">Разблокировать</button>
                           ): (
-                             <button onClick={() => handleBlockUser(user.id)} className="bg-surface border border-border-color text-brand-danger px-3 py-1.5 rounded-[8px] text-[12px] font-medium hover:bg-surface-alt transition-colors shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
+                             <button onClick={() => handleBlockUser(user.id)} className="bg-surface-alt border border-border-color text-brand-danger px-4 py-2 rounded-xl text-[12px] font-bold hover:bg-brand-danger/5 transition-all shadow-sm">
                                Блокировать
                              </button>
                           )}
@@ -376,7 +417,7 @@ export default function AdminDashboard() {
                 <h1 className="text-[24px] font-bold text-text-main tracking-tight">Заказы</h1>
                 <p className="text-[13px] text-text-muted mt-1">Все транзакции и их статус</p>
               </div>
-              <div className="bg-surface border border-border-color rounded-[16px] shadow-sm overflow-x-auto">
+              <div className="bg-surface border border-border-color rounded-[16px] shadow-sm overflow-x-auto card-premium">
                 <table className="w-full text-left text-[13px] min-w-[700px]">
                   <thead className="bg-surface-alt border-b border-border-color">
                     <tr>
@@ -423,22 +464,32 @@ export default function AdminDashboard() {
                    value={searchQuery}
                    onChange={(e) => setSearchQuery(e.target.value)}
                    placeholder="Поиск товаров..." 
-                   className="w-full bg-surface border border-border-color rounded-[10px] py-2.5 pl-10 pr-4 text-[13px] text-text-main shadow-[0_1px_2px_rgba(16,24,40,0.04)] focus:border-brand-primary focus:ring-1 focus:ring-brand-primary outline-none transition-all placeholder:text-text-muted" 
+                   className="w-full bg-surface border border-border-color rounded-[10px] py-2.5 pl-10 pr-4 text-[13px] text-text-main shadow-sm focus:border-brand-primary focus:ring-1 focus:ring-brand-primary outline-none transition-all placeholder:text-text-muted card-premium" 
                  />
               </div>
-              <div className="flex flex-col gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {PRODUCTS.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase())).map(product => {
                   return (
-                    <div key={product.id} className="bg-surface p-5 rounded-[16px] border border-border-color flex items-center gap-5 hover:bg-surface-alt transition-colors shadow-sm">
-                      <div className="w-12 h-12 bg-surface-alt text-brand-primary rounded-[12px] flex items-center justify-center flex-shrink-0 border border-border-color">
-                        <product.icon className="w-6 h-6" />
+                    <div key={product.id} className="bg-surface p-6 rounded-[32px] border border-border-color flex flex-col gap-6 hover:border-brand-primary/30 transition-all shadow-sm hover:shadow-accent group card-premium-hover">
+                      <div className="flex items-center justify-between">
+                        <div className="w-14 h-14 bg-brand-primary/5 text-brand-primary rounded-[20px] flex items-center justify-center flex-shrink-0 border border-brand-primary/10 group-hover:bg-brand-primary/10 transition-colors">
+                          <product.icon className="w-7 h-7" />
+                        </div>
+                        <div className="bg-surface-alt px-3 py-1 rounded-full text-[11px] font-black uppercase text-text-muted tracking-widest">
+                           {product.stock} Units
+                        </div>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="text-text-main font-semibold truncate text-[14px]">{product.name}</h3>
-                        <p className="text-[12px] text-text-muted mt-0.5">В наличии: <span className="font-medium text-text-main">{product.stock} шт.</span></p>
+                      <div className="flex-1">
+                        <h3 className="text-text-main font-bold text-[16px] leading-tight mb-2">{product.name}</h3>
+                        <p className="text-[12px] text-text-muted font-medium">Enterprise Grade Hardware</p>
                       </div>
-                      <div className="text-text-main font-bold text-[16px] whitespace-nowrap min-w-[80px] text-right tracking-tight">
-                        ${product.price}
+                      <div className="flex items-center justify-between pt-4 border-t border-border-color/50">
+                        <div className="text-text-main font-black text-xl tracking-tighter">
+                          ${product.price}
+                        </div>
+                        <button className="p-2.5 rounded-xl bg-brand-primary/10 text-brand-primary hover:bg-brand-primary text-white transition-all">
+                           <Plus className="w-5 h-5" />
+                        </button>
                       </div>
                     </div>
                   );
@@ -460,15 +511,31 @@ export default function AdminDashboard() {
                  <div className="w-full md:w-64 flex flex-col gap-1 shrink-0 bg-surface rounded-[16px] p-2 border border-border-color shadow-sm">
                     <button 
                       onClick={() => setSettingsTab('general')}
-                      className={clsx("text-left px-4 py-2.5 rounded-[10px] text-[13px] font-medium transition-colors", settingsTab === 'general' ? "bg-surface-alt text-text-main font-semibold shadow-sm border border-border-color" : "text-text-muted hover:text-text-main hover:bg-surface-alt/50 border border-transparent")}
+                      className={clsx("flex items-center gap-2.5 px-4 py-2.5 rounded-[12px] text-[13px] font-medium transition-all group", settingsTab === 'general' ? "bg-brand-primary/10 text-brand-primary font-bold shadow-sm border border-brand-primary/20" : "text-text-muted hover:text-text-main hover:bg-surface-alt/50 border border-transparent")}
                     >
-                      Общие профиля
+                      <User className={clsx("w-3.5 h-3.5 transition-transform", settingsTab === 'general' ? "scale-110" : "group-hover:scale-110")} />
+                      {lang === 'RU' ? 'Профиль' : 'Profil'}
                     </button>
                     <button 
                       onClick={() => setSettingsTab('privacy')}
-                      className={clsx("text-left px-4 py-2.5 rounded-[10px] text-[13px] font-medium transition-colors", settingsTab === 'privacy' ? "bg-brand-primary/10 text-brand-primary font-semibold shadow-sm border border-brand-primary/20" : "text-text-muted hover:text-text-main hover:bg-surface-alt/50 border border-transparent")}
+                      className={clsx("flex items-center gap-2.5 px-4 py-2.5 rounded-[12px] text-[13px] font-medium transition-all group", settingsTab === 'privacy' ? "bg-brand-primary/10 text-brand-primary font-bold shadow-sm border border-brand-primary/20" : "text-text-muted hover:text-text-main hover:bg-surface-alt/50 border border-transparent")}
                     >
-                      Политика конфиденциальность Vantorix
+                      <FileText className={clsx("w-3.5 h-3.5 transition-transform", settingsTab === 'privacy' ? "scale-110" : "group-hover:scale-110")} />
+                      {lang === 'RU' ? 'Конфиденциальность' : 'Maxfiylik'}
+                    </button>
+                    <button 
+                      onClick={() => setSettingsTab('security')}
+                      className={clsx("flex items-center gap-2.5 px-4 py-2.5 rounded-[12px] text-[13px] font-medium transition-all group", settingsTab === 'security' ? "bg-brand-primary/10 text-brand-primary font-bold shadow-sm border border-brand-primary/20" : "text-text-muted hover:text-text-main hover:bg-surface-alt/50 border border-transparent")}
+                    >
+                      <Shield className={clsx("w-3.5 h-3.5 transition-transform", settingsTab === 'security' ? "scale-110" : "group-hover:scale-110")} />
+                      {lang === 'RU' ? 'Безопасность' : 'Xavfsizlik'}
+                    </button>
+                    <button 
+                      onClick={() => setSettingsTab('appearance')}
+                      className={clsx("flex items-center gap-2.5 px-4 py-2.5 rounded-[12px] text-[13px] font-medium transition-all group", settingsTab === 'appearance' ? "bg-brand-primary/10 text-brand-primary font-bold shadow-sm border border-brand-primary/20" : "text-text-muted hover:text-text-main hover:bg-surface-alt/50 border border-transparent")}
+                    >
+                      <Palette className={clsx("w-3.5 h-3.5 transition-transform", settingsTab === 'appearance' ? "scale-110" : "group-hover:scale-110")} />
+                      {lang === 'RU' ? 'Внешний вид' : 'Tashqi ko\'rinish'}
                     </button>
                  </div>
                  
@@ -481,10 +548,65 @@ export default function AdminDashboard() {
                        </div>
                     )}
                     {settingsTab === 'privacy' && (
-                       <div className="bg-surface rounded-[24px] p-8 shadow-[0_4px_12px_rgba(16,24,40,0.06)] border border-border-color">
-                         <h3 className="text-[18px] font-bold text-text-main tracking-tight mb-6">Политика конфиденциальность Vantorix</h3>
+                       <div className="bg-surface rounded-[24px] p-8 shadow-[0_4px_12px_rgba(16,24,40,0.06)] border border-border-color card-premium animate-in fade-in slide-in-from-bottom-2 duration-300">
                          <div className="text-text-muted leading-relaxed text-[13px]">
                            <PrivacyPolicyContent />
+                          </div>
+                       </div>
+                    )}
+
+                    {settingsTab === 'security' && (
+                       <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                         <div className="mb-6 flex justify-end">
+                           <div className="flex bg-surface-alt p-1 rounded-xl border border-border-color">
+                             <button 
+                               onClick={() => setLang('RU')}
+                               className={`px-3 py-1.5 text-[11px] font-bold rounded-lg transition-all ${lang === 'RU' ? 'bg-surface text-brand-primary shadow-sm' : 'text-text-muted hover:text-text-main'}`}
+                             >
+                               RU
+                             </button>
+                             <button 
+                               onClick={() => setLang('UZ')}
+                               className={`px-3 py-1.5 text-[11px] font-bold rounded-lg transition-all ${lang === 'UZ' ? 'bg-surface text-brand-primary shadow-sm' : 'text-text-muted hover:text-text-main'}`}
+                             >
+                               UZ
+                             </button>
+                           </div>
+                         </div>
+                         <SecuritySettings lang={lang} />
+                       </div>
+                    )}
+                    {settingsTab === 'appearance' && (
+                       <div className="bg-surface rounded-[24px] p-8 shadow-sm border border-border-color card-premium animate-in fade-in slide-in-from-bottom-2 duration-300">
+                         <h3 className="text-[20px] font-black text-text-main tracking-tight mb-8 flex items-center gap-3">
+                           <div className="w-2 h-8 bg-brand-primary rounded-full shadow-accent" />
+                           {lang === 'RU' ? 'Внешний вид и Тема' : 'Tashqi ko\'rinish va Mavzu'}
+                         </h3>
+                         
+                         <div className="space-y-6">
+                            <div className="flex flex-col md:flex-row md:items-center justify-between p-8 rounded-[32px] bg-surface-alt/30 border border-border-color gap-6 hover:shadow-accent transition-all group">
+                               <div className="flex items-center gap-4">
+                                 <div className="w-12 h-12 bg-brand-primary/10 rounded-2xl flex items-center justify-center text-brand-primary border border-brand-primary/20 group-hover:scale-110 transition-transform">
+                                   <Palette className="w-6 h-6" />
+                                 </div>
+                                 <div>
+                                   <div className="text-[15px] font-bold text-text-main tracking-tight">{lang === 'RU' ? 'Цветовая схема' : 'Ranglar sxemasi'}</div>
+                                   <div className="text-[12px] text-text-muted mt-0.5 font-medium">{lang === 'RU' ? 'Выберите тему оформления интерфейса' : 'Interfeys mavzusini tanlang'}</div>
+                                 </div>
+                               </div>
+                               <ThemeToggle />
+                            </div>
+
+                            <div className="flex flex-col md:flex-row md:items-center justify-between p-6 rounded-2xl bg-surface-alt/50 border border-border-color gap-4">
+                               <div>
+                                 <div className="text-[14px] font-bold text-text-main">{lang === 'RU' ? 'Язык интерфейса' : 'Interfeys tili'}</div>
+                                 <div className="text-[12px] text-text-muted mt-1">{lang === 'RU' ? 'Текущий язык системы' : 'Tizimning joriy tili'}</div>
+                               </div>
+                               <div className="flex bg-surface p-1 rounded-xl border border-border-color shadow-sm">
+                                  <button onClick={() => setLang('RU')} className={`px-4 py-1.5 text-[11px] font-bold rounded-lg transition-all ${lang === 'RU' ? 'bg-brand-primary text-white shadow-md' : 'text-text-muted hover:text-text-main'}`}>RU</button>
+                                  <button onClick={() => setLang('UZ')} className={`px-4 py-1.5 text-[11px] font-bold rounded-lg transition-all ${lang === 'UZ' ? 'bg-brand-primary text-white shadow-md' : 'text-text-muted hover:text-text-main'}`}>UZ</button>
+                               </div>
+                            </div>
                          </div>
                        </div>
                     )}
@@ -495,6 +617,10 @@ export default function AdminDashboard() {
 
         </main>
       </div>
+      <PostRegistrationSecurityDialog 
+        isOpen={isSecurityDialogOpen} 
+        onClose={handleCloseSecurityDialog} 
+      />
     </div>
   );
 }

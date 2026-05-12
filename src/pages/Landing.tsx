@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import { Link, useNavigate } from 'react-router-dom';
+import { ThemeToggle } from '../components/ThemeToggle';
 import { 
   CheckCircle2, 
   PackageCheck, 
@@ -28,21 +29,26 @@ export default function Landing() {
       <div className="absolute right-[-10%] top-[20%] w-[40vw] h-[40vw] bg-brand-accent/10 rounded-full blur-[100px] pointer-events-none opacity-50" />
 
       {/* Header */}
-      <header className="absolute top-0 w-full p-6 lg:px-12 flex justify-between items-center z-50">
+      <header className="fixed top-0 w-full p-4 lg:px-12 flex justify-between items-center z-50 bg-bg-base/80 backdrop-blur-xl border-b border-border-color/50 shadow-sm">
         <div className="flex items-center gap-3">
-          <img src="https://drive.google.com/thumbnail?id=1Zzhxcg4wGu4HCBSmPptAhuTqb-s8yb3D&sz=w1000" alt="Vantorix Logo" className="w-10 h-auto object-contain" />
-          <span className="font-bold tracking-widest uppercase text-xl">Vantorix OMS</span>
+          <img src="https://drive.google.com/thumbnail?id=1Zzhxcg4wGu4HCBSmPptAhuTqb-s8yb3D&sz=w1000" alt="Vantorix Logo" className="w-9 h-auto object-contain" />
+          <span className="font-black tracking-widest uppercase text-lg text-text-main">Vantorix OMS</span>
         </div>
         
-        <button 
-          onClick={handleStart}
-          className="bg-white/5 hover:bg-white/10 border border-white/10 transition-colors px-5 py-2.5 rounded-full text-sm font-medium backdrop-blur-md"
-        >
-          Войти в систему
-        </button>
+        <div className="flex items-center gap-6">
+          <div className="scale-90 md:scale-100 origin-right">
+            <ThemeToggle />
+          </div>
+          <button 
+            onClick={handleStart}
+            className="flex items-center gap-2 bg-text-main text-bg-base px-6 py-2.5 rounded-full text-sm font-bold transition-all hover:opacity-90 active:scale-95 shadow-lg shadow-text-main/10"
+          >
+            Войти в систему
+          </button>
+        </div>
       </header>
 
-      <main className="pt-32 pb-24 relative z-10 w-full max-w-7xl mx-auto px-6 lg:px-12">
+      <main className="pt-40 pb-24 relative z-10 w-full max-w-7xl mx-auto px-6 lg:px-12">
         {/* HERO */}
         <section className="flex flex-col items-center text-center max-w-4xl mx-auto mb-32">
           <motion.div
@@ -66,7 +72,7 @@ export default function Landing() {
 
             <button 
               onClick={handleStart}
-              className="group relative inline-flex items-center justify-center gap-3 bg-gradient-to-r from-brand-primary via-brand-secondary to-brand-accent text-white px-8 py-4 rounded-full font-bold text-lg shadow-[0_0_40px_rgba(20,95,255,0.4)] hover:shadow-[0_0_60px_rgba(20,95,255,0.6)] transition-all scale-100 hover:scale-105"
+              className="group relative inline-flex items-center justify-center gap-3 btn-primary text-white px-8 py-4 rounded-full font-bold text-lg   transition-all scale-100 hover:scale-105"
             >
               <span>Перейти к платформе</span>
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
@@ -91,14 +97,14 @@ export default function Landing() {
             </div>
 
             <div className="relative z-10 flex flex-col gap-4 w-full">
-              <div className="bg-surface-alt/80 backdrop-blur-md border border-border-color rounded-2xl rounded-tl-sm p-4 max-w-[85%] text-[14px] text-text-muted shadow-sm flex items-start gap-3">
+              <div className="bg-surface-alt/80 backdrop-blur-md border border-border-color card-largexl rounded-tl-sm p-4 max-w-[85%] text-[14px] text-text-muted shadow-sm flex items-start gap-3">
                 <MessageSquareX className="w-4 h-4 mt-0.5 text-text-muted shrink-0" />
                 Привет! Нам нужно 50 коробок артикул 1234.
               </div>
-              <div className="bg-surface-alt/50 backdrop-blur-md border border-red-500/20 rounded-2xl rounded-tr-sm p-4 max-w-[85%] text-[14px] text-text-main self-end shadow-sm">
+              <div className="bg-surface-alt/50 backdrop-blur-md border border-red-500/20 card-largexl rounded-tr-sm p-4 max-w-[85%] text-[14px] text-text-main self-end shadow-sm">
                 Принято. Какая цена была в прошлый раз?
               </div>
-              <div className="bg-surface-alt/80 backdrop-blur-md border border-border-color rounded-2xl rounded-tl-sm p-4 max-w-[85%] text-[14px] text-text-muted shadow-sm">
+              <div className="bg-surface-alt/80 backdrop-blur-md border border-border-color card-largexl rounded-tl-sm p-4 max-w-[85%] text-[14px] text-text-muted shadow-sm">
                 Не помню, посмотрите в истории... а еще добавьте позицию 5678, но только 10 штук.
               </div>
             </div>
@@ -110,7 +116,7 @@ export default function Landing() {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="rounded-[32px] bg-surface border border-brand-primary/20 p-8 md:p-12 relative overflow-hidden flex flex-col justify-end min-h-[400px] group hover:border-brand-primary/40 transition-colors shadow-[0_20px_60px_-15px_rgba(20,95,255,0.1)]"
+            className="rounded-[32px] bg-surface border border-brand-primary/20 p-8 md:p-12 relative overflow-hidden flex flex-col justify-end min-h-[400px] group hover:border-brand-primary/40 transition-colors shadow-md"
           >
             <div className="absolute inset-0 bg-gradient-to-t from-brand-primary/10 to-transparent z-0 group-hover:from-brand-primary/20 transition-colors" />
             <div className="absolute top-8 left-8 font-bold text-brand-primary text-[11px] tracking-widest uppercase flex items-center gap-2 bg-brand-primary/10 px-3 py-1.5 rounded-full backdrop-blur-md border border-brand-primary/20">
@@ -126,10 +132,10 @@ export default function Landing() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: 0.4 + (i * 0.1) }}
-                  className="bg-surface/90 backdrop-blur-xl border border-brand-primary/20 rounded-2xl p-4 flex items-center justify-between shadow-lg"
+                  className="bg-surface/90 backdrop-blur-xl border border-brand-primary/20 card-largexl p-4 flex items-center justify-between shadow-lg"
                  >
                     <div className="flex items-center gap-4">
-                       <div className="w-10 h-10 rounded-xl bg-brand-primary/10 text-brand-primary flex items-center justify-center">
+                       <div className="w-10 h-10 card-largel bg-brand-primary/10 text-brand-primary flex items-center justify-center">
                           <PackageCheck className="w-5 h-5" />
                        </div>
                        <div>
@@ -153,8 +159,8 @@ export default function Landing() {
            <p className="text-lg text-text-muted leading-relaxed">
               Потерянные сообщения, ошибки при вводе данных менеджером, путаница с актуальными ценами и остатками. Мессенджеры не предназначены для эффективного ведения оптовых продаж.
            </p>
-           <div className="mt-12 p-8 rounded-3xl bg-surface border border-border-color text-left flex flex-col md:flex-row gap-8 items-center bg-gradient-to-br from-surface to-surface-alt">
-             <div className="w-16 h-16 rounded-2xl bg-brand-primary/10 flex items-center justify-center flex-shrink-0 border border-brand-primary/20">
+           <div className="mt-12 p-8 card-large bg-surface border border-border-color text-left flex flex-col md:flex-row gap-8 items-center bg-gradient-to-br from-surface to-surface-alt card-premium">
+             <div className="w-16 h-16 card-largexl bg-brand-primary/10 flex items-center justify-center flex-shrink-0 border border-brand-primary/20">
                 <LayoutDashboard className="w-8 h-8 text-brand-primary" />
              </div>
              <div>
@@ -173,8 +179,8 @@ export default function Landing() {
             { icon: RefreshCw, title: "Каталог реального времени", desc: "Ваши клиенты всегда видят актуальные цены и реальные остатки товаров." },
             { icon: Zap, title: "Автоматическая синхронизация", desc: "Ушли от создания заказа руками. Все заказы падают прямо в 1С/Bitrix24." }
           ].map((f, i) => (
-            <div key={i} className="bg-surface p-8 rounded-3xl border border-border-color hover:border-brand-primary/30 transition-colors">
-               <div className="w-12 h-12 rounded-xl bg-surface-alt text-brand-primary flex items-center justify-center mb-6 border border-border-color">
+            <div key={i} className="bg-surface p-8 card-largexl border border-border-color hover:border-brand-primary/30 transition-colors">
+               <div className="w-12 h-12 card-largel bg-surface-alt text-brand-primary flex items-center justify-center mb-6 border border-border-color">
                   <f.icon className="w-6 h-6" />
                </div>
                <h3 className="text-lg font-bold mb-3">{f.title}</h3>
@@ -198,7 +204,7 @@ export default function Landing() {
                 { step: "4", title: "Синхронизация", desc: "Заказы автоматически падают в вашу ERP/CRM." }
               ].map((s, i) => (
                  <div key={i} className="relative bg-surface rounded-[24px] p-6 border border-border-color flex flex-col pt-12">
-                   <div className="absolute -top-6 left-6 w-12 h-12 rounded-full bg-surface border border-border-color font-black text-xl flex items-center justify-center shadow-lg text-brand-primary bg-gradient-to-b from-surface to-surface-alt">
+                   <div className="absolute -top-6 left-6 w-12 h-12 rounded-full bg-surface border border-border-color font-black text-xl flex items-center justify-center shadow-lg text-brand-primary bg-gradient-to-b from-surface to-surface-alt card-premium">
                      {s.step}
                    </div>
                    <h4 className="text-lg font-bold mb-2">{s.title}</h4>
@@ -240,7 +246,7 @@ export default function Landing() {
              <p className="text-text-muted mb-10">Создано для компаний, которые вырастают за рамки ручных сообщений и таблиц.</p>
              <div className="flex flex-wrap justify-center gap-4 text-center">
                 {['Оптовые поставщики', 'Дистрибьюторы', 'Производители', 'B2B поставщики', 'Крупный e-commerce'].map(tag => (
-                   <span key={tag} className="px-5 py-2.5 rounded-full bg-surface border border-border-color text-text-main font-medium shadow-sm hover:border-brand-primary/50 transition-colors">
+                   <span key={tag} className="px-5 py-2.5 rounded-full bg-surface border border-border-color text-text-main font-medium shadow-sm hover:border-brand-primary/50 transition-colors card-premium">
                       {tag}
                    </span>
                 ))}
@@ -255,7 +261,7 @@ export default function Landing() {
           
           <button 
              onClick={handleStart}
-             className="w-full sm:w-auto bg-gradient-to-r from-brand-primary via-brand-secondary to-brand-accent text-white px-10 py-5 rounded-full font-bold text-lg hover:shadow-[0_0_40px_rgba(20,95,255,0.4)] transition-all hover:-translate-y-1"
+             className="w-full sm:w-auto btn-primary text-white px-10 py-5 rounded-full font-bold text-lg  transition-all hover:-translate-y-1"
           >
              Войти в систему
           </button>
@@ -290,7 +296,7 @@ export default function Landing() {
                   <img src="https://drive.google.com/thumbnail?id=1Zzhxcg4wGu4HCBSmPptAhuTqb-s8yb3D&sz=w1000" alt="Vantorix Logo" className="w-8 h-auto object-contain" />
                   <span className="font-bold tracking-widest uppercase text-sm">Vantorix Labs</span>
                </div>
-               <span className="text-[10px] uppercase tracking-[0.3em] bg-clip-text text-transparent bg-gradient-to-r from-brand-primary via-brand-secondary to-brand-accent font-black">Make it possible</span>
+               <span className="text-[10px] uppercase tracking-[0.3em] bg-clip-text text-transparent btn-primary font-black">Make it possible</span>
             </div>
             
             <div className="flex gap-6 text-[13px] text-text-muted font-medium">

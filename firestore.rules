@@ -28,7 +28,7 @@ service cloud.firestore {
     }
 
     match /businesses/{businessId} {
-        allow read: if isBusinessOwner(businessId) || isClientOfBusiness(businessId);
+        allow read: if true;
         // During registration, a business is created
         allow write: if isSignedIn(); 
     }

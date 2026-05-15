@@ -3,6 +3,72 @@ export type Language = 'RU' | 'UZ';
 
 export const translations = {
   RU: {
+    landing: {
+      openPlatform: 'Открыть Платформу',
+      enterWorkspace: 'Войти в рабочее пространство',
+      loginToDashboard: 'Войти в панель',
+      navPlatform: 'Платформа',
+      navFeatures: 'Возможности',
+      navIntegrations: 'Интеграции',
+      verifiedAccessOnly: 'B2B Система Управления Заказами',
+      heroSubtitle: 'B2B Оптовая Платформа',
+      heroDesc: 'Создайте закрытое рабочее пространство для вашего бизнеса. Загружайте товары, контролируйте остатки и получайте заказы от проверенных клиентов централизованно. Создано для B2B оптовиков.',
+      trustedBy: 'Интеграция с вашей инфраструктурой',
+      
+      overviewTitle: 'Управление оптовыми заказами',
+      overviewSubtitle: 'Как работает Vantorix',
+      step1Title: '1. Настройка каталога',
+      step1Desc: 'Создайте собственную среду: загружайте товары, управляйте прайс-листами и контролируйте актуальные запасы на складе.',
+      step2Title: '2. Приглашение клиентов',
+      step2Desc: 'Предоставляйте доступ только проверенным партнерам через приватные ссылки. Система закрыта от посторонних глаз.',
+      step3Title: '3. Прием заказов',
+      step3Desc: 'Клиенты оформляют заказы онлайн. Заявки поступают в цифровом формате и готовы к обработке через интеграции с 1С и Bitrix.',
+
+      featuresTitle: 'Возможности для вашего бизнеса',
+      featuresSubtitle: 'Современные процессы продаж',
+      featPrivate: 'Приватная среда',
+      featPrivateDesc: 'Контролируйте доступ к вашему каталогу и ценам. Никаких публичных маркетплейсов.',
+      featCatalog: 'Управление остатками',
+      featCatalogDesc: 'Точное отображение количества доступного товара защитит вас от заказов того, чего нет на складе.',
+      featIntegrations: 'Интеграция с ERP системами',
+      featIntegrationsDesc: 'Поддержка 1С и Bitrix из коробки для бесшовной передачи данных между платформой и вашей учетной системой.',
+      featWorkflow: 'Цифровой поток заказов',
+      featWorkflowDesc: 'Вся информация клиентов и статусы заказов хранятся в одном безопасном и удобном месте.',
+
+      problemsTitle: 'Почему пора отказаться от ручных заказов',
+      problemsSubtitle: 'Ручной контроль против платформы Vantorix',
+      manualApproach: 'Ручные B2B заказы (Без системы)',
+      digitalApproach: 'С платформой Vantorix OMS',
+      prob1: 'Ошибки и путаница при вводе заказов',
+      prob2: 'Несоответствие запасов: клиенты заказывают то, чего уже нет',
+      prob3: 'Долгие ответы клиентам и задержки в обработке сообщений',
+      prob4: 'Разрозненные запросы в почте, звонках и мессенджерах',
+      prob5: 'Трата времени менеджеров на рутинную работу со списками',
+      
+      sol1: 'Централизованное управление всеми заявками без ошибок',
+      sol2: 'Клиент видит только то, что он реально может купить',
+      sol3: 'Мгновенная информация о статусе для ваших партнеров',
+      sol4: 'Систематизированный сбор всех заказов внутри одной платформы',
+      sol5: 'Ускоренные операции и интеграция прямо в ваши процессы',
+
+      joinNetwork: 'Готовы оцифровать оптовые продажи?',
+      joinNetworkDesc: 'Платформа разработана специально для компаний, поставщиков и дистрибьюторов, желающих контролировать свои B2B продажи профессионально.',
+      applyForAccess: 'Создать рабочее пространство',
+      
+      privacyPolicy: 'Политика конфиденциальности',
+      termsOfService: 'Условия обслуживания',
+      cookiesSettings: 'Настройки файлов cookie',
+      footerCopyright: '© {year} Vantorix OMS. Профессиональные B2B решения.',
+      footerDesc: 'Специализированная B2B платформа для централизованного управления оптовыми заказами.',
+      
+      systematicFlow: 'Синхронизация заказов',
+      privateNetwork: 'Приватный каталог',
+      privateNetworkDesc: '',
+      onboardingDesk: 'Доступ по ссылкам',
+      onboardingDeskDesc: '',
+      auditReady: 'Аналитика и интеграции',
+      auditReadyDesc: ''
+    },
     common: {
       search: 'Поиск...',
       settings: 'Настройки',
@@ -12,7 +78,8 @@ export const translations = {
       save: 'Сохранить',
       cancel: 'Отмена',
       active: 'Активно',
-      verified: 'Проверено'
+      verified: 'Проверено',
+      next: 'Далее'
     },
     security: {
       important: 'Важная информация',
@@ -54,7 +121,10 @@ export const translations = {
       registerButton: 'Зарегистрировать компанию',
       alreadyHaveAccount: 'Компания уже зарегистрирована?',
       loginLink: 'Войти в кабинет',
-      moreInfo: 'Подробная информация о сайте'
+      moreInfo: 'Подробная информация о сайте',
+      importantNotice: 'Важное уведомление',
+      ndaWarningText: 'Передача информации о товарах, ценах и остатках третьим лицам строго запрещена. Копирование, создание снимков экрана (скриншотов) или экспорт бизнес-информации для передачи другим лицам может привести к немедленной блокировке аккаунта и административному правонарушению.',
+      iUnderstand: 'Я ознакомился и согласен'
     },
     logs: {
       activeVerified: 'Активно и Проверено',
@@ -66,6 +136,72 @@ export const translations = {
     }
   },
   UZ: {
+    landing: {
+      openPlatform: 'Platformani Ochish',
+      enterWorkspace: 'Ish maydoniga kirish',
+      loginToDashboard: 'Panelga kirish',
+      navPlatform: 'Platforma',
+      navFeatures: 'Imkoniyatlar',
+      navIntegrations: 'Integratsiyalar',
+      verifiedAccessOnly: 'B2B Buyurtmalarni Boshqarish Tizimi',
+      heroSubtitle: 'B2B Ulgurji Platformasi',
+      heroDesc: 'Biznesingiz uchun yopiq ish maydonini yarating. Tovarlarni yuklang, qoldiqlarni nazorat qiling va tasdiqlangan mijozlardan buyurtmalarni markazlashgan holda qabul qiling. B2B ulgurji sotuvchilar uchun yaratilgan.',
+      trustedBy: 'Biznes infratuzilmangiz bilan integratsiya',
+      
+      overviewTitle: 'Ulgurji buyurtmalarni boshqarish',
+      overviewSubtitle: 'Vantorix qanday ishlaydi',
+      step1Title: '1. Katalogni sozlash',
+      step1Desc: 'O\'z muhitingizni yarating: mahsulotlarni yuklang, narxlarni boshqaring va ombordagi joriy zaxiralarni nazorat qiling.',
+      step2Title: '2. Mijozlarni taklif qilish',
+      step2Desc: 'Faqat tekshirilgan hamkorlarga shaxsiy havolalar orqali kirish imkonini bering. Tizim begona ko\'zlardan yopiq.',
+      step3Title: '3. Buyurtmalarni qabul qilish',
+      step3Desc: 'Mijozlar buyurtmalarni onlayn rasmiylashtiradi. Arizalar raqamli formatda tushadi va 1C hamda Bitrix bilan integratsiya orqali ishlashga tayyor.',
+
+      featuresTitle: 'Biznesingiz uchun imkoniyatlar',
+      featuresSubtitle: 'Raqamli jarayonlarga tayaning',
+      featPrivate: 'Maxfiy muhit',
+      featPrivateDesc: 'Katalogingizga va narxlaringizga kirishni nazorat qiling. Ommaviy bozorlar yo\'q.',
+      featCatalog: 'Qoldiqlarni boshqarish',
+      featCatalogDesc: 'Mavjud mahsulot miqdorining aniq ko\'rsatilishi sizni omborda yo\'q narsalarning buyurtma qilinishidan himoya qiladi.',
+      featIntegrations: 'Hisobga olish tizimlari bilan integratsiya',
+      featIntegrationsDesc: 'Platforma va ofisingiz o\'rtasida ma\'lumotlarni uzluksiz uzatish uchun 1C va Bitrix-ni intergatsiyasi.',
+      featWorkflow: 'Yagona raqamli oqim',
+      featWorkflowDesc: 'Barcha mijozlar ma\'lumotlari, buyurtmalar tarixi va ishlash holatlari bitta xavfsiz joyda saqlanadi.',
+
+      problemsTitle: 'Nima uchun qo\'lda buyurtma olishdan voz kechish vaqti keldi',
+      problemsSubtitle: 'Qo\'lda boshqarish Vantorix platformasiga qarshi',
+      manualApproach: 'Tizimsiz qo\'lda B2B buyurtmalari',
+      digitalApproach: 'Vantorix OMS platformasi bilan',
+      prob1: 'Buyurtma kiritishda xatolar va tushunmovchiliklar',
+      prob2: 'Zaxiralardagi nomuvofiqlik: mijozlar yo\'q narsaga buyurtma beradi',
+      prob3: 'Mijozlarga uzoq javob berish va jarayondagi kechikishlar',
+      prob4: 'Pochta, qo\'ng\'iroqlar va messenjerlarda tarqoq so\'rovlar',
+      prob5: 'Menejerlar vaqtini muntazam qog\'oz ishlarga sarflashi',
+      
+      sol1: 'Xatolarsiz markazlashtirilgan boshqaruv',
+      sol2: 'Aniq qoldiqlar: mijoz faqat omborda bor narsalarnigina ko\'radi',
+      sol3: 'Hamkorlaringiz uchun holat haqida darhol ma\'lumot',
+      sol4: 'Barcha arizalarni bir platformada tizimli yig\'ish',
+      sol5: 'Tezlashtirilgan jarayonlar va biznesingiz bilan integratsiya',
+
+      joinNetwork: 'Ulgurji savdoni raqamlashtirishga tayyormisiz?',
+      joinNetworkDesc: 'Platforma B2B savdosini professional darajada nazorat qilishni xohlovchi kompaniyalar, yetkazib beruvchilar va distribyutorlar uchun maxsus ishlab chiqilgan.',
+      applyForAccess: 'Ish maydonini yaratish',
+      
+      privacyPolicy: 'Maxfiylik siyosati',
+      termsOfService: 'Xizmat ko\'rsatish shartlari',
+      cookiesSettings: 'Cookie sozlamalari',
+      footerCopyright: '© {year} Vantorix OMS. Professional B2B yechimlar.',
+      footerDesc: 'Ulgurji buyurtmalar, qoldiqlar va mijozlarni boshqarish uchun ixtisoslashtirilgan B2B platformasi.',
+      
+      systematicFlow: 'Buyurtmalar sinxronizatsiyasi',
+      privateNetwork: 'Shaxsiy katalog',
+      privateNetworkDesc: '',
+      onboardingDesk: 'Havola orqali ruxsatlar',
+      onboardingDeskDesc: '',
+      auditReady: 'Analitika va integratsiyalar',
+      auditReadyDesc: ''
+    },
     common: {
       search: 'Qidiruv...',
       settings: 'Sozlamalar',
@@ -75,7 +211,8 @@ export const translations = {
       save: 'Saqlash',
       cancel: 'Bekor qilish',
       active: 'Faol',
-      verified: 'Tekshirilgan'
+      verified: 'Tekshirilgan',
+      next: 'Keyingi'
     },
     security: {
       important: 'Muhim ma\'lumot',
@@ -117,7 +254,10 @@ export const translations = {
       registerButton: 'Kompaniyani ro\'yxatdan o\'tkazish',
       alreadyHaveAccount: 'Kompaniya allaqachon ro\'yxatdan o\'tganmi?',
       loginLink: 'Kabinetga kirish',
-      moreInfo: 'Sayt haqida batafsil ma\'lumot'
+      moreInfo: 'Sayt haqida batafsil ma\'lumot',
+      importantNotice: 'Muhim ogohlantirish',
+      ndaWarningText: 'Mahsulotlar, narxlar va qoldiqlar haqidagi ma\'lumotlarni uchinchi shaxslarga berish qat\'iyan man etiladi. Boshqa shaxslarga berish uchun biznes ma\'lumotlarini nusxalash, skrinshot qilish yoki eksport qilish hisobni darhol bloklashga va ma\'muriy huquqbuzarlikka olib kelishi mumkin.',
+      iUnderstand: 'Men o\'qidim va rozi bo\'ldim'
     },
     logs: {
       activeVerified: 'Faol va Tekshirilgan',

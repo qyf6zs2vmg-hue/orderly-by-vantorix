@@ -276,7 +276,6 @@ export default function ClientDashboard() {
            
            <div className="flex flex-row items-center gap-4 ml-auto">
                 <div className="hidden lg:flex items-center gap-2 mr-2">
-                  <ThemeToggle />
                   <LanguageToggle currentLang={lang} onLangChange={setLang} variant="minimal" />
                 </div>
                 <div className="hidden lg:block">
@@ -610,6 +609,8 @@ export default function ClientDashboard() {
       <PostRegistrationSecurityDialog 
         isOpen={isSecurityDialogOpen} 
         onClose={handleCloseSecurityDialog} 
+        lang={lang}
+        onLanguageChange={setLang}
       />
     </div>
     </>

@@ -1,15 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc, writeBatch, collection } from 'firebase/firestore';
 import { auth, db } from '../lib/firebase';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, Navigate } from 'react-router-dom';
+import { useAuth } from '../lib/AuthContext';
 import { Lock, Mail, User as UserIcon, EyeOff, Building2, Globe } from 'lucide-react';
 import PrivacyPolicyContent from '../components/PrivacyPolicyContent';
 import { LanguageToggle } from '../components/LanguageToggle';
 import { translations, Language } from '../constants/translations';
 
 import { motion } from 'motion/react';
-import { ThemeToggle } from '../components/ThemeToggle';
 
 export default function Register() {
   const [businessName, setBusinessName] = useState('');
@@ -23,6 +23,11 @@ export default function Register() {
   const [lang, setLang] = useState<Language>('RU');
   const t = translations[lang];
   const navigate = useNavigate();
+  const { user, appUser } = useAuth();
+
+  if (user && appUser) {
+    return <Navigate to="/" replace />;
+  }
 
   const registerOwner = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,7 +63,7 @@ export default function Register() {
         businessId: businessId,
         uid: uid,
         securityAcknowledged: true,
-        onboardingComplete: true
+        onboardingComplete: false
       });
 
       await batch.commit();
@@ -85,7 +90,7 @@ export default function Register() {
           </button>
           <div className="bg-surface rounded-[24px] p-8 sm:p-10 shadow-[0_4px_12px_rgba(16,24,40,0.06)] border border-border-color">
              <div className="text-text-muted leading-relaxed text-[13px]">
-               <PrivacyPolicyContent />
+               <PrivacyPolicyContent lang={lang} />
              </div>
           </div>
         </div>
@@ -148,7 +153,6 @@ export default function Register() {
           <div className="absolute bottom-[5%] left-[5%] w-[20rem] h-[20rem] bg-brand-accent/10 rounded-full blur-[80px]" />
         </div>
 
-        <div className="absolute top-6 right-6 z-50"><ThemeToggle /></div>
       <motion.div 
         initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -252,7 +256,7 @@ export default function Register() {
 
                 <div className="pt-6 border-t border-border-color/50 w-full text-center">
                     <span className="text-[10px] font-bold text-text-muted tracking-[0.3em] uppercase opacity-50">
-                      © {new Date().getFullYear()} Vantorix Labs
+                      © {new Date().getFullYear()} Vantorix OMS
                     </span>
                 </div>
               </div>

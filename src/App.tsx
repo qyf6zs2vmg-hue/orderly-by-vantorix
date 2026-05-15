@@ -70,39 +70,20 @@ function HomeRedirect() {
 import Landing from './pages/Landing';
 
 export default function App() {
-  const [initialLoading, setInitialLoading] = useState(true);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setInitialLoading(false);
-    }, 3000);
-    return () => clearTimeout(timer);
-  }, []);
-
   return (
     <AuthProvider>
       <BrowserRouter>
-        <AnimatePresence>
-          {initialLoading && <SplashScreen key="splash" />}
-        </AnimatePresence>
-        <motion.div 
-          initial={false}
-          animate={{ opacity: initialLoading ? 0 : 1 }}
-          transition={{ duration: 0.8, ease: "easeInOut" }}
-          style={{ display: initialLoading ? 'none' : 'block' }}
-        >
-          <Routes>
-            <Route path="/" element={<HomeRedirect />} />
-            <Route path="/welcome" element={<Landing />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/join" element={<Join />} />
-            <Route path="/invite/:code" element={<Join />} />
-            <Route path="/admin" element={<ProtectedRoute requiredRole="owner"><AdminDashboard /></ProtectedRoute>} />
-            <Route path="/client" element={<ProtectedRoute requiredRole="client"><ClientDashboard /></ProtectedRoute>} />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </motion.div>
+        <Routes>
+          <Route path="/" element={<HomeRedirect />} />
+          <Route path="/welcome" element={<Landing />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/join" element={<Join />} />
+          <Route path="/invite/:code" element={<Join />} />
+          <Route path="/admin" element={<ProtectedRoute requiredRole="owner"><AdminDashboard /></ProtectedRoute>} />
+          <Route path="/client" element={<ProtectedRoute requiredRole="client"><ClientDashboard /></ProtectedRoute>} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
       </BrowserRouter>
     </AuthProvider>
   );

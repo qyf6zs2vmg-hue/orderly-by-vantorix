@@ -8,9 +8,10 @@ interface Props {
   isOpen: boolean;
   onConfirm: () => void;
   lang: Language;
+  onLanguageChange?: (lang: Language) => void;
 }
 
-export const SecurityConfirmationModal: React.FC<Props> = ({ isOpen, onConfirm, lang }) => {
+export const SecurityConfirmationModal: React.FC<Props> = ({ isOpen, onConfirm, lang, onLanguageChange }) => {
   const [accepted, setAccepted] = useState(false);
   const t = translations[lang].security;
 
@@ -29,9 +30,33 @@ export const SecurityConfirmationModal: React.FC<Props> = ({ isOpen, onConfirm, 
         initial={{ opacity: 0, scale: 0.95, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 20 }}
-        className="relative w-full max-w-[500px] bg-surface rounded-[32px] border border-border-color shadow-[0_25px_60px_rgba(0,0,0,0.4)] overflow-hidden"
+        className="relative w-full max-w-[500px] bg-surface rounded-[32px] border border-border-color shadow-[0_25px_60px_rgba(0,0,0,0.4)] overflow-hidden flex flex-col"
       >
-        <div className="p-8 sm:p-10">
+        {onLanguageChange && (
+          <div className="absolute top-6 right-6 z-20 flex bg-surface-alt rounded-lg p-1 border border-border-color shadow-sm">
+             <button
+               onClick={() => onLanguageChange('RU')}
+               className={`px-3 py-1 rounded-[6px] text-[11px] font-bold tracking-wider transition-all ${
+                 lang === 'RU' 
+                   ? 'bg-white text-text-main shadow-sm' 
+                   : 'text-text-muted hover:text-text-main'
+               }`}
+             >
+               RU
+             </button>
+             <button
+               onClick={() => onLanguageChange('UZ')}
+               className={`px-3 py-1 rounded-[6px] text-[11px] font-bold tracking-wider transition-all ${
+                 lang === 'UZ' 
+                   ? 'bg-white text-text-main shadow-sm' 
+                   : 'text-text-muted hover:text-text-main'
+               }`}
+             >
+               UZ
+             </button>
+          </div>
+        )}
+        <div className="p-8 sm:p-10 pt-14">
           <div className="flex items-center gap-4 mb-8">
             <div className="w-12 h-12 rounded-2xl bg-brand-warning/10 flex items-center justify-center border border-brand-warning/20 shadow-[0_0_20px_rgba(255,181,71,0.1)]">
               <ShieldAlert className="w-6 h-6 text-brand-warning animate-pulse" />

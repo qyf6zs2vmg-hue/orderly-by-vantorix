@@ -194,9 +194,11 @@ export default function Join() {
              Назад к регистрации
           </button>
           <div className="bg-surface rounded-[24px] p-8 sm:p-10 shadow-[0_4px_12px_rgba(16,24,40,0.06)] border border-border-color">
-             <h1 className="text-[22px] font-bold text-text-main tracking-tight mb-8">Политика конфиденциальность Vantorix</h1>
+             <h1 className="text-[22px] font-bold text-text-main tracking-tight mb-8">
+               {lang === 'RU' ? 'Политика конфиденциальности Vantorix OMS' : 'Vantorix OMS maxfiylik siyosati'}
+             </h1>
              <div className="text-text-muted leading-relaxed text-[13px]">
-               <PrivacyPolicyContent />
+               <PrivacyPolicyContent lang={lang} />
              </div>
           </div>
         </div>
@@ -371,7 +373,7 @@ export default function Join() {
                   >
                     Подробная информация о сайте
                   </Link>
-                  <span>DEVELOPED BY VANTORIX LABS</span>
+                  <span>DEVELOPED BY VANTORIX OMS</span>
                </div>
           </div>
         </div>
@@ -380,6 +382,7 @@ export default function Join() {
         isOpen={isSecurityModalOpen} 
         onConfirm={processSubmit} 
         lang={lang}
+        onLanguageChange={setLang}
       />
     </div>
   );

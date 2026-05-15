@@ -244,14 +244,10 @@ export default function AdminDashboard() {
              {/* Icons */}
              <div className="flex items-center gap-4 ml-auto">
                 <div className="hidden lg:flex items-center gap-2 mr-2">
-                  <ThemeToggle />
                   <LanguageToggle currentLang={lang} onLangChange={setLang} variant="minimal" />
                 </div>
                 <div className="hidden lg:block">
                   <SecurityIndicator variant="shield" />
-                </div>
-                <div className="hidden md:block">
-                  <ThemeToggle />
                 </div>
                 <button className="relative w-10 h-10 flex items-center justify-center rounded-xl hover:bg-surface-alt transition-colors text-text-muted hover:text-text-main border border-transparent hover:border-border-color">
                    <Bell className="w-[18px] h-[18px]" />
@@ -620,6 +616,8 @@ export default function AdminDashboard() {
       <PostRegistrationSecurityDialog 
         isOpen={isSecurityDialogOpen} 
         onClose={handleCloseSecurityDialog} 
+        lang={lang}
+        onLanguageChange={setLang}
       />
     </div>
   );

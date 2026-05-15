@@ -6,7 +6,6 @@ import { Link, useNavigate, Navigate } from 'react-router-dom';
 import { Lock, Mail, EyeOff } from 'lucide-react';
 import { useAuth } from '../lib/AuthContext';
 import { motion } from 'motion/react';
-import { ThemeToggle } from '../components/ThemeToggle';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -73,7 +72,6 @@ export default function Login() {
         <div className="absolute bottom-[10%] left-[10%] w-[30rem] h-[30rem] bg-brand-accent/5 rounded-full blur-[100px]" />
       </div>
 
-      <div className="absolute top-6 right-6 z-50"><ThemeToggle /></div>
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -172,7 +170,7 @@ export default function Login() {
 
                 <div className="pt-6 border-t border-border-color/50 w-full text-center">
                     <span className="text-[10px] font-bold text-text-muted tracking-[0.3em] uppercase opacity-50">
-                      © {new Date().getFullYear()} Vantorix Labs
+                      © {new Date().getFullYear()} Vantorix OMS
                     </span>
                 </div>
               </div>

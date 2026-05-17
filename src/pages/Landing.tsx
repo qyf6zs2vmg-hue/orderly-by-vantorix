@@ -29,25 +29,22 @@ export default function Landing() {
   const [isInfoSharingOpen, setInfoSharingOpen] = useState(false);
 
   useEffect(() => {
-    setTheme('light');
-  }, [setTheme]);
+    // Theme will auto-sync with the time context because of ThemeProvider
+  }, []);
 
   const handleStart = () => {
-    localStorage.setItem('vantorix_visited', 'true');
+    localStorage.setItem('asthea_visited', 'true');
     navigate('/register');
   };
 
   return (
-    <div className="theme-light light min-h-screen bg-bg-base font-sans text-text-main overflow-x-hidden relative selection:bg-brand-primary/30">
-      {/* Background Subtle Gradient */}
-      <div className="absolute top-0 left-0 w-full h-[1000px] bg-gradient-to-b from-brand-primary/5 to-transparent pointer-events-none" />
-
+    <div className="min-h-screen bg-bg-base font-sans text-text-main overflow-x-hidden relative selection:bg-surface-alt">
       {/* Header / Nav */}
       <nav className="fixed top-0 w-full z-50 border-b border-border-color/50 bg-bg-base/70 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src="https://drive.google.com/thumbnail?id=1Zzhxcg4wGu4HCBSmPptAhuTqb-s8yb3D&sz=w1000" alt="Vantorix Logo" className="w-8 h-8 object-contain" />
-            <span className="font-bold tracking-tight text-[15px] uppercase">Vantorix OMS</span>
+            <img src="https://drive.google.com/thumbnail?id=1Zzhxcg4wGu4HCBSmPptAhuTqb-s8yb3D&sz=w1000" alt="ASTHEA Logo" className="w-8 h-8 object-contain" />
+            <span className="font-bold tracking-tight text-[15px] uppercase">Asthea OMS</span>
           </div>
 
           <div className="hidden md:flex items-center gap-8 text-[13px] font-medium text-text-muted">
@@ -78,7 +75,7 @@ export default function Landing() {
 
       <main className="relative pt-32">
         {/* 1. HERO SECTION */}
-        <section id="platform" className="max-w-7xl mx-auto px-6 grid lg:grid-cols-[1.2fr_1fr] gap-16 items-center mb-40">
+        <section id="platform" className="max-w-7xl mx-auto px-6 grid lg:grid-cols-[1.2fr_1fr] gap-16 items-center mb-56">
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -88,8 +85,8 @@ export default function Landing() {
               <Shield className="w-3 h-3" />
               {translations[lang].landing.verifiedAccessOnly}
             </div>
-            <h1 className="text-4xl md:text-5xl lg:text-7xl font-bold tracking-tighter leading-[1.05] mb-6">
-              Vantorix OMS<br />
+          <h1 className="text-4xl md:text-5xl lg:text-7xl font-bold tracking-tighter leading-[1.05] mb-6">
+              Asthea OMS<br />
               <span className="text-brand-primary text-3xl md:text-4xl lg:text-5xl block mt-4">{translations[lang].landing.heroSubtitle}</span>
             </h1>
             <p className="text-lg text-text-muted max-w-xl leading-relaxed mb-10 font-medium">
@@ -213,39 +210,39 @@ export default function Landing() {
         </section>
 
         {/* 2. OVERVIEW SECTION */}
-        <section id="overview" className="max-w-7xl mx-auto px-6 mb-40">
+        <section id="overview" className="max-w-7xl mx-auto px-6 mb-56">
            <div className="text-center mb-20">
-             <h2 className="text-3xl font-bold tracking-tight mb-4">{translations[lang].landing.overviewTitle}</h2>
+             <h2 className="text-3xl font-bold tracking-tighter mb-4">{translations[lang].landing.overviewTitle}</h2>
              <p className="text-text-muted text-[13px] font-semibold uppercase tracking-[0.2em]">{translations[lang].landing.overviewSubtitle}</p>
            </div>
            
            <div className="grid md:grid-cols-3 gap-8">
              {/* Step 1 */}
-             <div className="bg-surface border border-border-color rounded-[32px] p-8 hover:border-brand-primary/30 transition-all flex flex-col group relative overflow-hidden">
+             <div className="bg-surface border border-border-color rounded-2xl p-8 hover:border-brand-primary/30 transition-all flex flex-col group relative overflow-hidden">
                 <div className="w-14 h-14 bg-surface-alt text-brand-primary rounded-2xl flex items-center justify-center mb-8 border border-border-color relative z-10">
                   <Database className="w-6 h-6" />
                 </div>
-                <h3 className="text-xl font-bold mb-4 tracking-tight relative z-10">{translations[lang].landing.step1Title}</h3>
+                <h3 className="text-xl font-bold mb-4 tracking-tighter relative z-10">{translations[lang].landing.step1Title}</h3>
                 <p className="text-[14px] text-text-muted leading-relaxed font-medium relative z-10">{translations[lang].landing.step1Desc}</p>
                 <div className="absolute -bottom-8 -right-8 text-[120px] font-black text-surface-alt/50 select-none pointer-events-none group-hover:scale-110 transition-transform">1</div>
              </div>
              
              {/* Step 2 */}
-             <div className="bg-surface border border-border-color rounded-[32px] p-8 hover:border-brand-primary/30 transition-all flex flex-col group relative overflow-hidden">
+             <div className="bg-surface border border-border-color rounded-2xl p-8 hover:border-brand-primary/30 transition-all flex flex-col group relative overflow-hidden">
                 <div className="w-14 h-14 bg-surface-alt text-brand-primary rounded-2xl flex items-center justify-center mb-8 border border-border-color relative z-10">
                   <Users className="w-6 h-6" />
                 </div>
-                <h3 className="text-xl font-bold mb-4 tracking-tight relative z-10">{translations[lang].landing.step2Title}</h3>
+                <h3 className="text-xl font-bold mb-4 tracking-tighter relative z-10">{translations[lang].landing.step2Title}</h3>
                 <p className="text-[14px] text-text-muted leading-relaxed font-medium relative z-10">{translations[lang].landing.step2Desc}</p>
                 <div className="absolute -bottom-8 -right-8 text-[120px] font-black text-surface-alt/50 select-none pointer-events-none group-hover:scale-110 transition-transform">2</div>
              </div>
              
              {/* Step 3 */}
-             <div className="bg-surface border border-border-color rounded-[32px] p-8 hover:border-brand-primary/30 transition-all flex flex-col group relative overflow-hidden">
+             <div className="bg-surface border border-border-color rounded-2xl p-8 hover:border-brand-primary/30 transition-all flex flex-col group relative overflow-hidden">
                 <div className="w-14 h-14 bg-surface-alt text-brand-primary rounded-2xl flex items-center justify-center mb-8 border border-border-color relative z-10">
                   <Activity className="w-6 h-6" />
                 </div>
-                <h3 className="text-xl font-bold mb-4 tracking-tight relative z-10">{translations[lang].landing.step3Title}</h3>
+                <h3 className="text-xl font-bold mb-4 tracking-tighter relative z-10">{translations[lang].landing.step3Title}</h3>
                 <p className="text-[14px] text-text-muted leading-relaxed font-medium relative z-10">{translations[lang].landing.step3Desc}</p>
                 <div className="absolute -bottom-8 -right-8 text-[120px] font-black text-surface-alt/50 select-none pointer-events-none group-hover:scale-110 transition-transform">3</div>
              </div>
@@ -253,10 +250,10 @@ export default function Landing() {
         </section>
 
         {/* 3. FEATURES SECTION */}
-        <section id="features" className="bg-brand-primary/5 border-y border-border-color py-32 mb-40">
+        <section id="features" className="bg-brand-primary/5 border-y border-border-color py-48 mb-56">
            <div className="max-w-7xl mx-auto px-6">
              <div className="text-center mb-20">
-               <h2 className="text-3xl font-bold tracking-tight mb-4">{translations[lang].landing.featuresTitle}</h2>
+               <h2 className="text-3xl font-bold tracking-tighter mb-4">{translations[lang].landing.featuresTitle}</h2>
                <p className="text-text-muted text-[13px] font-semibold uppercase tracking-[0.2em]">{translations[lang].landing.featuresSubtitle}</p>
              </div>
              
@@ -302,21 +299,21 @@ export default function Landing() {
         </section>
 
         {/* 4. PROBLEMS VS SOLUTION */}
-        <section className="max-w-7xl mx-auto px-6 mb-40">
+        <section className="max-w-7xl mx-auto px-6 mb-56">
            <div className="text-center mb-16">
-             <h2 className="text-3xl font-bold tracking-tight mb-4">{translations[lang].landing.problemsTitle}</h2>
+             <h2 className="text-3xl font-bold tracking-tighter mb-4">{translations[lang].landing.problemsTitle}</h2>
              <p className="text-text-muted text-[13px] font-semibold uppercase tracking-[0.2em]">{translations[lang].landing.problemsSubtitle}</p>
            </div>
            
            <div className="grid md:grid-cols-2 gap-8">
               {/* Manual Approach */}
-              <div className="bg-brand-danger/5 border border-brand-danger/20 rounded-[32px] p-8 md:p-12 relative overflow-hidden">
+              <div className="bg-brand-danger/5 border border-brand-danger/20 rounded-2xl p-8 md:p-12 relative overflow-hidden">
                  <div className="w-14 h-14 bg-surface rounded-2xl flex items-center justify-center mb-8 border border-brand-danger/20 shadow-sm relative z-10">
                    <div className="w-6 h-6 rounded-full border-2 border-brand-danger flex items-center justify-center relative">
                      <div className="w-px h-8 bg-brand-danger absolute transform rotate-45" />
                    </div>
                  </div>
-                 <h3 className="text-2xl font-bold tracking-tight text-brand-danger mb-8 relative z-10">{translations[lang].landing.manualApproach}</h3>
+                 <h3 className="text-2xl font-bold tracking-tighter text-brand-danger mb-8 relative z-10">{translations[lang].landing.manualApproach}</h3>
                  
                  <div className="space-y-4 relative z-10">
                     {[
@@ -335,11 +332,11 @@ export default function Landing() {
               </div>
               
               {/* Digital Approach */}
-              <div className="bg-brand-success/5 border border-brand-success/20 rounded-[32px] p-8 md:p-12 relative overflow-hidden">
+              <div className="bg-brand-success/5 border border-brand-success/20 rounded-2xl p-8 md:p-12 relative overflow-hidden">
                  <div className="w-14 h-14 bg-surface rounded-2xl flex items-center justify-center mb-8 border border-brand-success/20 shadow-sm relative z-10">
                    <CheckCircle2 className="w-8 h-8 text-brand-success" />
                  </div>
-                 <h3 className="text-2xl font-bold tracking-tight text-brand-success mb-8 relative z-10">{translations[lang].landing.digitalApproach}</h3>
+                 <h3 className="text-2xl font-bold tracking-tighter text-brand-success mb-8 relative z-10">{translations[lang].landing.digitalApproach}</h3>
                  
                  <div className="space-y-4 relative z-10">
                     {[
@@ -360,10 +357,8 @@ export default function Landing() {
         </section>
 
         {/* 5. ACCESS SECTION */}
-        <section className="max-w-4xl mx-auto px-6 mb-40 text-center">
-           <div className="p-12 md:p-20 bg-surface border border-border-color rounded-[48px] relative overflow-hidden shadow-accent">
-              <div className="absolute top-0 right-0 w-64 h-64 bg-brand-primary/5 blur-[100px] pointer-events-none" />
-              
+        <section className="max-w-4xl mx-auto px-6 mb-56 text-center">
+           <div className="p-12 md:p-20 bg-surface border border-border-color rounded-3xl relative overflow-hidden shadow-accent">
               <div className="relative z-10">
                 <h2 className="text-3xl md:text-5xl font-bold tracking-tighter mb-8 leading-tight">
                   {translations[lang].landing.joinNetwork}
@@ -375,7 +370,7 @@ export default function Landing() {
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                    <button 
                      onClick={handleStart}
-                     className="btn-primary px-10 py-5 text-[16px] font-bold shadow-xl shadow-brand-primary/10"
+                     className="btn-primary px-10 py-5 text-[16px] font-bold shadow-xl"
                    >
                      {translations[lang].landing.openPlatform}
                    </button>
@@ -410,8 +405,8 @@ export default function Landing() {
       <footer className="border-t border-border-color pt-24 pb-12 bg-surface/10">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex items-center gap-3 mb-6">
-             <img src="https://drive.google.com/thumbnail?id=1Zzhxcg4wGu4HCBSmPptAhuTqb-s8yb3D&sz=w1000" alt="Vantorix Logo" className="w-8 h-8 object-contain" />
-             <span className="font-bold tracking-tight text-[15px] uppercase">Vantorix OMS</span>
+             <img src="https://drive.google.com/thumbnail?id=1Zzhxcg4wGu4HCBSmPptAhuTqb-s8yb3D&sz=w1000" alt="ASTHEA Logo" className="w-8 h-8 object-contain" />
+             <span className="font-bold tracking-tight text-[15px] uppercase">Asthea OMS</span>
           </div>
           <p className="text-[13px] text-text-muted leading-relaxed font-medium mb-16 max-w-sm">
              {translations[lang].landing.footerDesc}

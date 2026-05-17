@@ -201,8 +201,8 @@ export default function ClientDashboard() {
           
         {/* User Profile Summary in Sidebar */}
         <div className="flex items-center gap-2 px-3 mb-8">
-           <img src="https://drive.google.com/thumbnail?id=1Zzhxcg4wGu4HCBSmPptAhuTqb-s8yb3D&sz=w1000" alt="Vantorix Logo" className="w-8 h-auto object-contain" />
-           <span className="font-bold tracking-widest uppercase text-[15px] text-text-main">Vantorix OMS</span>
+           <img src="https://drive.google.com/thumbnail?id=1Zzhxcg4wGu4HCBSmPptAhuTqb-s8yb3D&sz=w1000" alt="ASTHEA Logo" className="w-8 h-auto object-contain" />
+           <span className="font-bold tracking-widest uppercase text-[15px] text-text-main">Asthea OMS</span>
         </div>
 
         <div className="flex items-center gap-3 px-3 mb-8">
@@ -254,7 +254,7 @@ export default function ClientDashboard() {
              <LogOut className="w-4 h-4 mr-2" /> {t.common.logout}
            </button>
            <div className="text-[10px] text-text-muted font-bold tracking-widest opacity-60 uppercase text-center px-2">
-             © {new Date().getFullYear()} VANTORIX LABS
+             © {new Date().getFullYear()} ASTHEA LABS
            </div>
         </div>
       </div>

@@ -123,8 +123,8 @@ export default function Register() {
             </h2>
             <p className="mt-6 text-text-muted text-[15px] leading-relaxed">
               {lang === 'RU' 
-                ? 'Vantorix OMS предоставляет все необходимые инструменты для автоматизации оптовых продаж: удобные каталоги, управление заказами и клиентской базой.' 
-                : 'Vantorix OMS ulgurji savdoni avtomatlashtirish uchun barcha zarur vositalarni taqdim etadi: qulay kataloglar, buyurtmalar va mijozlar bazasini boshqarish.'}
+                ? 'Asthea OMS предоставляет все необходимые инструменты для автоматизации оптовых продаж: удобные каталоги, управление заказами и клиентской базой.' 
+                : 'Asthea OMS ulgurji savdoni avtomatlashtirish uchun barcha zarur vositalarni taqdim etadi: qulay kataloglar, buyurtmalar va mijozlar bazasini boshqarish.'}
             </p>
             
             <div className="mt-12 flex flex-col gap-6">
@@ -160,8 +160,8 @@ export default function Register() {
           className="w-full max-w-[440px] relative z-10"
         >
           <div className="bg-surface/80 backdrop-blur-xl card-large p-8 md:p-10 shadow-[0_20px_50px_rgba(17,24,39,0.05)] border border-white/20 flex flex-col items-center text-left">
-            <img src="https://drive.google.com/thumbnail?id=1Zzhxcg4wGu4HCBSmPptAhuTqb-s8yb3D&sz=w1000" alt="Vantorix Logo" className="w-24 h-auto mb-2 object-contain" />
-            <h1 className="text-2xl font-black text-text-main tracking-tight mb-8">Vantorix OMS</h1>
+            <img src="https://drive.google.com/thumbnail?id=1Zzhxcg4wGu4HCBSmPptAhuTqb-s8yb3D&sz=w1000" alt="ASTHEA Logo" className="w-24 h-auto mb-2 object-contain" />
+            <h1 className="text-2xl font-black text-text-main tracking-tight mb-8">Asthea OMS</h1>
             <h3 className="text-[20px] font-black tracking-tight text-text-main mb-8 w-full uppercase text-center">{t.auth.registerTitle}</h3>
 
             <motion.div 
@@ -256,7 +256,7 @@ export default function Register() {
 
                 <div className="pt-6 border-t border-border-color/50 w-full text-center">
                     <span className="text-[10px] font-bold text-text-muted tracking-[0.3em] uppercase opacity-50">
-                      © {new Date().getFullYear()} Vantorix OMS
+                      © {new Date().getFullYear()} Asthea OMS
                     </span>
                 </div>
               </div>

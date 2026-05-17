@@ -26,7 +26,7 @@ export default function PendingApproval() {
         </button>
 
          <div className="mt-8 text-center text-[11px] text-text-muted font-medium">
-             © {new Date().getFullYear()} DEVELOPED BY VANTORIX LABS.
+             © {new Date().getFullYear()} DEVELOPED BY ASTHEA LABS.
          </div>
       </div>
     </div>

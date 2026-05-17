@@ -195,7 +195,7 @@ export default function Join() {
           </button>
           <div className="bg-surface rounded-[24px] p-8 sm:p-10 shadow-[0_4px_12px_rgba(16,24,40,0.06)] border border-border-color">
              <h1 className="text-[22px] font-bold text-text-main tracking-tight mb-8">
-               {lang === 'RU' ? 'Политика конфиденциальности Vantorix OMS' : 'Vantorix OMS maxfiylik siyosati'}
+               {lang === 'RU' ? 'Политика конфиденциальности Asthea OMS' : 'Asthea OMS maxfiylik siyosati'}
              </h1>
              <div className="text-text-muted leading-relaxed text-[13px]">
                <PrivacyPolicyContent lang={lang} />
@@ -307,7 +307,7 @@ export default function Join() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       className="w-full pl-11 pr-4 py-3 rounded-xl bg-surface border border-border-color text-text-main focus:border-brand-primary focus:ring-4 focus:ring-brand-primary/10 outline-none transition-all placeholder:text-text-muted text-[13px] shadow-sm"
-                      placeholder="example@vantorix.com"
+                      placeholder="example@asthea.com"
                     />
                   </div>
                 </div>
@@ -373,7 +373,7 @@ export default function Join() {
                   >
                     Подробная информация о сайте
                   </Link>
-                  <span>DEVELOPED BY VANTORIX OMS</span>
+                  <span>DEVELOPED BY ASTHEA OMS</span>
                </div>
           </div>
         </div>

@@ -80,8 +80,8 @@ export default function Login() {
       >
         <div className="bg-surface/80 backdrop-blur-xl card-large p-10 shadow-[0_20px_50px_rgba(17,24,39,0.05)] border border-white/20 flex flex-col items-center">
           
-          <img src="https://drive.google.com/thumbnail?id=1Zzhxcg4wGu4HCBSmPptAhuTqb-s8yb3D&sz=w1000" alt="Vantorix Logo" className="w-24 h-auto mb-2 object-contain" />
-          <h1 className="text-2xl font-black text-text-main tracking-tight mb-8">Vantorix OMS</h1>
+          <img src="https://drive.google.com/thumbnail?id=1Zzhxcg4wGu4HCBSmPptAhuTqb-s8yb3D&sz=w1000" alt="ASTHEA Logo" className="w-24 h-auto mb-2 object-contain" />
+          <h1 className="text-2xl font-black text-text-main tracking-tight mb-8">Asthea OMS</h1>
 
           <motion.div 
             initial={{ opacity: 0 }}
@@ -170,7 +170,7 @@ export default function Login() {
 
                 <div className="pt-6 border-t border-border-color/50 w-full text-center">
                     <span className="text-[10px] font-bold text-text-muted tracking-[0.3em] uppercase opacity-50">
-                      © {new Date().getFullYear()} Vantorix OMS
+                      © {new Date().getFullYear()} Asthea OMS
                     </span>
                 </div>
               </div>

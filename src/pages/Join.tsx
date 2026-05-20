@@ -3,7 +3,7 @@ import { createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVe
 import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { auth, db } from '../lib/firebase';
 import { useNavigate, useSearchParams, useParams, Navigate, Link } from 'react-router-dom';
-import { Lock, Mail, User as UserIcon, EyeOff, Building2, Globe, ChevronRight } from 'lucide-react';
+import { Lock, Mail, User as UserIcon, EyeOff, Building2, Globe, ChevronRight, Phone } from 'lucide-react';
 import { useAuth } from '../lib/AuthContext';
 import PrivacyPolicyContent from '../components/PrivacyPolicyContent';
 import { SplashScreen } from '../components/SplashScreen';
@@ -23,6 +23,7 @@ export default function Join() {
   const [inviteError, setInviteError] = useState('');
 
   const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -138,6 +139,7 @@ export default function Join() {
           await setDoc(doc(db, 'users', uid), {
             uid: uid,
             name: name,
+            phone: phone,
             email: email,
             role: 'client',
             status: 'pending',
@@ -281,20 +283,36 @@ export default function Join() {
 
               <form onSubmit={handleJoinSubmit} className="space-y-4">
                 {!isLogin && (
-                  <div className="space-y-1.5">
-                    <label className="text-[13px] font-bold text-text-main ml-1">{lang === 'RU' ? 'Ваше имя' : 'Ismingiz'}</label>
-                    <div className="relative">
-                      <UserIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-                      <input
-                        type="text"
-                        required={!isLogin}
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        className="w-full pl-11 pr-4 py-3 rounded-xl bg-surface border border-border-color text-text-main focus:border-text-muted focus:ring-4 focus:ring-text-muted/10 outline-none transition-all placeholder:text-text-muted text-[13px] shadow-sm"
-                        placeholder={lang === 'RU' ? "Иван Иванов" : "Ism Familiya"}
-                      />
+                  <>
+                    <div className="space-y-1.5">
+                      <label className="text-[13px] font-bold text-text-main ml-1">{lang === 'RU' ? 'Ваше имя' : 'Ismingiz'}</label>
+                      <div className="relative">
+                        <UserIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+                        <input
+                          type="text"
+                          required={!isLogin}
+                          value={name}
+                          onChange={(e) => setName(e.target.value)}
+                          className="w-full pl-11 pr-4 py-3 rounded-xl bg-surface border border-border-color text-text-main focus:border-text-muted focus:ring-4 focus:ring-text-muted/10 outline-none transition-all placeholder:text-text-muted text-[13px] shadow-sm"
+                          placeholder={lang === 'RU' ? "Иван Иванов" : "Ism Familiya"}
+                        />
+                      </div>
                     </div>
-                  </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[13px] font-bold text-text-main ml-1">{lang === 'RU' ? 'Номер телефона' : 'Telefon raqamingiz'}</label>
+                      <div className="relative">
+                        <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+                        <input
+                          type="tel"
+                          required={!isLogin}
+                          value={phone}
+                          onChange={(e) => setPhone(e.target.value)}
+                          className="w-full pl-11 pr-4 py-3 rounded-xl bg-surface border border-border-color text-text-main focus:border-text-muted focus:ring-4 focus:ring-text-muted/10 outline-none transition-all placeholder:text-text-muted text-[13px] shadow-sm"
+                          placeholder="+998 90 123 45 67"
+                        />
+                      </div>
+                    </div>
+                  </>
                 )}
                 
                 <div className="space-y-1.5">

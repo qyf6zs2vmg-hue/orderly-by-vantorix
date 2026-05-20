@@ -256,7 +256,7 @@ export default function Register() {
 
                 <div className="pt-6 border-t border-border-color/50 w-full text-center">
                     <span className="text-[10px] font-bold text-text-muted tracking-[0.3em] uppercase opacity-50">
-                      © {new Date().getFullYear()} Asthea OMS
+                      ASTHEA OMS © {new Date().getFullYear()} — Created by Salmon Davronov
                     </span>
                 </div>
               </div>

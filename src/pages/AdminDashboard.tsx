@@ -50,7 +50,6 @@ export default function AdminDashboard() {
       }
     }
   };
-  const [pendingUsers, setPendingUsers] = useState<any[]>([]);
   const [activeUsers, setActiveUsers] = useState<any[]>([]);
   const [orders, setOrders] = useState<any[]>([]);
   const [products, setProducts] = useState<any[]>([]);
@@ -71,8 +70,7 @@ export default function AdminDashboard() {
     const qUsers = query(collection(db, 'users'), where('businessId', '==', appUser.businessId));
     const unsubUsers = onSnapshot(qUsers, (snap) => {
       const allUsers = snap.docs.map(d => ({id: d.id, ...d.data()}));
-      setPendingUsers(allUsers.filter((u: any) => u.status === 'pending' && u.role === 'client'));
-      setActiveUsers(allUsers.filter((u: any) => u.role === 'client' && u.status !== 'pending'));
+      setActiveUsers(allUsers.filter((u: any) => u.role === 'client'));
     });
 
     const qOrders = query(collection(db, 'orders'), where('businessId', '==', appUser.businessId));
@@ -250,7 +248,7 @@ export default function AdminDashboard() {
              <LogOut className="w-4 h-4 mr-2" /> {t.common.logout}
            </button>
            <div className="text-[10px] text-text-muted font-bold tracking-widest opacity-60 uppercase text-center px-2">
-             © {new Date().getFullYear()} ASTHEA LABS
+             ASTHEA OMS © {new Date().getFullYear()} — Created by Salmon Davronov
            </div>
         </div>
       </div>
@@ -408,6 +406,7 @@ export default function AdminDashboard() {
                     <tr>
                       <th className="px-8 py-5 font-bold text-text-muted uppercase text-[11px] tracking-[0.2em]">Имя</th>
                       <th className="px-8 py-5 font-bold text-text-muted uppercase text-[11px] tracking-[0.2em]">Email</th>
+                      <th className="px-8 py-5 font-bold text-text-muted uppercase text-[11px] tracking-[0.2em]">Телефон</th>
                       <th className="px-8 py-5 font-bold text-text-muted uppercase text-[11px] tracking-[0.2em]">Статус</th>
                       <th className="px-8 py-5 font-bold text-text-muted text-right uppercase text-[11px] tracking-[0.2em]">Действия</th>
                     </tr>
@@ -419,6 +418,7 @@ export default function AdminDashboard() {
                           <div className="font-bold tracking-tight">{user.name}</div>
                         </td>
                         <td className="px-8 py-5 text-text-muted font-medium">{user.email}</td>
+                        <td className="px-8 py-5 text-text-muted font-medium">{user.phone || '—'}</td>
                         <td className="px-8 py-5">
                           {user.status === 'blocked' ? (
                             <span className="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-brand-danger/10 text-brand-danger border border-brand-danger/20">Заблокирован</span>

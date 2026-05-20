@@ -271,7 +271,7 @@ export default function ClientDashboard() {
              <LogOut className="w-4 h-4 mr-2" /> {t.common.logout}
            </button>
            <div className="text-[10px] text-text-muted font-bold tracking-widest opacity-60 uppercase text-center px-2">
-             © {new Date().getFullYear()} ASTHEA LABS
+             ASTHEA OMS © {new Date().getFullYear()} — Created by Salmon Davronov
            </div>
         </div>
       </div>

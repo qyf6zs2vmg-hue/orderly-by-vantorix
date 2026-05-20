@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { collection, onSnapshot, query, where, doc, updateDoc, deleteDoc, setDoc } from 'firebase/firestore';
+import { collection, onSnapshot, query, where, doc, updateDoc, deleteDoc, setDoc, addDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { useAuth } from '../lib/AuthContext';
 import { ThemeToggle } from '../components/ThemeToggle';
@@ -21,13 +21,7 @@ function generateRandomCode(length = 24) {
   return result;
 }
 
-const PRODUCTS = [
-  { id: 'p1', name: 'Серверный шкаф 42U', price: 850, icon: Box, stock: 15 },
-  { id: 'p2', name: 'Коммутатор 24 порта', price: 320, icon: Box, stock: 42 },
-  { id: 'p3', name: 'Патч-корд кат. 6 (100шт)', price: 150, icon: Box, stock: 120 },
-  { id: 'p4', name: 'Маршрутизатор Enterprise', price: 1200, icon: Box, stock: 8 },
-  { id: 'p5', name: 'ИБП 3000VA', price: 750, icon: Box, stock: 25 },
-];
+
 
 export default function AdminDashboard() {
   const { logout, appUser, business } = useAuth();
@@ -59,8 +53,14 @@ export default function AdminDashboard() {
   const [pendingUsers, setPendingUsers] = useState<any[]>([]);
   const [activeUsers, setActiveUsers] = useState<any[]>([]);
   const [orders, setOrders] = useState<any[]>([]);
+  const [products, setProducts] = useState<any[]>([]);
   const [editingClient, setEditingClient] = useState<{id: string, name: string} | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  
+  // Products Management
+  const [showAddProduct, setShowAddProduct] = useState(false);
+  const [integrations, setIntegrations] = useState({bitrixApi: '', oneCApi: ''});
+  const [newProduct, setNewProduct] = useState({ name: '', description: '', price: 0, stock: 0, imageBase64: '' });
 
   useEffect(() => {
     if (!appUser?.businessId) return;
@@ -78,10 +78,14 @@ export default function AdminDashboard() {
     const qOrders = query(collection(db, 'orders'), where('businessId', '==', appUser.businessId));
     const unsubOrders = onSnapshot(qOrders, (snap) => setOrders(snap.docs.map(d => ({id: d.id, ...d.data()}))));
 
+    const qProducts = query(collection(db, 'products'), where('businessId', '==', appUser.businessId));
+    const unsubProducts = onSnapshot(qProducts, (snap) => setProducts(snap.docs.map(d => ({id: d.id, ...d.data()}))));
+
     return () => {
       unsubInvites();
       unsubUsers();
       unsubOrders();
+      unsubProducts();
     };
   }, [appUser]);
 
@@ -128,6 +132,42 @@ export default function AdminDashboard() {
     setEditingClient(null);
   };
 
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setNewProduct({...newProduct, imageBase64: reader.result as string});
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleAddProduct = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!appUser?.businessId) return;
+    try {
+      await addDoc(collection(db, 'products'), {
+        businessId: appUser.businessId,
+        name: newProduct.name,
+        description: newProduct.description,
+        price: Number(newProduct.price),
+        stock: Number(newProduct.stock),
+        imageUrl: newProduct.imageBase64,
+        createdAt: Date.now()
+      });
+      setNewProduct({ name: '', description: '', price: 0, stock: 0, imageBase64: '' });
+      setShowAddProduct(false);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleSaveIntegrations = async () => {
+    // Mock save logic for integrations
+    alert(lang === 'RU' ? 'Интеграции успешно сохранены' : 'Integratsiya muvaffaqiyatli saqlandi');
+  };
+
   return (
     <div className="h-screen overflow-hidden bg-bg-base flex flex-row font-sans text-text-main">
       {/* Mobile Backdrop */}
@@ -146,13 +186,13 @@ export default function AdminDashboard() {
         
         {/* User Profile Summary in Sidebar */}
         <div className="flex items-center gap-2 px-3 mb-8">
-           <img src="https://drive.google.com/thumbnail?id=1Zzhxcg4wGu4HCBSmPptAhuTqb-s8yb3D&sz=w1000" alt="ASTHEA Logo" className="w-8 h-auto object-contain" />
+           <img src="https://drive.google.com/thumbnail?id=1l7HkE_p4K09Xwkv9g9JAiFzfTuViiWvZ&sz=w1000" alt="ASTHEA Logo" className="w-8 h-auto object-contain" />
            <span className="font-bold tracking-widest uppercase text-[15px] text-text-main">Asthea OMS</span>
         </div>
 
         <div className="flex items-center gap-3 px-3 mb-8">
-          <div className="h-10 w-10 bg-brand-primary/10 rounded-xl flex items-center justify-center font-bold text-brand-primary border border-brand-primary/20 shadow-sm relative overflow-hidden group">
-             <div className="absolute inset-0 bg-brand-primary opacity-0 group-hover:opacity-10 transition-opacity" />
+          <div className="h-10 w-10 bg-surface-alt rounded-xl flex items-center justify-center font-bold text-text-main border border-border-color shadow-sm relative overflow-hidden group">
+             <div className="absolute inset-0 bg-text-main opacity-0 group-hover:opacity-10 transition-opacity" />
              {appUser?.name?.[0]?.toUpperCase() || 'A'}
           </div>
           <div className="flex flex-col min-w-0">
@@ -165,42 +205,42 @@ export default function AdminDashboard() {
         <nav className="flex flex-col gap-1.5 flex-1 px-1">
           <button
             onClick={() => setActiveTab('invites')}
-            className={clsx("flex items-center px-4 py-3 rounded-xl text-[13px] font-bold transition-all duration-200 border-2", activeTab === 'invites' ? "bg-brand-primary/5 text-brand-primary border-brand-primary/20 shadow-lg shadow-brand-primary/5" : "text-text-muted hover:text-text-main hover:bg-surface-alt border-transparent")}
+            className={clsx("flex items-center px-4 py-3 rounded-xl text-[13px] font-bold transition-all duration-200 border-2", activeTab === 'invites' ? "bg-surface text-text-main border-border-color shadow-sm" : "text-text-muted hover:text-text-main hover:bg-surface-alt border-transparent")}
           >
-            <Key className={clsx("w-4 h-4 mr-3 transition-transform", activeTab === 'invites' ? "text-brand-primary scale-110" : "text-text-muted")} />
+            <Key className={clsx("w-4 h-4 mr-3 transition-transform", activeTab === 'invites' ? "text-text-main scale-110" : "text-text-muted")} />
             {t.tabs.invites}
           </button>
           <button
             onClick={() => setActiveTab('users')}
-            className={clsx("flex items-center justify-between px-4 py-3 rounded-xl text-[13px] font-bold transition-all duration-200 border-2", activeTab === 'users' ? "bg-brand-primary/5 text-brand-primary border-brand-primary/20 shadow-lg shadow-brand-primary/5" : "text-text-muted hover:text-text-main hover:bg-surface-alt border-transparent")}
+            className={clsx("flex items-center justify-between px-4 py-3 rounded-xl text-[13px] font-bold transition-all duration-200 border-2", activeTab === 'users' ? "bg-surface-alt text-text-main border-border-color shadow-sm" : "text-text-muted hover:text-text-main hover:bg-surface-alt border-transparent")}
           >
             <div className="flex items-center">
-              <Users className={clsx("w-4 h-4 mr-3 transition-transform", activeTab === 'users' ? "text-brand-primary scale-110" : "text-text-muted")} />
+              <Users className={clsx("w-4 h-4 mr-3 transition-transform", activeTab === 'users' ? "text-text-main scale-110" : "text-text-muted")} />
               {t.tabs.users}
             </div>
             {activeUsers.length > 0 && (
-              <span className="bg-brand-primary text-white text-[10px] px-2 py-0.5 rounded-full font-bold ml-auto border border-brand-primary/20 shadow-sm">{activeUsers.length}</span>
+              <span className="bg-surface-alt text-text-main text-[10px] px-2 py-0.5 rounded-full font-bold ml-auto border border-border-color shadow-sm">{activeUsers.length}</span>
             )}
           </button>
           <button
             onClick={() => setActiveTab('orders')}
-            className={clsx("flex items-center px-4 py-3 rounded-xl text-[13px] font-bold transition-all duration-200 border-2", activeTab === 'orders' ? "bg-brand-primary/5 text-brand-primary border-brand-primary/20 shadow-lg shadow-brand-primary/5" : "text-text-muted hover:text-text-main hover:bg-surface-alt border-transparent")}
+            className={clsx("flex items-center px-4 py-3 rounded-xl text-[13px] font-bold transition-all duration-200 border-2", activeTab === 'orders' ? "bg-surface text-text-main border-border-color shadow-sm" : "text-text-muted hover:text-text-main hover:bg-surface-alt border-transparent")}
           >
-            <ShoppingCart className={clsx("w-4 h-4 mr-3 transition-transform", activeTab === 'orders' ? "text-brand-primary scale-110" : "text-text-muted")} />
+            <ShoppingCart className={clsx("w-4 h-4 mr-3 transition-transform", activeTab === 'orders' ? "text-text-main scale-110" : "text-text-muted")} />
             {t.tabs.orders}
           </button>
           <button
             onClick={() => setActiveTab('products')}
-            className={clsx("flex items-center px-4 py-3 rounded-xl text-[13px] font-bold transition-all duration-200 border-2", activeTab === 'products' ? "bg-brand-primary/5 text-brand-primary border-brand-primary/20 shadow-lg shadow-brand-primary/5" : "text-text-muted hover:text-text-main hover:bg-surface-alt border-transparent")}
+            className={clsx("flex items-center px-4 py-3 rounded-xl text-[13px] font-bold transition-all duration-200 border-2", activeTab === 'products' ? "bg-surface text-text-main border-border-color shadow-sm" : "text-text-muted hover:text-text-main hover:bg-surface-alt border-transparent")}
           >
-            <Store className={clsx("w-4 h-4 mr-3 transition-transform", activeTab === 'products' ? "text-brand-primary scale-110" : "text-text-muted")} />
+            <Store className={clsx("w-4 h-4 mr-3 transition-transform", activeTab === 'products' ? "text-text-main scale-110" : "text-text-muted")} />
             {t.tabs.products}
           </button>
           <button
             onClick={() => setActiveTab('settings')}
-            className={clsx("flex items-center px-4 py-3 rounded-xl text-[13px] font-bold transition-all duration-200 border-2", activeTab === 'settings' ? "bg-brand-primary/5 text-brand-primary border-brand-primary/20 shadow-lg shadow-brand-primary/5" : "text-text-muted hover:text-text-main hover:bg-surface-alt border-transparent")}
+            className={clsx("flex items-center px-4 py-3 rounded-xl text-[13px] font-bold transition-all duration-200 border-2", activeTab === 'settings' ? "bg-surface text-text-main border-border-color shadow-sm" : "text-text-muted hover:text-text-main hover:bg-surface-alt border-transparent")}
           >
-            <Settings className={clsx("w-4 h-4 mr-3 transition-transform", activeTab === 'settings' ? "text-brand-primary scale-110" : "text-text-muted")} />
+            <Settings className={clsx("w-4 h-4 mr-3 transition-transform", activeTab === 'settings' ? "text-text-main scale-110" : "text-text-muted")} />
             {t.tabs.settings}
           </button>
         </nav>
@@ -236,7 +276,7 @@ export default function AdminDashboard() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder={t.common.search} 
-                  className="w-full bg-surface-alt/50 border border-border-color rounded-[14px] py-3 pl-11 pr-11 text-[13px] text-text-main shadow-sm focus:border-brand-primary focus:ring-4 focus:ring-brand-primary/10 outline-none transition-all placeholder:text-text-muted font-medium" 
+                  className="w-full bg-surface-alt/50 border border-border-color rounded-[14px] py-3 pl-11 pr-11 text-[13px] text-text-main shadow-sm focus:border-text-muted focus:ring-4 focus:ring-text-muted outline-none transition-all placeholder:text-text-muted font-medium" 
                 />
                 <kbd className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] bg-surface border border-border-color rounded-lg px-2 py-1 text-text-muted font-sans font-bold shadow-sm">⌘K</kbd>
              </div>
@@ -258,7 +298,7 @@ export default function AdminDashboard() {
                 </button>
                 <div className="h-5 w-px bg-border-color hidden md:block mx-1"></div>
                 <div className="flex items-center gap-2.5 cursor-pointer">
-                   <div className="h-8 w-8 bg-surface-alt rounded-full flex items-center justify-center font-bold text-brand-primary border border-border-color shadow-[0_1px_2px_rgba(16,24,40,0.04)] text-[12px]">
+                   <div className="h-8 w-8 bg-surface-alt rounded-full flex items-center justify-center font-bold text-text-main border border-border-color shadow-sm text-[12px]">
                       {appUser?.name?.[0]?.toUpperCase() || 'A'}
                    </div>
                    <div className="hidden md:flex flex-col">
@@ -303,12 +343,12 @@ export default function AdminDashboard() {
                       <tr key={invite.id} className="hover:bg-surface-alt/30 transition-all group">
                         <td className="px-8 py-5 text-text-main">
                           <div className="flex flex-col gap-1">
-                            <span className="font-mono font-bold text-[14px] text-brand-primary group-hover:glow-accent transition-all">{invite.id}</span>
+                            <span className="font-mono font-bold text-[14px] text-text-main group-hover:text-text-muted transition-all">{invite.id}</span>
                             <div className="flex items-center group/link">
                               <span className="text-[11px] text-text-muted truncate max-w-[200px] font-sans opacity-70 group-hover/link:opacity-100 transition-opacity">{window.location.origin}/join?code={invite.id}</span>
                               <button 
                                 onClick={() => navigator.clipboard.writeText(`${window.location.origin}/join?code=${invite.id}`)} 
-                                className="ml-2 p-1 text-text-muted hover:text-brand-primary transition-colors"
+                                className="ml-2 p-1 text-text-muted hover:text-text-main transition-colors"
                                 title="Копировать ссылку"
                               >
                                 <Copy className="w-3 h-3" />
@@ -326,7 +366,7 @@ export default function AdminDashboard() {
                               Использован
                             </span>
                           ) : (
-                            <span className="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-brand-primary/10 text-brand-primary border border-brand-primary/20 glow-accent">
+                            <span className="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-surface-alt text-text-main border border-border-color mt-3">
                               Свободен
                             </span>
                           )}
@@ -449,48 +489,124 @@ export default function AdminDashboard() {
           {/* Products Tab */}
           {activeTab === 'products' && (
             <div className="max-w-6xl flex flex-col gap-8 relative z-10 w-full mx-auto animate-in fade-in duration-300">
-              <div className="mb-6">
-                 <h1 className="text-[24px] font-bold text-text-main tracking-tight">Каталог товаров (Preview)</h1>
-                 <p className="text-[13px] text-text-muted mt-1">Товары, доступные вашим клиентам</p>
+              <div className="flex flex-col md:flex-row justify-between md:items-end mb-6 gap-4">
+                <div>
+                  <h1 className="text-[24px] font-bold text-text-main tracking-tight">Добавить товар / Интеграции</h1>
+                  <p className="text-[13px] text-text-muted mt-1">Импорт товаров через API и ручное добавление</p>
+                </div>
+                <button onClick={() => setShowAddProduct(!showAddProduct)} className="bg-brand-primary text-white border border-transparent shadow-sm px-4 py-2 rounded-[10px] text-[13px] font-bold hover:bg-brand-primary-hover transition-all">
+                  {showAddProduct ? 'Отмена' : 'Добавить вручную'}
+                </button>
               </div>
-              <div className="mb-6 relative md:hidden">
-                 <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-                 <input 
-                   type="text" 
-                   value={searchQuery}
-                   onChange={(e) => setSearchQuery(e.target.value)}
-                   placeholder="Поиск товаров..." 
-                   className="w-full bg-surface border border-border-color rounded-[10px] py-2.5 pl-10 pr-4 text-[13px] text-text-main shadow-sm focus:border-brand-primary focus:ring-1 focus:ring-brand-primary outline-none transition-all placeholder:text-text-muted card-premium" 
-                 />
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {PRODUCTS.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase())).map(product => {
-                  return (
-                    <div key={product.id} className="bg-surface p-6 rounded-[32px] border border-border-color flex flex-col gap-6 hover:border-brand-primary/30 transition-all shadow-sm hover:shadow-accent group card-premium-hover">
-                      <div className="flex items-center justify-between">
-                        <div className="w-14 h-14 bg-brand-primary/5 text-brand-primary rounded-[20px] flex items-center justify-center flex-shrink-0 border border-brand-primary/10 group-hover:bg-brand-primary/10 transition-colors">
-                          <product.icon className="w-7 h-7" />
-                        </div>
-                        <div className="bg-surface-alt px-3 py-1 rounded-full text-[11px] font-black uppercase text-text-muted tracking-widest">
-                           {product.stock} Units
-                        </div>
+
+              {!showAddProduct ? (
+                <>
+                  {/* Integrations Section */}
+                  <div className="bg-surface border border-border-color rounded-[32px] overflow-hidden shadow-accent card-premium p-8">
+                    <h2 className="text-[18px] font-bold text-text-main tracking-tight mb-6">Интеграции</h2>
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <div className="flex flex-col gap-2">
+                        <label className="text-[12px] font-bold text-text-muted uppercase tracking-wider">Bitrix API Key</label>
+                        <input
+                          type="text"
+                          value={integrations.bitrixApi}
+                          onChange={(e) => setIntegrations({...integrations, bitrixApi: e.target.value})}
+                          className="w-full bg-surface-alt border border-border-color rounded-[10px] py-2.5 px-4 text-[13px] text-text-main focus:border-text-muted outline-none transition-all placeholder:text-text-muted/50"
+                          placeholder="Введите API ключ Bitrix..."
+                        />
                       </div>
-                      <div className="flex-1">
-                        <h3 className="text-text-main font-bold text-[16px] leading-tight mb-2">{product.name}</h3>
-                        <p className="text-[12px] text-text-muted font-medium">Enterprise Grade Hardware</p>
-                      </div>
-                      <div className="flex items-center justify-between pt-4 border-t border-border-color/50">
-                        <div className="text-text-main font-black text-xl tracking-tighter">
-                          ${product.price}
-                        </div>
-                        <button className="p-2.5 rounded-xl bg-brand-primary/10 text-brand-primary hover:bg-brand-primary text-white transition-all">
-                           <Plus className="w-5 h-5" />
-                        </button>
+                      <div className="flex flex-col gap-2">
+                        <label className="text-[12px] font-bold text-text-muted uppercase tracking-wider">1C API Key</label>
+                        <input
+                          type="text"
+                          value={integrations.oneCApi}
+                          onChange={(e) => setIntegrations({...integrations, oneCApi: e.target.value})}
+                          className="w-full bg-surface-alt border border-border-color rounded-[10px] py-2.5 px-4 text-[13px] text-text-main focus:border-text-muted outline-none transition-all placeholder:text-text-muted/50"
+                          placeholder="Введите API ключ 1C..."
+                        />
                       </div>
                     </div>
-                  );
-                })}
-              </div>
+                    <div className="mt-6 flex justify-end">
+                      <button onClick={handleSaveIntegrations} className="bg-surface-alt border border-border-color text-text-main px-6 py-2.5 rounded-xl text-[13px] font-bold hover:bg-surface hover:border-text-muted transition-all shadow-sm">
+                        Сохранить интеграции
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* List added products */}
+                  <div className="mt-4 overflow-x-auto min-w-full">
+                    <h3 className="text-[18px] font-bold text-text-main tracking-tight mb-4">Ваши товары</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {products.map(product => (
+                        <div key={product.id} className="bg-surface p-6 rounded-[32px] border border-border-color flex flex-col gap-4 shadow-sm group">
+                          {product.imageUrl ? (
+                             <div className="w-full h-40 bg-surface-alt rounded-2xl overflow-hidden border border-border-color mb-2 shrink-0">
+                               <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
+                             </div>
+                          ) : (
+                             <div className="w-full h-40 bg-surface-alt rounded-2xl flex items-center justify-center border border-border-color mb-2 text-text-muted shrink-0">
+                               <Box className="w-10 h-10 opacity-30" />
+                             </div>
+                          )}
+                          <div className="flex-1">
+                            <h3 className="text-text-main font-bold text-[16px] leading-tight mb-2">{product.name}</h3>
+                            <p className="text-[12px] text-text-muted font-medium line-clamp-3 leading-relaxed">{product.description || 'Нет описания'}</p>
+                          </div>
+                          <div className="mt-auto flex items-center justify-between pt-4 border-t border-border-color/50">
+                            <div className="text-text-main font-black text-xl tracking-tighter">${product.price.toLocaleString()}</div>
+                            <div className="bg-surface-alt px-3 py-1 rounded-full text-[11px] font-black uppercase text-text-muted tracking-widest">{product.stock} шт.</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    {products.length === 0 && (
+                      <div className="w-full py-12 text-center border border-border-color rounded-2xl bg-surface-alt/30 text-[13px] text-text-muted mt-4">
+                        У вас пока нет добавленных товаров.
+                      </div>
+                    )}
+                  </div>
+                </>
+              ) : (
+                <div className="bg-surface border border-border-color rounded-[32px] overflow-hidden shadow-accent card-premium p-8 max-w-2xl animate-in fade-in duration-300">
+                  <h2 className="text-[18px] font-bold text-text-main tracking-tight mb-6">Добавление товара</h2>
+                  <form onSubmit={handleAddProduct} className="flex flex-col gap-5">
+                    <div className="flex flex-col gap-2">
+                      <label className="text-[12px] font-bold text-text-muted uppercase tracking-wider">Название товара</label>
+                      <input type="text" required value={newProduct.name} onChange={e => setNewProduct({...newProduct, name: e.target.value})} className="w-full bg-surface-alt border border-border-color rounded-[10px] py-2.5 px-4 text-[13px] text-text-main focus:border-text-muted outline-none transition-all placeholder:text-text-muted/50" placeholder="Например: Серверный шкаф 42U" />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="flex flex-col gap-2">
+                        <label className="text-[12px] font-bold text-text-muted uppercase tracking-wider">Цена ($)</label>
+                        <input type="number" required min="0" value={newProduct.price || ''} onChange={e => setNewProduct({...newProduct, price: Number(e.target.value)})} className="w-full bg-surface-alt border border-border-color rounded-[10px] py-2.5 px-4 text-[13px] text-text-main focus:border-text-muted outline-none transition-all" placeholder="0.00" />
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        <label className="text-[12px] font-bold text-text-muted uppercase tracking-wider">Количество (шт.)</label>
+                        <input type="number" required min="0" value={newProduct.stock || ''} onChange={e => setNewProduct({...newProduct, stock: Number(e.target.value)})} className="w-full bg-surface-alt border border-border-color rounded-[10px] py-2.5 px-4 text-[13px] text-text-main focus:border-text-muted outline-none transition-all" placeholder="0" />
+                      </div>
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <label className="text-[12px] font-bold text-text-muted uppercase tracking-wider">Краткое описание товара</label>
+                      <textarea required value={newProduct.description} onChange={e => setNewProduct({...newProduct, description: e.target.value})} rows={3} className="w-full bg-surface-alt border border-border-color rounded-[10px] py-2.5 px-4 text-[13px] text-text-main focus:border-text-muted outline-none transition-all placeholder:text-text-muted/50 resize-none" placeholder="Основная информация..." />
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <label className="text-[12px] font-bold text-text-muted uppercase tracking-wider">Изображение товара</label>
+                      <div className="flex items-center gap-4 mt-1">
+                        {newProduct.imageBase64 && (
+                          <div className="w-16 h-16 rounded-xl overflow-hidden border border-border-color shadow-sm shrink-0">
+                            <img src={newProduct.imageBase64} alt="Preview" className="w-full h-full object-cover" />
+                          </div>
+                        )}
+                        <input type="file" accept="image/*" onChange={handleImageUpload} className="block w-full text-[12px] text-text-muted file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border file:border-border-color file:text-[12px] file:font-bold file:bg-surface-alt file:text-text-main hover:file:bg-surface file:transition-colors file:cursor-pointer cursor-pointer" />
+                      </div>
+                    </div>
+                    <div className="mt-4 pt-4 border-t border-border-color/50 flex justify-end">
+                      <button type="submit" className="bg-brand-primary hover:bg-brand-primary-hover text-white px-6 py-3 rounded-xl text-[13px] font-bold shadow-lg shadow-brand-primary/20 transition-all flex items-center justify-center">
+                        Создать товар
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              )}
             </div>
           )}
 
@@ -507,28 +623,28 @@ export default function AdminDashboard() {
                  <div className="w-full md:w-64 flex flex-col gap-1 shrink-0 bg-surface rounded-[16px] p-2 border border-border-color shadow-sm">
                     <button 
                       onClick={() => setSettingsTab('general')}
-                      className={clsx("flex items-center gap-2.5 px-4 py-2.5 rounded-[12px] text-[13px] font-medium transition-all group", settingsTab === 'general' ? "bg-brand-primary/10 text-brand-primary font-bold shadow-sm border border-brand-primary/20" : "text-text-muted hover:text-text-main hover:bg-surface-alt/50 border border-transparent")}
+                      className={clsx("flex items-center gap-2.5 px-4 py-2.5 rounded-[12px] text-[13px] font-medium transition-all group", settingsTab === 'general' ? "bg-surface text-text-main font-bold shadow-sm border border-border-color" : "text-text-muted hover:text-text-main hover:bg-surface-alt/50 border border-transparent")}
                     >
                       <User className={clsx("w-3.5 h-3.5 transition-transform", settingsTab === 'general' ? "scale-110" : "group-hover:scale-110")} />
                       {lang === 'RU' ? 'Профиль' : 'Profil'}
                     </button>
                     <button 
                       onClick={() => setSettingsTab('privacy')}
-                      className={clsx("flex items-center gap-2.5 px-4 py-2.5 rounded-[12px] text-[13px] font-medium transition-all group", settingsTab === 'privacy' ? "bg-brand-primary/10 text-brand-primary font-bold shadow-sm border border-brand-primary/20" : "text-text-muted hover:text-text-main hover:bg-surface-alt/50 border border-transparent")}
+                      className={clsx("flex items-center gap-2.5 px-4 py-2.5 rounded-[12px] text-[13px] font-medium transition-all group", settingsTab === 'privacy' ? "bg-surface text-text-main font-bold shadow-sm border border-border-color" : "text-text-muted hover:text-text-main hover:bg-surface-alt/50 border border-transparent")}
                     >
                       <FileText className={clsx("w-3.5 h-3.5 transition-transform", settingsTab === 'privacy' ? "scale-110" : "group-hover:scale-110")} />
                       {lang === 'RU' ? 'Конфиденциальность' : 'Maxfiylik'}
                     </button>
                     <button 
                       onClick={() => setSettingsTab('security')}
-                      className={clsx("flex items-center gap-2.5 px-4 py-2.5 rounded-[12px] text-[13px] font-medium transition-all group", settingsTab === 'security' ? "bg-brand-primary/10 text-brand-primary font-bold shadow-sm border border-brand-primary/20" : "text-text-muted hover:text-text-main hover:bg-surface-alt/50 border border-transparent")}
+                      className={clsx("flex items-center gap-2.5 px-4 py-2.5 rounded-[12px] text-[13px] font-medium transition-all group", settingsTab === 'security' ? "bg-surface text-text-main font-bold shadow-sm border border-border-color" : "text-text-muted hover:text-text-main hover:bg-surface-alt/50 border border-transparent")}
                     >
                       <Shield className={clsx("w-3.5 h-3.5 transition-transform", settingsTab === 'security' ? "scale-110" : "group-hover:scale-110")} />
                       {lang === 'RU' ? 'Безопасность' : 'Xavfsizlik'}
                     </button>
                     <button 
                       onClick={() => setSettingsTab('appearance')}
-                      className={clsx("flex items-center gap-2.5 px-4 py-2.5 rounded-[12px] text-[13px] font-medium transition-all group", settingsTab === 'appearance' ? "bg-brand-primary/10 text-brand-primary font-bold shadow-sm border border-brand-primary/20" : "text-text-muted hover:text-text-main hover:bg-surface-alt/50 border border-transparent")}
+                      className={clsx("flex items-center gap-2.5 px-4 py-2.5 rounded-[12px] text-[13px] font-medium transition-all group", settingsTab === 'appearance' ? "bg-surface text-text-main font-bold shadow-sm border border-border-color" : "text-text-muted hover:text-text-main hover:bg-surface-alt/50 border border-transparent")}
                     >
                       <Palette className={clsx("w-3.5 h-3.5 transition-transform", settingsTab === 'appearance' ? "scale-110" : "group-hover:scale-110")} />
                       {lang === 'RU' ? 'Внешний вид' : 'Tashqi ko\'rinish'}
@@ -557,13 +673,13 @@ export default function AdminDashboard() {
                            <div className="flex bg-surface-alt p-1 rounded-xl border border-border-color">
                              <button 
                                onClick={() => setLang('RU')}
-                               className={`px-3 py-1.5 text-[11px] font-bold rounded-lg transition-all ${lang === 'RU' ? 'bg-surface text-brand-primary shadow-sm' : 'text-text-muted hover:text-text-main'}`}
+                               className={`px-3 py-1.5 text-[11px] font-bold rounded-lg transition-all ${lang === 'RU' ? 'bg-surface text-text-main shadow-sm' : 'text-text-muted hover:text-text-main'}`}
                              >
                                RU
                              </button>
                              <button 
                                onClick={() => setLang('UZ')}
-                               className={`px-3 py-1.5 text-[11px] font-bold rounded-lg transition-all ${lang === 'UZ' ? 'bg-surface text-brand-primary shadow-sm' : 'text-text-muted hover:text-text-main'}`}
+                               className={`px-3 py-1.5 text-[11px] font-bold rounded-lg transition-all ${lang === 'UZ' ? 'bg-surface text-text-main shadow-sm' : 'text-text-muted hover:text-text-main'}`}
                              >
                                UZ
                              </button>
@@ -575,14 +691,14 @@ export default function AdminDashboard() {
                     {settingsTab === 'appearance' && (
                        <div className="bg-surface rounded-[24px] p-8 shadow-sm border border-border-color card-premium animate-in fade-in slide-in-from-bottom-2 duration-300">
                          <h3 className="text-[20px] font-black text-text-main tracking-tight mb-8 flex items-center gap-3">
-                           <div className="w-2 h-8 bg-brand-primary rounded-full shadow-accent" />
+                           <div className="w-2 h-8 bg-text-main rounded-full shadow-sm" />
                            {lang === 'RU' ? 'Внешний вид и Тема' : 'Tashqi ko\'rinish va Mavzu'}
                          </h3>
                          
                          <div className="space-y-6">
                             <div className="flex flex-col md:flex-row md:items-center justify-between p-8 rounded-[32px] bg-surface-alt/30 border border-border-color gap-6 hover:shadow-accent transition-all group">
                                <div className="flex items-center gap-4">
-                                 <div className="w-12 h-12 bg-brand-primary/10 rounded-2xl flex items-center justify-center text-brand-primary border border-brand-primary/20 group-hover:scale-110 transition-transform">
+                                 <div className="w-12 h-12 bg-surface-alt rounded-2xl flex items-center justify-center text-text-main border border-border-color group-hover:scale-110 transition-transform">
                                    <Palette className="w-6 h-6" />
                                  </div>
                                  <div>
@@ -599,8 +715,8 @@ export default function AdminDashboard() {
                                  <div className="text-[12px] text-text-muted mt-1">{lang === 'RU' ? 'Текущий язык системы' : 'Tizimning joriy tili'}</div>
                                </div>
                                <div className="flex bg-surface p-1 rounded-xl border border-border-color shadow-sm">
-                                  <button onClick={() => setLang('RU')} className={`px-4 py-1.5 text-[11px] font-bold rounded-lg transition-all ${lang === 'RU' ? 'bg-brand-primary text-white shadow-md' : 'text-text-muted hover:text-text-main'}`}>RU</button>
-                                  <button onClick={() => setLang('UZ')} className={`px-4 py-1.5 text-[11px] font-bold rounded-lg transition-all ${lang === 'UZ' ? 'bg-brand-primary text-white shadow-md' : 'text-text-muted hover:text-text-main'}`}>UZ</button>
+                                  <button onClick={() => setLang('RU')} className={`px-4 py-1.5 text-[11px] font-bold rounded-lg transition-all ${lang === 'RU' ? 'bg-surface text-text-main shadow-md' : 'text-text-muted hover:text-text-main'}`}>RU</button>
+                                  <button onClick={() => setLang('UZ')} className={`px-4 py-1.5 text-[11px] font-bold rounded-lg transition-all ${lang === 'UZ' ? 'bg-surface text-text-main shadow-md' : 'text-text-muted hover:text-text-main'}`}>UZ</button>
                                </div>
                             </div>
                          </div>

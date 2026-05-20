@@ -1,175 +1,139 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 @import "tailwindcss";
 
 @layer base {
-  :is(.theme-dark, .dark) {
-    --bg-base: #0F0F10;
-    --surface: #1A1A1C;
-    --border-color: #2A2A2A;
-    --text-main: #EDEDED;
-    --text-muted: #A1A1A1;
+  /* Default: Light Theme */
+  :root {
+    --bg-primary: #FFFFFF;
+    --surface: #FAFAFA;
+    --border: #EAEAEA;
+    --fg-primary: #111111;
+    --muted: #666666;
+    --asthea-orange: #FF5931;
     
-    --btn-primary-bg: #EDEDED;
-    --btn-primary-text: #0F0F10;
-    --btn-hover-bg: #ECE7DF; /* Location 2: Hover Caramel */
-    --btn-hover-text: #0F0F10;
-    
-    --metric-text: #ECE7DF; /* Location 1: Metric Caramel */
-    
-    --badge-bg: transparent;
-    --badge-text: #EDEDED;
-    --badge-border: #2A2A2A;
-
-    --brand-fallback: #EDEDED;
+    /* Legacy variables used across the project */
+    --bg-site: var(--bg-primary);
+    --bg-card: var(--surface);
+    --bg-base: var(--bg-primary);
+    --surface-alt: var(--surface);
+    --text-main: var(--fg-primary);
+    --text-muted: var(--muted);
+    --border-color: var(--border);
+    --brand-primary: var(--asthea-orange);
+    --brand-danger: #333333;
+    --brand-success: #333333;
+    --brand-warning: #333333;
   }
 
-  :root, :is(.theme-light, .light) {
-    --bg-base: #FFFFFF;
-    --surface: #FFFFFF;
-    --border-color: #E4E4E7;
-    --text-main: #0F0F10;
-    --text-muted: #52525B;
-    
-    --btn-primary-bg: #0F0F10;
-    --btn-primary-text: #FFFFFF;
-    --btn-hover-bg: #D9D2C1; /* Location 2: Hover Caramel */
-    --btn-hover-text: #0F0F10;
-    
-    --metric-text: #D9D2C1; /* Location 1: Metric Caramel */
-    
-    --badge-bg: transparent;
-    --badge-text: #0F0F10;
-    --badge-border: #E4E4E7;
-
-    --brand-fallback: #0F0F10;
+  /* Dark Theme */
+  html.dark, .dark {
+    --bg-primary: #0E0E0F;
+    --surface: #161618;
+    --border: #262629;
+    --fg-primary: #F3F3F3;
+    --muted: #9A9A9A;
+    --asthea-orange: #FF5931;
+    --brand-danger: #9A9A9A;
+    --brand-success: #9A9A9A;
+    --brand-warning: #9A9A9A;
   }
 }
 
 @theme {
   --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --color-bg-base: var(--bg-base);
+  
+  --color-bg-primary: var(--bg-primary);
+  --color-bg-base: var(--bg-primary);
+  
   --color-surface: var(--surface);
-  --color-border-color: var(--border-color);
-  --color-text-main: var(--text-main);
-  --color-text-muted: var(--text-muted);
-  --color-metric-text: var(--metric-text);
+  --color-surface-alt: var(--surface-alt);
   
-  /* Wipe out old brand colors entirely */
-  --color-brand-primary: var(--brand-fallback);
-  --color-brand-danger: var(--brand-fallback);
-  --color-brand-success: var(--brand-fallback);
-  --color-brand-warning: var(--brand-fallback);
+  --color-border-color: var(--border);
+  --color-border: var(--border);
   
-  --color-accent-light: var(--bg-base);
-  --color-accent-sand: var(--bg-base);
+  --color-fg-primary: var(--fg-primary);
+  --color-text-main: var(--fg-primary);
+  
+  --color-muted: var(--muted);
+  --color-text-muted: var(--muted);
+  
+  --color-asthea-orange: #FF5931;
+  --color-brand-primary: var(--brand-primary);
+  --color-brand-danger: var(--brand-danger);
+  --color-brand-success: var(--brand-success);
+  --color-brand-warning: var(--brand-warning);
 }
 
 body {
-  background-color: var(--bg-base) !important;
-  color: var(--text-main) !important;
+  background-color: var(--bg-primary);
+  color: var(--fg-primary);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Force absolute strict compliance on sections and texts */
-h1, h2, h3, h4, h5, h6, p, span, div, a {
-  transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
-}
+@layer utilities {
+  .bg-brand-primary\/5 { background-color: color-mix(in srgb, var(--brand-primary) 5%, transparent); }
+  .bg-brand-primary\/10 { background-color: color-mix(in srgb, var(--brand-primary) 10%, transparent); }
+  .border-brand-primary\/10 { border-color: color-mix(in srgb, var(--brand-primary) 10%, transparent); }
+  .border-brand-primary\/20 { border-color: color-mix(in srgb, var(--brand-primary) 20%, transparent); }
+  .border-brand-primary\/30 { border-color: color-mix(in srgb, var(--brand-primary) 30%, transparent); }
+  
+  .shadow-brand-primary\/5 { box-shadow: 0 4px 6px -1px color-mix(in srgb, var(--brand-primary) 5%, transparent), 0 2px 4px -2px color-mix(in srgb, var(--brand-primary) 5%, transparent); }
+  .shadow-brand-primary\/20 { box-shadow: 0 10px 15px -3px color-mix(in srgb, var(--brand-primary) 20%, transparent), 0 4px 6px -4px color-mix(in srgb, var(--brand-primary) 20%, transparent); }
 
-h1, h2, h3, h4, h5, h6,
-.text-text-main,
-.text-brand-primary,
-.text-brand-success,
-.text-brand-danger,
-.text-brand-warning {
-  color: var(--text-main) !important;
-}
+  .bg-brand-danger\/5 { background-color: color-mix(in srgb, var(--brand-danger) 5%, transparent); }
+  .bg-brand-danger\/10 { background-color: color-mix(in srgb, var(--brand-danger) 10%, transparent); }
+  .border-brand-danger\/10 { border-color: color-mix(in srgb, var(--brand-danger) 10%, transparent); }
+  .border-brand-danger\/20 { border-color: color-mix(in srgb, var(--brand-danger) 20%, transparent); }
 
-p, .text-text-muted {
-  color: var(--text-muted) !important;
-}
+  .bg-brand-success\/5 { background-color: color-mix(in srgb, var(--brand-success) 5%, transparent); }
+  .bg-brand-success\/10 { background-color: color-mix(in srgb, var(--brand-success) 10%, transparent); }
+  .border-brand-success\/20 { border-color: color-mix(in srgb, var(--brand-success) 20%, transparent); }
 
-span.text-[10px].uppercase,
-span.text-[11px].uppercase {
-  background-color: var(--badge-bg) !important;
-  color: var(--badge-text) !important;
-  border: 1px solid var(--badge-border) !important;
-  border-radius: 4px;
-}
-
-/* Kills background chaos from old tailwind utility classes */
-.bg-surface,
-.bg-surface-alt,
-.bg-brand-primary\/5,
-.bg-brand-primary\/10,
-.bg-brand-primary\/20,
-.bg-brand-primary\/30,
-.bg-brand-success\/5,
-.bg-brand-success\/10,
-.bg-brand-success\/20,
-.bg-brand-danger\/5,
-.bg-brand-danger\/20 {
-  background-color: var(--surface) !important;
-  border-color: var(--border-color) !important;
-}
-
-/* Also ensure borders are strictly border-color */
-.border-brand-primary\/30,
-.border-brand-danger\/20,
-.border-brand-success\/20,
-.border-brand-success\/30 {
-  border-color: var(--border-color) !important;
-}
-
-/* Metric text strictly uses caramel */
-span.text-xl.font-bold,
-span.text-2xl.font-bold,
-span.text-3xl.font-bold {
-  color: var(--metric-text) !important;
-}
-
-/* Images: monochrome with deep shadows */
-img {
-  filter: grayscale(100%) contrast(1.2) brightness(0.9) !important;
-  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5) !important;
-  border-radius: 8px; /* Slight polish */
+  .bg-surface-alt\/50 { background-color: color-mix(in srgb, var(--surface) 50%, transparent); }
+  .bg-surface-alt\/30 { background-color: color-mix(in srgb, var(--surface) 30%, transparent); }
+  .bg-bg-base\/50 { background-color: color-mix(in srgb, var(--bg-primary) 50%, transparent); }
+  .border-border-color\/50 { border-color: color-mix(in srgb, var(--border) 50%, transparent); }
 }
 
 @layer components {
   .btn-primary {
-    background-color: var(--btn-primary-bg) !important;
-    color: var(--btn-primary-text) !important;
-    font-weight: 600;
-    border-radius: 0;
-    border: 1px solid transparent;
+    background-color: var(--fg-primary);
+    color: var(--bg-primary);
+    font-weight: 500;
+    border-radius: 9999px;
     transition: all 0.3s ease;
   }
+  
   .btn-primary:hover {
-    background-color: var(--btn-hover-bg) !important;
-    color: var(--btn-hover-text) !important; 
+    background-color: var(--asthea-orange);
+    color: #FFFFFF;
+    transform: scale(1.02);
   }
-  .btn-primary:hover svg {
-    color: var(--btn-hover-text) !important; 
+
+  .btn-primary:active {
+    transform: scale(0.98);
   }
 
   .btn-secondary {
-    background-color: transparent !important;
-    color: var(--text-main) !important;
+    background-color: transparent;
+    color: var(--fg-primary);
     font-weight: 500;
-    border-radius: 0;
-    border: 1px solid var(--border-color) !important;
+    border-radius: 9999px;
+    border: 1px solid var(--border);
     transition: all 0.3s ease;
   }
+  
   .btn-secondary:hover {
-    background-color: var(--surface) !important;
-    border-color: var(--text-main) !important;
+    background-color: var(--surface);
+    border-color: var(--fg-primary);
   }
 
   .card-premium, .card-small, .card-large {
-    background-color: var(--surface) !important;
-    border: 1px solid var(--border-color) !important;
-    border-radius: 4px;
+    background-color: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
     transition: all 0.3s ease;
   }
 }

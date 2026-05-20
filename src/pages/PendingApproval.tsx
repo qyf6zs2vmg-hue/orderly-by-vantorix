@@ -8,7 +8,7 @@ export default function PendingApproval() {
     <div className="min-h-screen bg-bg-base flex items-center justify-center p-6 font-sans relative overflow-hidden">
       <div className="max-w-[420px] w-full bg-surface rounded-[24px] shadow-[0_12px_28px_rgba(16,24,40,0.06)] border border-border-color p-10 text-center relative z-10">
         
-        <div className="w-16 h-16 bg-brand-primary/10 text-brand-primary border border-brand-primary/20 card-largexl flex items-center justify-center mx-auto mb-6">
+        <div className="w-16 h-16 bg-surface-alt text-text-main border border-border-color shadow-sm rounded-full flex items-center justify-center mx-auto mb-6">
           <Clock className="w-8 h-8" />
         </div>
         

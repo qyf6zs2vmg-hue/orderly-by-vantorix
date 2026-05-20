@@ -14,13 +14,7 @@ import { SplashScreen } from '../components/SplashScreen';
 import { LanguageToggle } from '../components/LanguageToggle';
 import { translations, Language } from '../constants/translations';
 
-const PRODUCTS = [
-  { id: 'p1', name: 'Серверный шкаф 42U', price: 850, icon: Box, stock: 15 },
-  { id: 'p2', name: 'Коммутатор 24 порта', price: 320, icon: Box, stock: 42 },
-  { id: 'p3', name: 'Патч-корд кат. 6 (100шт)', price: 150, icon: Box, stock: 120 },
-  { id: 'p4', name: 'Маршрутизатор Enterprise', price: 1200, icon: Box, stock: 8 },
-  { id: 'p5', name: 'ИБП 3000VA', price: 750, icon: Box, stock: 25 },
-];
+
 
 export default function ClientDashboard() {
   const { logout, appUser, business } = useAuth();
@@ -50,16 +44,26 @@ export default function ClientDashboard() {
   
   const [cart, setCart] = useState<{product: any, quantity: number}[]>([]);
   const [myOrders, setMyOrders] = useState<any[]>([]);
+  const [products, setProducts] = useState<any[]>([]);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [checkoutState, setCheckoutState] = useState<'idle' | 'processing' | 'success'>('idle');
 
   useEffect(() => {
-    if (!appUser?.uid) return;
-    const q = query(collection(db, 'orders'), where('clientId', '==', appUser.uid));
-    const unsub = onSnapshot(q, (snap) => {
+    if (!appUser?.uid || !appUser?.businessId) return;
+    const qOrders = query(collection(db, 'orders'), where('clientId', '==', appUser.uid));
+    const unsubOrders = onSnapshot(qOrders, (snap) => {
       setMyOrders(snap.docs.map(d => ({id: d.id, ...d.data()})));
     });
-    return () => unsub();
+
+    const qProducts = query(collection(db, 'products'), where('businessId', '==', appUser.businessId));
+    const unsubProducts = onSnapshot(qProducts, (snap) => {
+      setProducts(snap.docs.map(d => ({id: d.id, ...d.data()})));
+    });
+
+    return () => {
+      unsubOrders();
+      unsubProducts();
+    };
   }, [appUser]);
 
   const addToCart = (product: any) => {
@@ -132,6 +136,19 @@ export default function ClientDashboard() {
         createdAt: Date.now()
       });
 
+      // Update product stocks
+      for (const item of cart) {
+        if (item.product.id) {
+          try {
+            await updateDoc(doc(db, 'products', item.product.id), {
+              stock: Math.max(0, item.product.stock - item.quantity)
+            });
+          } catch (e) {
+            console.error("Failed to update stock", e);
+          }
+        }
+      }
+
       setCart([]);
       
       setTimeout(() => {
@@ -201,13 +218,13 @@ export default function ClientDashboard() {
           
         {/* User Profile Summary in Sidebar */}
         <div className="flex items-center gap-2 px-3 mb-8">
-           <img src="https://drive.google.com/thumbnail?id=1Zzhxcg4wGu4HCBSmPptAhuTqb-s8yb3D&sz=w1000" alt="ASTHEA Logo" className="w-8 h-auto object-contain" />
+           <img src="https://drive.google.com/thumbnail?id=1l7HkE_p4K09Xwkv9g9JAiFzfTuViiWvZ&sz=w1000" alt="ASTHEA Logo" className="w-8 h-auto object-contain" />
            <span className="font-bold tracking-widest uppercase text-[15px] text-text-main">Asthea OMS</span>
         </div>
 
         <div className="flex items-center gap-3 px-3 mb-8">
-            <div className="h-10 w-10 bg-brand-primary/10 rounded-xl flex items-center justify-center font-bold text-brand-primary border border-brand-primary/20 shadow-sm relative overflow-hidden group">
-              <div className="absolute inset-0 bg-brand-primary opacity-0 group-hover:opacity-10 transition-opacity" />
+            <div className="h-10 w-10 bg-surface-alt rounded-xl flex items-center justify-center font-bold text-text-main border border-border-color shadow-sm relative overflow-hidden group">
+              <div className="absolute inset-0 bg-text-main opacity-0 group-hover:opacity-10 transition-opacity" />
               {appUser?.name?.[0]?.toUpperCase() || 'C'}
             </div>
             <div className="flex flex-col min-w-0">
@@ -219,22 +236,22 @@ export default function ClientDashboard() {
         <nav className="flex flex-col gap-1.5 flex-1 px-1">
           <button
             onClick={() => setActiveTab('shop')}
-            className={clsx("flex items-center px-4 py-3 rounded-xl text-[13px] font-bold transition-all duration-200 border-2", activeTab === 'shop' ? "bg-brand-primary/5 text-brand-primary border-brand-primary/20 shadow-lg shadow-brand-primary/5" : "text-text-muted hover:text-text-main hover:bg-surface-alt border-transparent")}
+            className={clsx("flex items-center px-4 py-3 rounded-xl text-[13px] font-bold transition-all duration-200 border-2", activeTab === 'shop' ? "bg-surface-alt border-border-color text-text-main shadow-sm" : "text-text-muted hover:text-text-main hover:bg-surface-alt border-transparent")}
           >
-            <Store className={clsx("w-4 h-4 mr-3 transition-transform", activeTab === 'shop' ? "text-brand-primary scale-110" : "text-text-muted")} />
+            <Store className={clsx("w-4 h-4 mr-3 transition-transform", activeTab === 'shop' ? "text-text-main scale-110" : "text-text-muted")} />
             {t.tabs.shop}
           </button>
           
           <button
             onClick={() => setActiveTab('orders')}
-            className={clsx("flex items-center justify-between px-4 py-3 rounded-xl text-[13px] font-bold transition-all duration-200 border-2", activeTab === 'orders' ? "bg-brand-primary/5 text-brand-primary border-brand-primary/20 shadow-lg shadow-brand-primary/5" : "text-text-muted hover:text-text-main hover:bg-surface-alt border-transparent")}
+            className={clsx("flex items-center justify-between px-4 py-3 rounded-xl text-[13px] font-bold transition-all duration-200 border-2", activeTab === 'orders' ? "bg-surface-alt border-border-color text-text-main shadow-sm" : "text-text-muted hover:text-text-main hover:bg-surface-alt border-transparent")}
           >
             <div className="flex items-center">
-              <ShoppingBag className={clsx("w-4 h-4 mr-3 transition-transform", activeTab === 'orders' ? "text-brand-primary scale-110" : "text-text-muted")} />
+              <ShoppingBag className={clsx("w-4 h-4 mr-3 transition-transform", activeTab === 'orders' ? "text-text-main scale-110" : "text-text-muted")} />
               {t.tabs.myOrders}
             </div>
             {myOrders.length > 0 && (
-              <span className="bg-brand-primary text-white text-[10px] px-2 py-0.5 rounded-full font-bold ml-auto border border-brand-primary/20 shadow-sm">
+              <span className="bg-surface-alt text-text-main text-[10px] px-2 py-0.5 rounded-full font-bold ml-auto border border-border-color shadow-sm">
                 {myOrders.length}
               </span>
             )}
@@ -242,9 +259,9 @@ export default function ClientDashboard() {
 
           <button
             onClick={() => setActiveTab('settings')}
-            className={clsx("flex items-center px-4 py-3 rounded-xl text-[13px] font-bold transition-all duration-200 border-2", activeTab === 'settings' ? "bg-brand-primary/5 text-brand-primary border-brand-primary/20 shadow-lg shadow-brand-primary/5" : "text-text-muted hover:text-text-main hover:bg-surface-alt border-transparent")}
+            className={clsx("flex items-center px-4 py-3 rounded-xl text-[13px] font-bold transition-all duration-200 border-2", activeTab === 'settings' ? "bg-surface-alt border-border-color text-text-main shadow-sm" : "text-text-muted hover:text-text-main hover:bg-surface-alt border-transparent")}
           >
-            <Settings className={clsx("w-4 h-4 mr-3 transition-transform", activeTab === 'settings' ? "text-brand-primary scale-110" : "text-text-muted")} />
+            <Settings className={clsx("w-4 h-4 mr-3 transition-transform", activeTab === 'settings' ? "text-text-main scale-110" : "text-text-muted")} />
             {t.tabs.settings}
           </button>
         </nav>
@@ -287,11 +304,11 @@ export default function ClientDashboard() {
                 </button>
                 <div className="h-5 w-px bg-border-color hidden md:block mx-1"></div>
                 <div className="flex items-center gap-3 cursor-pointer group">
-                   <div className="h-9 w-9 bg-brand-primary/10 rounded-xl flex items-center justify-center font-bold text-brand-primary border border-brand-primary/20 shadow-sm relative overflow-hidden">
+                   <div className="h-9 w-9 bg-surface-alt rounded-xl flex items-center justify-center font-bold text-text-main border border-border-color shadow-sm relative overflow-hidden">
                       {appUser?.name?.[0]?.toUpperCase() || 'C'}
                    </div>
                    <div className="hidden md:flex flex-col">
-                     <span className="text-[13px] font-bold text-text-main leading-tight group-hover:text-brand-primary transition-colors">{appUser?.name || 'Client'}</span>
+                     <span className="text-[13px] font-bold text-text-main leading-tight group-hover:text-text-muted transition-colors">{appUser?.name || 'Client'}</span>
                      <span className="text-[10px] text-text-muted leading-tight mt-0.5 font-bold uppercase tracking-wider">{t.common.clientAccount}</span>
                    </div>
                    <ChevronDown className="w-4 h-4 text-text-muted hidden md:block transition-transform group-hover:translate-y-0.5" />
@@ -314,75 +331,91 @@ export default function ClientDashboard() {
                    value={searchQuery}
                    onChange={(e) => setSearchQuery(e.target.value)}
                    placeholder="Поиск товаров..." 
-                   className="w-full bg-surface border border-border-color rounded-[10px] py-2.5 pl-10 pr-4 text-[13px] text-text-main shadow-sm focus:border-brand-primary focus:ring-1 focus:ring-brand-primary outline-none transition-all placeholder:text-text-muted card-premium" 
+                   className="w-full bg-surface border border-border-color rounded-[10px] py-2.5 pl-10 pr-4 text-[13px] text-text-main shadow-sm focus:border-text-muted focus:ring-1 focus:ring-text-muted outline-none transition-all placeholder:text-text-muted card-premium" 
                  />
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                {PRODUCTS.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase())).map(product => {
+                {products.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase())).map(product => {
                   const cartItem = cart.find(i => i.product.id === product.id);
                   const quantity = cartItem ? cartItem.quantity : 0;
                   
                   return (
-                    <div key={product.id} className="bg-surface p-6 rounded-[32px] border border-border-color flex flex-col gap-6 hover:border-brand-primary/30 transition-all shadow-sm hover:shadow-accent group card-premium-hover">
-                      <div className="flex items-center justify-between">
-                        <div className="w-14 h-14 bg-brand-primary/5 text-brand-primary rounded-[20px] flex items-center justify-center flex-shrink-0 border border-brand-primary/10 group-hover:bg-brand-primary/10 transition-colors">
-                          <product.icon className="w-7 h-7" />
+                    <div key={product.id} className="bg-surface p-6 rounded-[32px] border border-border-color flex flex-col gap-4 shadow-sm group">
+                      {product.imageUrl ? (
+                        <div className="w-full h-48 bg-surface-alt rounded-2xl overflow-hidden border border-border-color shrink-0">
+                          <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
                         </div>
-                        <div className="bg-surface-alt px-3 py-1 rounded-full text-[11px] font-black uppercase text-text-muted tracking-widest">
-                           {product.stock} Units
+                      ) : (
+                        <div className="w-full h-48 bg-surface-alt rounded-2xl flex items-center justify-center border border-border-color text-text-muted shrink-0">
+                          <Box className="w-12 h-12 opacity-30" />
                         </div>
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="text-text-main font-bold text-[16px] leading-tight mb-2">{product.name}</h3>
-                        <p className="text-[12px] text-text-muted font-medium">Enterprise Grade Hardware</p>
+                      )}
+                      
+                      <div className="flex-1 mt-2">
+                        <h3 className="text-text-main font-bold text-[18px] leading-tight mb-2">{product.name}</h3>
+                        <p className="text-[13px] text-text-muted font-medium line-clamp-3 leading-relaxed">{product.description || 'Нет описания'}</p>
                       </div>
                       
-                      <div className="flex items-center justify-between pt-6 border-t border-border-color/50">
-                        <div className="text-text-main font-black text-xl tracking-tighter">
-                          ${product.price}
+                      <div className="flex items-center justify-between pt-4 border-t border-border-color/50 mt-auto">
+                        <div className="flex flex-col">
+                          <span className="text-[11px] font-black uppercase text-text-muted tracking-widest mb-1">Остаток: {product.stock}</span>
+                          <div className="text-text-main font-black text-xl tracking-tighter">
+                            ${(product.price || 0).toLocaleString()}
+                          </div>
                         </div>
                         
-                        <div className="flex items-center gap-1.5 bg-surface-alt/50 border border-border-color/50 rounded-xl p-1 shadow-inner">
-                          <button 
-                            onClick={(e) => { e.stopPropagation(); removeFromCart(product.id); }}
-                            className={clsx(
-                              "p-2 rounded-lg transition-all",
-                              quantity > 0 ? "text-text-main hover:bg-surface hover:text-brand-danger shadow-sm" : "text-text-muted cursor-not-allowed opacity-30"
-                            )}
-                            disabled={quantity === 0}
-                          >
-                            <Minus className="w-3.5 h-3.5" />
-                          </button>
-                          <input 
-                            type="number"
-                            value={quantity || ''}
-                            onChange={(e) => updateQuantity(product, e.target.value)}
-                            onClick={(e) => e.stopPropagation()}
-                            placeholder="0"
-                            className="text-[14px] font-bold w-10 text-center text-text-main bg-transparent border-none focus:ring-0 px-1"
-                          />
-                          <button 
-                            onClick={(e) => { e.stopPropagation(); addToCart(product); }}
-                            className={clsx(
-                              "p-2 rounded-lg transition-all",
-                              quantity >= product.stock ? "text-text-muted cursor-not-allowed opacity-30" : "text-text-main hover:bg-surface hover:text-brand-primary shadow-sm"
-                            )}
-                            disabled={quantity >= product.stock}
-                          >
-                            <Plus className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
+                        {product.stock > 0 ? (
+                          <div className="flex items-center gap-1 bg-surface-alt/80 border border-border-color/50 rounded-xl p-1 shadow-inner max-w-[120px]">
+                              <button 
+                                onClick={(e) => { e.stopPropagation(); removeFromCart(product.id); }}
+                                className={clsx(
+                                  "p-2 rounded-lg transition-all",
+                                  quantity > 0 ? "text-text-main hover:bg-surface hover:text-brand-danger shadow-sm" : "text-text-muted cursor-not-allowed opacity-30"
+                                )}
+                                disabled={quantity === 0}
+                              >
+                                <Minus className="w-4 h-4" />
+                              </button>
+                              <input 
+                                type="number"
+                                value={quantity || ''}
+                                onChange={(e) => updateQuantity(product, e.target.value)}
+                                onClick={(e) => e.stopPropagation()}
+                                placeholder="0"
+                                className="text-[14px] font-bold w-8 text-center text-text-main bg-transparent border-none focus:ring-0 px-0.5"
+                              />
+                              <button 
+                                onClick={(e) => { e.stopPropagation(); addToCart(product); }}
+                                className={clsx(
+                                  "p-2 rounded-lg transition-all",
+                                  quantity >= product.stock ? "text-text-muted cursor-not-allowed opacity-30" : "text-text-main hover:bg-surface hover:text-text-muted shadow-sm"
+                                )}
+                                disabled={quantity >= product.stock}
+                              >
+                                <Plus className="w-4 h-4" />
+                              </button>
+                          </div>
+                        ) : (
+                          <div className="bg-brand-danger/10 text-brand-danger border border-brand-danger/20 px-4 py-2 rounded-xl text-[12px] font-bold shrink-0">
+                            Нет в наличии
+                          </div>
+                        )}
                       </div>
                     </div>
                   );
                 })}
+                {products.length === 0 && (
+                  <div className="w-full sm:col-span-2 py-16 text-center border border-border-color rounded-[32px] bg-surface-alt/30 text-[14px] text-text-muted font-medium">
+                    Товары не найдены.
+                  </div>
+                )}
               </div>
             </div>
 
             {/* Cart Sidebar */}
             <div className="w-full xl:w-96 bg-surface rounded-[16px] shadow-[0_4px_12px_rgba(16,24,40,0.03)] border border-border-color p-6 flex flex-col h-fit xl:sticky xl:top-6">
               <h2 className="text-[16px] font-bold text-text-main mb-6 flex items-center pb-4 border-b border-border-color">
-                <ShoppingCart className="w-[18px] h-[18px] mr-2 text-brand-primary opacity-80" />
+                <ShoppingCart className="w-[18px] h-[18px] mr-2 text-text-muted opacity-80" />
                 Ваша корзина
               </h2>
               
@@ -428,7 +461,7 @@ export default function ClientDashboard() {
                   <div className="border-t border-border-color pt-6 mb-6">
                     <div className="flex justify-between items-center">
                       <span className="text-[13px] font-medium text-text-muted">Итого:</span>
-                      <span className="text-brand-primary font-bold text-[20px] tracking-tight">${cartTotal.toLocaleString()}</span>
+                      <span className="text-text-main font-bold text-[20px] tracking-tight">${cartTotal.toLocaleString()}</span>
                     </div>
                   </div>
 
@@ -463,7 +496,7 @@ export default function ClientDashboard() {
                     </div>
                     <div className="text-[14px] text-text-main mb-4 font-bold flex flex-wrap gap-2">
                       {order.items.map((i:any, idx:number) => (
-                        <span key={idx} className="bg-brand-primary/5 text-brand-primary px-3 py-1 rounded-lg border border-brand-primary/10">
+                        <span key={idx} className="bg-surface text-text-main px-3 py-1 rounded-lg border border-border-color shadow-sm">
                            {i.quantity} × {i.name}
                         </span>
                       ))}
@@ -471,8 +504,8 @@ export default function ClientDashboard() {
                   </div>
                   <div className="flex flex-col items-end gap-3">
                     <div className="text-[12px] font-black uppercase tracking-widest text-text-muted opacity-40">Total Amount</div>
-                    <div className="font-black text-text-main text-[24px] tracking-tighter group-hover:text-brand-primary transition-colors">${order.total.toLocaleString()}</div>
-                    <div className="inline-flex items-center px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-brand-success/10 text-brand-success border border-brand-success/20 glow-accent">
+                    <div className="font-black text-text-main text-[24px] tracking-tighter group-hover:text-text-muted transition-colors">${order.total.toLocaleString()}</div>
+                    <div className="inline-flex items-center px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-surface-alt text-text-main border border-border-color shadow-sm mt-1">
                        Delivered
                     </div>
                   </div>
@@ -501,28 +534,28 @@ export default function ClientDashboard() {
                  <div className="w-full md:w-64 flex flex-col gap-1 shrink-0 bg-surface rounded-[16px] p-2 border border-border-color shadow-sm">
                     <button 
                       onClick={() => setSettingsTab('general')}
-                      className={clsx("flex items-center gap-2.5 px-4 py-2.5 rounded-[12px] text-[13px] font-medium transition-all group", settingsTab === 'general' ? "bg-brand-primary/10 text-brand-primary font-bold shadow-sm border border-brand-primary/20" : "text-text-muted hover:text-text-main hover:bg-surface-alt/50 border border-transparent")}
+                      className={clsx("flex items-center gap-2.5 px-4 py-2.5 rounded-[12px] text-[13px] font-medium transition-all group", settingsTab === 'general' ? "bg-surface text-text-main font-bold shadow-sm border border-border-color" : "text-text-muted hover:text-text-main hover:bg-surface-alt/50 border border-transparent")}
                     >
                       <User className={clsx("w-3.5 h-3.5 transition-transform", settingsTab === 'general' ? "scale-110" : "group-hover:scale-110")} />
                       {lang === 'RU' ? 'Профиль' : 'Profil'}
                     </button>
                     <button 
                       onClick={() => setSettingsTab('privacy')}
-                      className={clsx("flex items-center gap-2.5 px-4 py-2.5 rounded-[12px] text-[13px] font-medium transition-all group", settingsTab === 'privacy' ? "bg-brand-primary/10 text-brand-primary font-bold shadow-sm border border-brand-primary/20" : "text-text-muted hover:text-text-main hover:bg-surface-alt/50 border border-transparent")}
+                      className={clsx("flex items-center gap-2.5 px-4 py-2.5 rounded-[12px] text-[13px] font-medium transition-all group", settingsTab === 'privacy' ? "bg-surface text-text-main font-bold shadow-sm border border-border-color" : "text-text-muted hover:text-text-main hover:bg-surface-alt/50 border border-transparent")}
                     >
                       <FileText className={clsx("w-3.5 h-3.5 transition-transform", settingsTab === 'privacy' ? "scale-110" : "group-hover:scale-110")} />
                       {lang === 'RU' ? 'Конфиденциальность' : 'Maxfiylik'}
                     </button>
                     <button 
                       onClick={() => setSettingsTab('security')}
-                      className={clsx("flex items-center gap-2.5 px-4 py-2.5 rounded-[12px] text-[13px] font-medium transition-all group", settingsTab === 'security' ? "bg-brand-primary/10 text-brand-primary font-bold shadow-sm border border-brand-primary/20" : "text-text-muted hover:text-text-main hover:bg-surface-alt/50 border border-transparent")}
+                      className={clsx("flex items-center gap-2.5 px-4 py-2.5 rounded-[12px] text-[13px] font-medium transition-all group", settingsTab === 'security' ? "bg-surface text-text-main font-bold shadow-sm border border-border-color" : "text-text-muted hover:text-text-main hover:bg-surface-alt/50 border border-transparent")}
                     >
                       <Shield className={clsx("w-3.5 h-3.5 transition-transform", settingsTab === 'security' ? "scale-110" : "group-hover:scale-110")} />
                       {lang === 'RU' ? 'Безопасность' : 'Xavfsizlik'}
                     </button>
                     <button 
                       onClick={() => setSettingsTab('appearance')}
-                      className={clsx("flex items-center gap-2.5 px-4 py-2.5 rounded-[12px] text-[13px] font-medium transition-all group", settingsTab === 'appearance' ? "bg-brand-primary/10 text-brand-primary font-bold shadow-sm border border-brand-primary/20" : "text-text-muted hover:text-text-main hover:bg-surface-alt/50 border border-transparent")}
+                      className={clsx("flex items-center gap-2.5 px-4 py-2.5 rounded-[12px] text-[13px] font-medium transition-all group", settingsTab === 'appearance' ? "bg-surface text-text-main font-bold shadow-sm border border-border-color" : "text-text-muted hover:text-text-main hover:bg-surface-alt/50 border border-transparent")}
                     >
                       <Palette className={clsx("w-3.5 h-3.5 transition-transform", settingsTab === 'appearance' ? "scale-110" : "group-hover:scale-110")} />
                       {lang === 'RU' ? 'Внешний вид' : 'Tashqi ko\'rinish'}
@@ -551,13 +584,13 @@ export default function ClientDashboard() {
                            <div className="flex bg-surface-alt p-1 rounded-xl border border-border-color">
                              <button 
                                onClick={() => setLang('RU')}
-                               className={`px-3 py-1.5 text-[11px] font-bold rounded-lg transition-all ${lang === 'RU' ? 'bg-surface text-brand-primary shadow-sm' : 'text-text-muted hover:text-text-main'}`}
+                               className={`px-3 py-1.5 text-[11px] font-bold rounded-lg transition-all ${lang === 'RU' ? 'bg-surface text-text-main shadow-sm' : 'text-text-muted hover:text-text-main'}`}
                              >
                                RU
                              </button>
                              <button 
                                onClick={() => setLang('UZ')}
-                               className={`px-3 py-1.5 text-[11px] font-bold rounded-lg transition-all ${lang === 'UZ' ? 'bg-surface text-brand-primary shadow-sm' : 'text-text-muted hover:text-text-main'}`}
+                               className={`px-3 py-1.5 text-[11px] font-bold rounded-lg transition-all ${lang === 'UZ' ? 'bg-surface text-text-main shadow-sm' : 'text-text-muted hover:text-text-main'}`}
                              >
                                UZ
                              </button>

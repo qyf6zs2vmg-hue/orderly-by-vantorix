@@ -40,10 +40,10 @@ export default function Landing() {
   return (
     <div className="min-h-screen bg-bg-base font-sans text-text-main overflow-x-hidden relative selection:bg-surface-alt">
       {/* Header / Nav */}
-      <nav className="fixed top-0 w-full z-50 border-b border-border-color/50 bg-bg-base/70 backdrop-blur-md">
+      <nav className="fixed top-0 w-full z-50 border-b border-border-color bg-bg-base backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src="https://drive.google.com/thumbnail?id=1Zzhxcg4wGu4HCBSmPptAhuTqb-s8yb3D&sz=w1000" alt="ASTHEA Logo" className="w-8 h-8 object-contain" />
+            <img src="https://drive.google.com/thumbnail?id=1l7HkE_p4K09Xwkv9g9JAiFzfTuViiWvZ&sz=w1000" alt="ASTHEA Logo" className="w-8 h-8 object-contain" />
             <span className="font-bold tracking-tight text-[15px] uppercase">Asthea OMS</span>
           </div>
 
@@ -75,19 +75,19 @@ export default function Landing() {
 
       <main className="relative pt-32">
         {/* 1. HERO SECTION */}
-        <section id="platform" className="max-w-7xl mx-auto px-6 grid lg:grid-cols-[1.2fr_1fr] gap-16 items-center mb-56">
+        <section id="platform" className="max-w-7xl mx-auto px-6 grid lg:grid-cols-[1.2fr_1fr] gap-12 md:gap-16 items-center mb-24 md:mb-56">
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-surface-alt border border-border-color text-[11px] font-black uppercase tracking-widest mb-8 text-brand-primary">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface-alt border border-border-color text-[11px] font-semibold uppercase tracking-widest mb-8 text-text-main shadow-sm">
               <Shield className="w-3 h-3" />
               {translations[lang].landing.verifiedAccessOnly}
             </div>
           <h1 className="text-4xl md:text-5xl lg:text-7xl font-bold tracking-tighter leading-[1.05] mb-6">
               Asthea OMS<br />
-              <span className="text-brand-primary text-3xl md:text-4xl lg:text-5xl block mt-4">{translations[lang].landing.heroSubtitle}</span>
+              <span className="text-text-muted text-3xl md:text-4xl lg:text-5xl block mt-4 font-light">{translations[lang].landing.heroSubtitle}</span>
             </h1>
             <p className="text-lg text-text-muted max-w-xl leading-relaxed mb-10 font-medium">
               {translations[lang].landing.heroDesc}
@@ -117,7 +117,7 @@ export default function Landing() {
                   </div>
                 ))}
               </div>
-              <p className="text-[12px] text-text-muted font-medium">{translations[lang].landing.trustedBy}</p>
+              <p className="text-[12px] text-text-muted font-medium uppercase tracking-widest">{translations[lang].landing.trustedBy}</p>
             </div>
           </motion.div>
 
@@ -127,93 +127,52 @@ export default function Landing() {
             transition={{ duration: 1, delay: 0.2 }}
             className="relative lg:h-[600px] flex items-center justify-center w-full"
           >
-            {/* Professional Dashboard Mockup Visual */}
-            <div className="relative w-full aspect-[4/3] max-w-[600px] bg-surface rounded-[24px] border border-border-color shadow-[0_30px_60px_rgba(0,0,0,0.12)] overflow-hidden flex flex-col">
-              <div className="h-12 border-b border-border-color bg-surface-alt/50 flex items-center px-4 gap-2">
-                <div className="w-3 h-3 rounded-full bg-border-color/80" />
-                <div className="w-3 h-3 rounded-full bg-border-color/80" />
-                <div className="w-3 h-3 rounded-full bg-border-color/80" />
-                <div className="ml-4 h-6 px-3 bg-surface border border-border-color rounded-md flex items-center">
-                  <div className="w-32 h-2.5 bg-text-muted/20 rounded-full" />
-                </div>
-              </div>
-              <div className="flex-1 p-6 flex gap-6 bg-bg-base/50">
-                {/* Sidebar mock */}
-                <div className="w-1/4 hidden sm:flex flex-col gap-3">
-                  <div className="h-4 w-1/2 bg-text-muted/30 rounded-full mb-4" />
-                  {[1,2,3,4,5].map(i => (
-                    <div key={i} className="h-8 w-full bg-surface border border-border-color rounded-lg opacity-60" />
-                  ))}
-                </div>
-                {/* Content mock */}
-                <div className="flex-1 flex flex-col gap-4">
-                  <div className="flex justify-between items-center mb-2">
-                    <div className="h-6 w-1/3 bg-text-main/20 rounded-full" />
-                    <div className="h-8 w-24 bg-brand-primary/20 rounded-lg border border-brand-primary/30" />
-                  </div>
-                  {/* Stats mock */}
-                  <div className="grid grid-cols-3 gap-4 mb-4">
-                    {[1,2,3].map(i => (
-                      <div key={i} className="h-20 bg-surface border border-border-color rounded-xl p-4 flex flex-col justify-between">
-                        <div className="h-3 w-1/2 bg-text-muted/30 rounded-full" />
-                        <div className="h-5 w-3/4 bg-text-main/40 rounded-full" />
-                      </div>
-                    ))}
-                  </div>
-                  {/* List mock */}
-                  <div className="flex-1 bg-surface border border-border-color rounded-xl p-4 flex flex-col gap-3">
-                    {[1,2,3,4].map(i => (
-                      <div key={i} className="flex justify-between items-center p-3 hover:bg-surface-alt rounded-lg transition-colors border border-transparent hover:border-border-color">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-brand-primary/10" />
-                          <div className="flex flex-col gap-1.5">
-                            <div className="h-2.5 w-24 bg-text-main/30 rounded-full" />
-                            <div className="h-2 w-16 bg-text-muted/30 rounded-full" />
-                          </div>
-                        </div>
-                        <div className="h-4 w-16 bg-brand-success/20 rounded-full border border-brand-success/30" />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-              
-              {/* Floating elements */}
-              <motion.div 
-                animate={{ y: [0, -10, 0] }}
-                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute -right-6 top-1/4 w-40 p-4 bg-surface/90 backdrop-blur-md border border-border-color rounded-2xl shadow-xl flex items-center gap-4"
-              >
-                 <div className="w-10 h-10 rounded-full bg-brand-success/10 flex items-center justify-center">
-                   <Shield className="w-5 h-5 text-brand-success" />
+            {/* Minimalist Dashboard Conceptual UI */}
+            <div className="relative w-full aspect-[4/3] max-w-[600px] bg-surface rounded-[24px] border border-border-color shadow-sm overflow-hidden flex flex-col p-6 gap-6">
+               {/* Header strip */}
+               <div className="w-full flex justify-between items-center border-b border-border-color pb-6">
+                 <div className="flex gap-2.5">
+                   <div className="w-3 h-3 rounded-full border border-border-color bg-bg-base" />
+                   <div className="w-3 h-3 rounded-full border border-border-color bg-bg-base" />
                  </div>
-                 <div>
-                   <div className="text-[12px] font-bold text-text-main">{translations[lang].landing.verifiedAccessOnly}</div>
+                 <div className="w-32 h-2.5 bg-border-color rounded-full opacity-50" />
+               </div>
+               
+               {/* Content area */}
+               <div className="flex-1 flex gap-6 mt-2">
+                 {/* Sidebar */}
+                 <div className="w-1/4 bg-surface-alt rounded-xl h-full border border-border-color opacity-30 flex flex-col gap-4 p-4">
+                   <div className="w-full h-2 bg-text-muted rounded-full opacity-20" />
+                   <div className="w-3/4 h-2 bg-text-muted rounded-full opacity-20" />
+                   <div className="w-5/6 h-2 bg-text-muted rounded-full opacity-20" />
                  </div>
-              </motion.div>
-              
-              <motion.div 
-                animate={{ y: [0, 10, 0] }}
-                transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-                className="absolute -left-6 bottom-1/4 w-48 p-4 bg-surface/90 backdrop-blur-md border border-border-color rounded-xl shadow-xl space-y-2"
-              >
-                 <div className="flex items-center justify-between">
-                   <span className="text-[10px] font-bold text-text-muted uppercase">Sync</span>
-                   <span className="w-2 h-2 rounded-full bg-brand-success animate-pulse" />
+                 
+                 {/* Main Column */}
+                 <div className="flex-1 flex flex-col gap-6">
+                   {/* Top Stats */}
+                   <div className="flex gap-4">
+                     <div className="flex-1 bg-surface-alt rounded-xl h-24 border border-border-color opacity-30 flex items-center justify-center">
+                       <div className="w-8 h-8 rounded-full border-2 border-text-main opacity-50" />
+                     </div>
+                     <div className="flex-1 bg-surface-alt rounded-xl h-24 border border-border-color opacity-30" />
+                   </div>
+                   {/* Main Graph Area */}
+                   <div className="w-full flex-1 bg-surface-alt rounded-xl border border-border-color opacity-30 relative overflow-hidden">
+                     <div className="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-brand-primary/10 to-transparent" />
+                     <div className="absolute bottom-4 left-4 right-4 h-[1px] bg-brand-primary/20" />
+                     <div className="absolute top-4 left-4 w-1/4 h-2 bg-text-muted rounded-full opacity-20" />
+                   </div>
                  </div>
-                 <div className="h-2 w-full bg-surface-alt rounded-full overflow-hidden">
-                   <div className="h-full bg-brand-primary w-3/4 rounded-full" />
-                 </div>
-              </motion.div>
+               </div>
             </div>
           </motion.div>
         </section>
 
         {/* 2. OVERVIEW SECTION */}
-        <section id="overview" className="max-w-7xl mx-auto px-6 mb-56">
-           <div className="text-center mb-20">
+        <section id="overview" className="max-w-7xl mx-auto px-6 mb-24 md:mb-56">
+           <div className="text-center mb-16 md:mb-20">
              <h2 className="text-3xl font-bold tracking-tighter mb-4">{translations[lang].landing.overviewTitle}</h2>
-             <p className="text-text-muted text-[13px] font-semibold uppercase tracking-[0.2em]">{translations[lang].landing.overviewSubtitle}</p>
+             <p className="text-[#FF5931] text-[13px] font-semibold uppercase tracking-[0.15em]">{translations[lang].landing.overviewSubtitle}</p>
            </div>
            
            <div className="grid md:grid-cols-3 gap-8">
@@ -224,7 +183,7 @@ export default function Landing() {
                 </div>
                 <h3 className="text-xl font-bold mb-4 tracking-tighter relative z-10">{translations[lang].landing.step1Title}</h3>
                 <p className="text-[14px] text-text-muted leading-relaxed font-medium relative z-10">{translations[lang].landing.step1Desc}</p>
-                <div className="absolute -bottom-8 -right-8 text-[120px] font-black text-surface-alt/50 select-none pointer-events-none group-hover:scale-110 transition-transform">1</div>
+                <div className="absolute -bottom-8 -right-8 text-[120px] font-black text-border-color select-none pointer-events-none group-hover:scale-110 transition-transform">1</div>
              </div>
              
              {/* Step 2 */}
@@ -234,7 +193,7 @@ export default function Landing() {
                 </div>
                 <h3 className="text-xl font-bold mb-4 tracking-tighter relative z-10">{translations[lang].landing.step2Title}</h3>
                 <p className="text-[14px] text-text-muted leading-relaxed font-medium relative z-10">{translations[lang].landing.step2Desc}</p>
-                <div className="absolute -bottom-8 -right-8 text-[120px] font-black text-surface-alt/50 select-none pointer-events-none group-hover:scale-110 transition-transform">2</div>
+                <div className="absolute -bottom-8 -right-8 text-[120px] font-black text-border-color select-none pointer-events-none group-hover:scale-110 transition-transform">2</div>
              </div>
              
              {/* Step 3 */}
@@ -244,17 +203,17 @@ export default function Landing() {
                 </div>
                 <h3 className="text-xl font-bold mb-4 tracking-tighter relative z-10">{translations[lang].landing.step3Title}</h3>
                 <p className="text-[14px] text-text-muted leading-relaxed font-medium relative z-10">{translations[lang].landing.step3Desc}</p>
-                <div className="absolute -bottom-8 -right-8 text-[120px] font-black text-surface-alt/50 select-none pointer-events-none group-hover:scale-110 transition-transform">3</div>
+                <div className="absolute -bottom-8 -right-8 text-[120px] font-black text-border-color select-none pointer-events-none group-hover:scale-110 transition-transform">3</div>
              </div>
            </div>
         </section>
 
         {/* 3. FEATURES SECTION */}
-        <section id="features" className="bg-brand-primary/5 border-y border-border-color py-48 mb-56">
+        <section id="features" className="bg-surface-alt border-y border-border-color py-24 md:py-48 mb-24 md:mb-56">
            <div className="max-w-7xl mx-auto px-6">
-             <div className="text-center mb-20">
+             <div className="text-center mb-16 md:mb-20">
                <h2 className="text-3xl font-bold tracking-tighter mb-4">{translations[lang].landing.featuresTitle}</h2>
-               <p className="text-text-muted text-[13px] font-semibold uppercase tracking-[0.2em]">{translations[lang].landing.featuresSubtitle}</p>
+               <p className="text-[#FF5931] text-[13px] font-semibold uppercase tracking-[0.15em]">{translations[lang].landing.featuresSubtitle}</p>
              </div>
              
              <div className="grid md:grid-cols-2 gap-x-12 gap-y-10">
@@ -298,67 +257,9 @@ export default function Landing() {
            </div>
         </section>
 
-        {/* 4. PROBLEMS VS SOLUTION */}
-        <section className="max-w-7xl mx-auto px-6 mb-56">
-           <div className="text-center mb-16">
-             <h2 className="text-3xl font-bold tracking-tighter mb-4">{translations[lang].landing.problemsTitle}</h2>
-             <p className="text-text-muted text-[13px] font-semibold uppercase tracking-[0.2em]">{translations[lang].landing.problemsSubtitle}</p>
-           </div>
-           
-           <div className="grid md:grid-cols-2 gap-8">
-              {/* Manual Approach */}
-              <div className="bg-brand-danger/5 border border-brand-danger/20 rounded-2xl p-8 md:p-12 relative overflow-hidden">
-                 <div className="w-14 h-14 bg-surface rounded-2xl flex items-center justify-center mb-8 border border-brand-danger/20 shadow-sm relative z-10">
-                   <div className="w-6 h-6 rounded-full border-2 border-brand-danger flex items-center justify-center relative">
-                     <div className="w-px h-8 bg-brand-danger absolute transform rotate-45" />
-                   </div>
-                 </div>
-                 <h3 className="text-2xl font-bold tracking-tighter text-brand-danger mb-8 relative z-10">{translations[lang].landing.manualApproach}</h3>
-                 
-                 <div className="space-y-4 relative z-10">
-                    {[
-                      translations[lang].landing.prob1,
-                      translations[lang].landing.prob2,
-                      translations[lang].landing.prob3,
-                      translations[lang].landing.prob4,
-                      translations[lang].landing.prob5
-                    ].map((prob, i) => (
-                      <div key={i} className="flex gap-4">
-                        <div className="w-1.5 h-1.5 rounded-full bg-brand-danger shrink-0 mt-2" />
-                        <span className="text-[14px] font-medium text-text-main/80">{prob}</span>
-                      </div>
-                    ))}
-                 </div>
-              </div>
-              
-              {/* Digital Approach */}
-              <div className="bg-brand-success/5 border border-brand-success/20 rounded-2xl p-8 md:p-12 relative overflow-hidden">
-                 <div className="w-14 h-14 bg-surface rounded-2xl flex items-center justify-center mb-8 border border-brand-success/20 shadow-sm relative z-10">
-                   <CheckCircle2 className="w-8 h-8 text-brand-success" />
-                 </div>
-                 <h3 className="text-2xl font-bold tracking-tighter text-brand-success mb-8 relative z-10">{translations[lang].landing.digitalApproach}</h3>
-                 
-                 <div className="space-y-4 relative z-10">
-                    {[
-                      translations[lang].landing.sol1,
-                      translations[lang].landing.sol2,
-                      translations[lang].landing.sol3,
-                      translations[lang].landing.sol4,
-                      translations[lang].landing.sol5
-                    ].map((sol, i) => (
-                      <div key={i} className="flex gap-4">
-                        <CheckCircle2 className="w-4 h-4 text-brand-success shrink-0 mt-0.5" />
-                        <span className="text-[14px] font-medium text-text-main/90">{sol}</span>
-                      </div>
-                    ))}
-                 </div>
-              </div>
-           </div>
-        </section>
-
         {/* 5. ACCESS SECTION */}
-        <section className="max-w-4xl mx-auto px-6 mb-56 text-center">
-           <div className="p-12 md:p-20 bg-surface border border-border-color rounded-3xl relative overflow-hidden shadow-accent">
+        <section className="max-w-4xl mx-auto px-6 mb-24 md:mb-56 text-center">
+           <div className="p-12 md:p-20 bg-surface border border-border-color rounded-3xl relative overflow-hidden shadow-2xl">
               <div className="relative z-10">
                 <h2 className="text-3xl md:text-5xl font-bold tracking-tighter mb-8 leading-tight">
                   {translations[lang].landing.joinNetwork}
@@ -402,10 +303,10 @@ export default function Landing() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-border-color pt-24 pb-12 bg-surface/10">
+      <footer className="border-t border-border-color pt-24 pb-12 bg-surface">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex items-center gap-3 mb-6">
-             <img src="https://drive.google.com/thumbnail?id=1Zzhxcg4wGu4HCBSmPptAhuTqb-s8yb3D&sz=w1000" alt="ASTHEA Logo" className="w-8 h-8 object-contain" />
+             <img src="https://drive.google.com/thumbnail?id=1l7HkE_p4K09Xwkv9g9JAiFzfTuViiWvZ&sz=w1000" alt="ASTHEA Logo" className="w-8 h-8 object-contain" />
              <span className="font-bold tracking-tight text-[15px] uppercase">Asthea OMS</span>
           </div>
           <p className="text-[13px] text-text-muted leading-relaxed font-medium mb-16 max-w-sm">

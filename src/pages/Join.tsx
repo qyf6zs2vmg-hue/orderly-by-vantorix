@@ -208,11 +208,11 @@ export default function Join() {
 
   if (user && appUser && inviteData) {
     return (
-      <div className="min-h-screen bg-bg-base flex flex-col items-center justify-center p-6 font-sans relative overflow-hidden">
-        <div className="w-full max-w-[420px] relative z-10 my-8">
-          <div className="bg-surface rounded-[24px] p-10 shadow-[0_12px_28px_rgba(16,24,40,0.06)] border border-border-color flex flex-col items-center text-center">
+      <div className="min-h-[100dvh] md:min-h-screen bg-bg-base flex flex-col items-center justify-center p-4 md:p-6 font-sans relative overflow-hidden">
+        <div className="w-full max-w-[420px] relative z-10 my-4 md:my-8">
+          <div className="bg-surface rounded-[24px] p-6 sm:p-10 shadow-[0_12px_28px_rgba(16,24,40,0.06)] border border-border-color flex flex-col items-center text-center">
             
-            <div className="w-16 h-16 bg-brand-primary/10 text-brand-primary rounded-full flex items-center justify-center mb-6 border border-brand-primary/20">
+            <div className="w-16 h-16 bg-surface-alt text-text-main rounded-full flex items-center justify-center mb-6 border border-border-color shadow-sm">
               <UserIcon className="w-8 h-8" />
             </div>
             
@@ -248,8 +248,8 @@ export default function Join() {
         <LanguageToggle currentLang={lang} onLangChange={setLang} />
       </div>
 
-      <div className="w-full max-w-[420px] relative z-10 my-8">
-        <div className="bg-surface rounded-[24px] p-10 shadow-[0_12px_28px_rgba(16,24,40,0.06)] border border-border-color flex flex-col items-center">
+      <div className="w-full max-w-[420px] relative z-10 my-4 md:my-8">
+        <div className="bg-surface rounded-[24px] p-6 sm:p-10 shadow-[0_12px_28px_rgba(16,24,40,0.06)] border border-border-color flex flex-col items-center">
           <div className="text-center mb-8 w-full flex flex-col items-center">
             <h1 className="text-[18px] font-bold text-text-main tracking-tight mb-2 text-center">{inviteData?.businessName || "Загрузка..."}</h1>
             <p className="text-[13px] text-text-muted font-medium mb-4 text-center" style={{ textWrap: "balance" }}>
@@ -267,13 +267,13 @@ export default function Join() {
               <div className="flex bg-surface-alt rounded-[12px] p-1.5 mb-8 border border-border-color">
                  <button
                    onClick={() => { setIsLogin(false); setError(''); }}
-                   className={`flex-1 py-2 text-[13px] font-bold rounded-lg transition-all ${!isLogin ? 'bg-surface shadow-sm text-brand-primary' : 'text-text-muted hover:text-text-main'}`}
+                   className={`flex-1 py-2 text-[13px] font-bold rounded-lg transition-all ${!isLogin ? 'bg-surface shadow-sm text-text-main' : 'text-text-muted hover:text-text-main'}`}
                  >
                    {lang === 'RU' ? 'Регистрация' : 'Ro\'yxatdan o\'tish'}
                  </button>
                  <button
                    onClick={() => { setIsLogin(true); setError(''); }}
-                   className={`flex-1 py-2 text-[13px] font-bold rounded-lg transition-all ${isLogin ? 'bg-surface shadow-sm text-brand-primary' : 'text-text-muted hover:text-text-main'}`}
+                   className={`flex-1 py-2 text-[13px] font-bold rounded-lg transition-all ${isLogin ? 'bg-surface shadow-sm text-text-main' : 'text-text-muted hover:text-text-main'}`}
                  >
                    {lang === 'RU' ? 'Вход' : 'Kirish'}
                  </button>
@@ -290,7 +290,7 @@ export default function Join() {
                         required={!isLogin}
                         value={name}
                         onChange={(e) => setName(e.target.value)}
-                        className="w-full pl-11 pr-4 py-3 rounded-xl bg-surface border border-border-color text-text-main focus:border-brand-primary focus:ring-4 focus:ring-brand-primary/10 outline-none transition-all placeholder:text-text-muted text-[13px] shadow-sm"
+                        className="w-full pl-11 pr-4 py-3 rounded-xl bg-surface border border-border-color text-text-main focus:border-text-muted focus:ring-4 focus:ring-text-muted/10 outline-none transition-all placeholder:text-text-muted text-[13px] shadow-sm"
                         placeholder={lang === 'RU' ? "Иван Иванов" : "Ism Familiya"}
                       />
                     </div>
@@ -306,7 +306,7 @@ export default function Join() {
                       required
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="w-full pl-11 pr-4 py-3 rounded-xl bg-surface border border-border-color text-text-main focus:border-brand-primary focus:ring-4 focus:ring-brand-primary/10 outline-none transition-all placeholder:text-text-muted text-[13px] shadow-sm"
+                      className="w-full pl-11 pr-4 py-3 rounded-xl bg-surface border border-border-color text-text-main focus:border-text-muted focus:ring-4 focus:ring-text-muted/10 outline-none transition-all placeholder:text-text-muted text-[13px] shadow-sm"
                       placeholder="example@asthea.com"
                     />
                   </div>
@@ -321,7 +321,7 @@ export default function Join() {
                       required
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="w-full pl-11 pr-4 py-3 rounded-xl bg-surface border border-border-color text-text-main focus:border-brand-primary focus:ring-4 focus:ring-brand-primary/10 outline-none transition-all placeholder:text-text-muted text-[13px] shadow-sm"
+                      className="w-full pl-11 pr-4 py-3 rounded-xl bg-surface border border-border-color text-text-main focus:border-text-muted focus:ring-4 focus:ring-text-muted/10 outline-none transition-all placeholder:text-text-muted text-[13px] shadow-sm"
                       placeholder={lang === 'RU' ? "Минимум 6 символов" : "Kamida 6 belgi"}
                       minLength={6}
                     />
@@ -331,7 +331,7 @@ export default function Join() {
                 {!isLogin && (
                    <div className="pt-2 px-1">
                       <label className="flex items-start gap-4 group cursor-pointer">
-                        <div className={`mt-0.5 w-5 h-5 flex items-center justify-center rounded-lg border transition-all ${agreePrivacy ? 'bg-brand-primary border-brand-primary shadow-[0_0_10px_rgba(79,124,255,0.2)]' : 'bg-surface-alt border-border-color group-hover:border-text-muted'}`}>
+                        <div className={`mt-0.5 w-5 h-5 flex items-center justify-center rounded-lg border transition-all ${agreePrivacy ? 'bg-text-main border-text-main shadow-[0_0_10px_rgba(255,255,255,0.2)]' : 'bg-surface-alt border-border-color group-hover:border-text-muted'}`}>
                           {agreePrivacy && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" className="text-white"><polyline points="20 6 9 17 4 12"/></svg>}
                         </div>
                         <input 
@@ -341,7 +341,7 @@ export default function Join() {
                           onChange={(e) => setAgreePrivacy(e.target.checked)}
                         />
                         <span className="text-[12px] text-text-muted leading-relaxed group-hover:text-text-main transition-colors select-none">
-                          {lang === 'RU' ? 'Я согласен с ' : 'Men '}<button type="button" onClick={(e) => { e.stopPropagation(); setIsPrivacyModalOpen(true); }} className="text-brand-primary hover:underline font-bold">{lang === 'RU' ? 'Политикой конфиденциальности' : 'Maxfiylik siyosatiga roziman'}</button>
+                          {lang === 'RU' ? 'Я согласен с ' : 'Men '}<button type="button" onClick={(e) => { e.stopPropagation(); setIsPrivacyModalOpen(true); }} className="text-text-main hover:underline font-bold">{lang === 'RU' ? 'Политикой конфиденциальности' : 'Maxfiylik siyosatiga roziman'}</button>
                         </span>
                       </label>
                    </div>
@@ -350,7 +350,7 @@ export default function Join() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full bg-brand-primary hover:bg-brand-primary-hover text-white font-bold h-12 rounded-xl text-[14px] mt-6 transition-all shadow-lg shadow-brand-primary/20 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 group"
+                  className="w-full bg-text-main hover:bg-text-main/90 text-bg-base font-bold h-12 rounded-xl text-[14px] mt-6 transition-all shadow-sm active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 group"
                 >
                   {loading ? (
                     <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -369,7 +369,7 @@ export default function Join() {
                <div className="mt-8 text-center text-[11px] text-text-muted font-medium uppercase tracking-[0.2em] flex flex-col items-center gap-4">
                   <Link 
                     to="/welcome" 
-                    className="text-[13px] font-bold text-brand-primary hover:text-brand-secondary transition-colors underline underline-offset-4 normal-case tracking-normal"
+                    className="text-[13px] font-bold text-text-main hover:text-text-muted transition-colors underline underline-offset-4 normal-case tracking-normal"
                   >
                     Подробная информация о сайте
                   </Link>

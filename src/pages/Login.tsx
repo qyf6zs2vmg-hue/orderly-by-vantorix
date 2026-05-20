@@ -65,10 +65,10 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-bg-base flex flex-col items-center justify-center p-6 font-sans relative overflow-hidden">
+    <div className="min-h-[100dvh] md:min-h-screen bg-bg-base flex flex-col items-center justify-center p-4 md:p-6 font-sans relative overflow-hidden">
       {/* Dynamic Background */}
       <div className="absolute inset-0 z-0 pointer-events-none">
-        <div className="absolute top-[10%] right-[10%] w-[30rem] h-[30rem] bg-brand-primary/5 rounded-full blur-[100px]" />
+        <div className="absolute top-[10%] right-[10%] w-[30rem] h-[30rem] bg-text-main/5 rounded-full blur-[100px]" />
         <div className="absolute bottom-[10%] left-[10%] w-[30rem] h-[30rem] bg-brand-accent/5 rounded-full blur-[100px]" />
       </div>
 
@@ -78,9 +78,9 @@ export default function Login() {
         transition={{ duration: 0.8, ease: "easeOut" }}
         className="w-full max-w-[440px] relative z-10"
       >
-        <div className="bg-surface/80 backdrop-blur-xl card-large p-10 shadow-[0_20px_50px_rgba(17,24,39,0.05)] border border-white/20 flex flex-col items-center">
+        <div className="bg-surface/80 backdrop-blur-xl rounded-[24px] p-6 sm:p-10 border border-white/20 flex flex-col items-center">
           
-          <img src="https://drive.google.com/thumbnail?id=1Zzhxcg4wGu4HCBSmPptAhuTqb-s8yb3D&sz=w1000" alt="ASTHEA Logo" className="w-24 h-auto mb-2 object-contain" />
+          <img src="https://drive.google.com/thumbnail?id=1l7HkE_p4K09Xwkv9g9JAiFzfTuViiWvZ&sz=w1000" alt="ASTHEA Logo" className="w-24 h-auto mb-2 object-contain" />
           <h1 className="text-2xl font-black text-text-main tracking-tight mb-8">Asthea OMS</h1>
 
           <motion.div 
@@ -104,13 +104,13 @@ export default function Login() {
                 >
                   <label className="text-[12px] font-bold text-text-main uppercase tracking-wider ml-1">Email</label>
                   <div className="relative group">
-                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-brand-primary transition-colors" />
+                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-text-main transition-colors" />
                     <input
                       type="email"
                       required
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="w-full pl-11 pr-4 py-3.5 rounded-[14px] bg-bg-base/50 border border-border-color/50 text-text-main focus:bg-surface focus:border-brand-primary focus:ring-4 focus:ring-brand-primary/5 outline-none transition-all placeholder:text-text-muted/60 text-[14px] shadow-sm"
+                      className="w-full pl-11 pr-4 py-3 rounded-[12px] bg-bg-base/50 border border-border-color/50 text-text-main focus:bg-surface focus:border-text-muted focus:ring-4 focus:ring-text-muted/10 outline-none transition-all placeholder:text-text-muted/60 text-[14px] shadow-sm"
                       placeholder="Введите ваш email"
                     />
                   </div>
@@ -124,16 +124,16 @@ export default function Login() {
                 >
                   <div className="flex justify-between items-center px-1">
                      <label className="text-[12px] font-bold text-text-main uppercase tracking-wider">Пароль</label>
-                     <a href="#" className="text-[11px] font-bold text-brand-primary hover:text-brand-secondary transition-colors uppercase tracking-tight">Забыли пароль?</a>
+                     <a href="#" className="text-[11px] font-bold text-text-main hover:text-text-muted transition-colors uppercase tracking-tight">Забыли пароль?</a>
                   </div>
                   <div className="relative group">
-                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-brand-primary transition-colors" />
+                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-text-main transition-colors" />
                     <input
                       type="password"
                       required
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="w-full pl-11 pr-11 py-3.5 rounded-[14px] bg-bg-base/50 border border-border-color/50 text-text-main focus:bg-surface focus:border-brand-primary focus:ring-4 focus:ring-brand-primary/5 outline-none transition-all placeholder:text-text-muted/60 text-[14px] shadow-sm"
+                      className="w-full pl-11 pr-11 py-3 rounded-[12px] bg-bg-base/50 border border-border-color/50 text-text-main focus:bg-surface focus:border-text-muted focus:ring-4 focus:ring-text-muted/10 outline-none transition-all placeholder:text-text-muted/60 text-[14px] shadow-sm"
                       placeholder="Введите пароль"
                     />
                      <button type="button" className="absolute right-4 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-main transition-colors">
@@ -147,28 +147,28 @@ export default function Login() {
                   whileTap={{ scale: 0.98 }}
                   type="submit"
                   disabled={loading}
-                  className="w-full btn-primary text-white py-4 px-6 rounded-[16px] font-bold hover:shadow-xl card-premium-hover transition-all disabled:opacity-70 flex justify-center items-center text-[15px] tracking-wide uppercase mt-8"
+                  className="w-full btn-primary text-white py-3.5 px-6 rounded-[14px] font-bold hover:shadow-xl card-premium-hover transition-all disabled:opacity-70 flex justify-center items-center text-[15px] tracking-wide uppercase mt-6"
                 >
                   {loading ? 'Вход...' : 'Войти в систему'}
                 </motion.button>
               </form>
               
-              <div className="mt-10 flex flex-col items-center gap-4">
+                  <div className="mt-8 flex flex-col items-center gap-3">
                 <div className="text-[13px] text-text-muted">
                   Нет бизнеса?{' '}
-                  <Link to="/register" className="font-bold text-brand-primary hover:text-brand-secondary transition-colors underline underline-offset-4">
+                  <Link to="/register" className="font-bold text-text-main hover:text-text-muted transition-colors underline underline-offset-4">
                     Создать компанию
                   </Link>
                 </div>
 
                 <Link 
                   to="/welcome" 
-                  className="text-[13px] font-bold text-brand-primary hover:text-brand-secondary transition-colors underline underline-offset-4 mt-2"
+                  className="text-[13px] font-bold text-text-main hover:text-text-muted transition-colors underline underline-offset-4 mt-2"
                 >
                   Подробная информация о сайте
                 </Link>
 
-                <div className="pt-6 border-t border-border-color/50 w-full text-center">
+                <div className="pt-4 border-t border-border-color/50 w-full text-center">
                     <span className="text-[10px] font-bold text-text-muted tracking-[0.3em] uppercase opacity-50">
                       © {new Date().getFullYear()} Asthea OMS
                     </span>

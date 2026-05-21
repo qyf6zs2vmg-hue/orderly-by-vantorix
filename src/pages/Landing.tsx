@@ -18,6 +18,7 @@ import { Language, translations } from '../constants/translations';
 import PrivacyPolicyModal from '../components/PrivacyPolicyModal';
 import TermsOfUseModal from '../components/TermsOfUseModal';
 import InfoSharingPolicyModal from '../components/InfoSharingPolicyModal';
+import heroImg from '../assets/hero.jpg';
 
 export default function Landing() {
   const navigate = useNavigate();
@@ -128,7 +129,7 @@ export default function Landing() {
             className="relative lg:h-[600px] flex items-center justify-center w-full"
           >
             <img 
-              src="/hero.jpg" 
+              src={heroImg} 
               alt="Asthea OMS Platform" 
               className="relative w-full max-w-[600px] rounded-[24px] shadow-2xl object-cover"
             />

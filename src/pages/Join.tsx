@@ -63,7 +63,17 @@ export default function Join() {
           if (data.blocked) {
             setInviteError(lang === 'RU' ? 'Этот инвайт-код заблокирован' : 'Ushbu taklif kodi bloklangan');
           } else if (data.used) {
-            setInviteError(lang === 'RU' ? 'Этот инвайт-код уже использован' : 'Ushbu taklif kodi allaqachon ishlatilgan');
+            if (data.businessId) {
+              const busDoc = await getDoc(doc(db, 'businesses', data.businessId));
+              if (busDoc.exists()) {
+                setInviteData({ id: inviteDoc.id, businessName: busDoc.data().name, ...data });
+              } else {
+                setInviteData({ id: inviteDoc.id, businessName: lang === 'RU' ? 'Неизвестный бизнес' : 'Noma\'lum biznes', ...data });
+              }
+            } else {
+              setInviteData({ id: inviteDoc.id, businessName: lang === 'RU' ? 'Неизвестный бизнес' : 'Noma\'lum biznes', ...data });
+            }
+            setIsLogin(true);
           } else {
             if (data.businessId) {
               const busDoc = await getDoc(doc(db, 'businesses', data.businessId));
@@ -119,8 +129,11 @@ export default function Join() {
           const ud = userDoc.data();
           if (ud.role === 'client') {
             if (ud.businessId !== inviteData.businessId) {
-                // Assign to this new business? 
-                // Typically you only belong to one business or we just overwrite it
+                if (inviteData.used) {
+                   setError(lang === 'RU' ? 'Вы не можете присоединиться к этому бизнесу. Инвайт код уже использован.' : 'Ushbu biznesga qoshila olmaysiz. Taklif kodi ishlatilgan.');
+                   return;
+                }
+                
                 await updateDoc(doc(db, 'users', uid), {
                     businessId: inviteData.businessId,
                     inviteCode: code,
@@ -289,20 +302,26 @@ export default function Join() {
                 </div>
               )}
               
-              <div className="flex bg-surface-alt rounded-[12px] p-1.5 mb-8 border border-border-color">
-                 <button
-                   onClick={() => { setIsLogin(false); setError(''); }}
-                   className={`flex-1 py-2 text-[13px] font-bold rounded-lg transition-all ${!isLogin ? 'bg-surface shadow-sm text-text-main' : 'text-text-muted hover:text-text-main'}`}
-                 >
-                   {lang === 'RU' ? 'Регистрация' : 'Ro\'yxatdan o\'tish'}
-                 </button>
-                 <button
-                   onClick={() => { setIsLogin(true); setError(''); }}
-                   className={`flex-1 py-2 text-[13px] font-bold rounded-lg transition-all ${isLogin ? 'bg-surface shadow-sm text-text-main' : 'text-text-muted hover:text-text-main'}`}
-                 >
-                   {lang === 'RU' ? 'Вход' : 'Kirish'}
-                 </button>
-              </div>
+              {inviteData?.used ? (
+                 <div className="bg-surface-alt/50 border border-border-color text-text-muted p-3 rounded-[10px] text-[13px] font-medium mb-6 text-center">
+                    {lang === 'RU' ? 'Этот инвайт-код уже использован. Если это ваш код, пожалуйста, войдите в систему.' : 'Ushbu taklif kodi allaqachon ishlatilgan. Agar bu sizning kodingiz bo\'lsa, tizimga kiring.'}
+                 </div>
+              ) : (
+                <div className="flex bg-surface-alt rounded-[12px] p-1.5 mb-8 border border-border-color">
+                   <button
+                     onClick={() => { setIsLogin(false); setError(''); }}
+                     className={`flex-1 py-2 text-[13px] font-bold rounded-lg transition-all ${!isLogin ? 'bg-surface shadow-sm text-text-main' : 'text-text-muted hover:text-text-main'}`}
+                   >
+                     {lang === 'RU' ? 'Регистрация' : 'Ro\'yxatdan o\'tish'}
+                   </button>
+                   <button
+                     onClick={() => { setIsLogin(true); setError(''); }}
+                     className={`flex-1 py-2 text-[13px] font-bold rounded-lg transition-all ${isLogin ? 'bg-surface shadow-sm text-text-main' : 'text-text-muted hover:text-text-main'}`}
+                   >
+                     {lang === 'RU' ? 'Вход' : 'Kirish'}
+                   </button>
+                </div>
+              )}
 
               <form onSubmit={handleJoinSubmit} className="space-y-4">
                 {!isLogin && (

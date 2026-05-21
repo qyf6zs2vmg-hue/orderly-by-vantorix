@@ -215,7 +215,7 @@ export default function AdminDashboard() {
         
         {/* User Profile Summary in Sidebar */}
         <div className="flex items-center gap-2 px-3 mb-8">
-           <img src="https://drive.google.com/thumbnail?id=1l7HkE_p4K09Xwkv9g9JAiFzfTuViiWvZ&sz=w1000" alt="ASTHEA Logo" className="w-8 h-auto object-contain" />
+           <img src="/logo.png" alt="ASTHEA Logo" className="w-8 h-auto object-contain" />
            <span className="font-bold tracking-widest uppercase text-[15px] text-text-main">Asthea OMS</span>
         </div>
 
@@ -367,8 +367,8 @@ export default function AdminDashboard() {
                 </button>
               </div>
               
-              <div className="bg-surface border border-border-color rounded-[32px] shadow-accent card-premium backdrop-blur-sm overflow-hidden">
-                <div className="overflow-x-auto w-full max-w-full">
+              <div className="bg-surface border border-border-color rounded-[32px] shadow-accent card-premium backdrop-blur-sm relative">
+                <div className="overflow-x-auto w-full custom-scrollbar rounded-[32px]">
                   <table className="w-full text-left text-[14px] min-w-[700px]">
                     <thead className="bg-surface-alt/50 border-b border-border-color">
                       <tr>
@@ -444,8 +444,8 @@ export default function AdminDashboard() {
                 <p className="text-text-muted mt-1 text-[13px]">Новые заявки от клиентов на подключение к системе.</p>
               </div>
 
-              <div className="bg-surface rounded-2xl border border-border-color shadow-sm overflow-hidden">
-                <div className="overflow-x-auto">
+              <div className="bg-surface border border-border-color rounded-[32px] shadow-accent card-premium backdrop-blur-sm relative">
+                <div className="overflow-x-auto w-full custom-scrollbar rounded-[32px]">
                   <table className="w-full text-left border-collapse">
                     <thead className="bg-surface-alt/50 border-b border-border-color">
                       <tr>
@@ -503,8 +503,8 @@ export default function AdminDashboard() {
                 <h1 className="text-[24px] font-bold text-text-main tracking-tight">Клиенты</h1>
                 <p className="text-[13px] text-text-muted mt-1">Управление активными клиентами и их доступом</p>
               </div>
-              <div className="bg-surface border border-border-color rounded-[32px] shadow-accent overflow-hidden card-premium backdrop-blur-sm">
-                <div className="overflow-x-auto w-full max-w-full">
+              <div className="bg-surface border border-border-color rounded-[32px] shadow-accent card-premium backdrop-blur-sm relative">
+                <div className="overflow-x-auto w-full custom-scrollbar rounded-[32px]">
                   <table className="w-full text-left text-[14px] min-w-[700px]">
                     <thead className="bg-surface-alt/50 border-b border-border-color">
                       <tr>
@@ -558,7 +558,8 @@ export default function AdminDashboard() {
                 <h1 className="text-[24px] font-bold text-text-main tracking-tight">Заказы</h1>
                 <p className="text-[13px] text-text-muted mt-1">Все транзакции и их статус</p>
               </div>
-              <div className="bg-surface border border-border-color rounded-[16px] shadow-sm overflow-x-auto card-premium">
+              <div className="bg-surface border border-border-color rounded-[32px] shadow-accent card-premium backdrop-blur-sm relative">
+                <div className="overflow-x-auto w-full custom-scrollbar rounded-[32px]">
                 <table className="w-full text-left text-[13px] min-w-[700px]">
                   <thead className="bg-surface-alt border-b border-border-color">
                     <tr>
@@ -587,6 +588,7 @@ export default function AdminDashboard() {
                     )}
                   </tbody>
                 </table>
+                </div>
               </div>
             </div>
           )}

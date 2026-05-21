@@ -127,44 +127,11 @@ export default function Landing() {
             transition={{ duration: 1, delay: 0.2 }}
             className="relative lg:h-[600px] flex items-center justify-center w-full"
           >
-            {/* Minimalist Dashboard Conceptual UI */}
-            <div className="relative w-full aspect-[4/3] max-w-[600px] bg-surface rounded-[24px] border border-border-color shadow-sm overflow-hidden flex flex-col p-6 gap-6">
-               {/* Header strip */}
-               <div className="w-full flex justify-between items-center border-b border-border-color pb-6">
-                 <div className="flex gap-2.5">
-                   <div className="w-3 h-3 rounded-full border border-border-color bg-bg-base" />
-                   <div className="w-3 h-3 rounded-full border border-border-color bg-bg-base" />
-                 </div>
-                 <div className="w-32 h-2.5 bg-border-color rounded-full opacity-50" />
-               </div>
-               
-               {/* Content area */}
-               <div className="flex-1 flex gap-6 mt-2">
-                 {/* Sidebar */}
-                 <div className="w-1/4 bg-surface-alt rounded-xl h-full border border-border-color opacity-30 flex flex-col gap-4 p-4">
-                   <div className="w-full h-2 bg-text-muted rounded-full opacity-20" />
-                   <div className="w-3/4 h-2 bg-text-muted rounded-full opacity-20" />
-                   <div className="w-5/6 h-2 bg-text-muted rounded-full opacity-20" />
-                 </div>
-                 
-                 {/* Main Column */}
-                 <div className="flex-1 flex flex-col gap-6">
-                   {/* Top Stats */}
-                   <div className="flex gap-4">
-                     <div className="flex-1 bg-surface-alt rounded-xl h-24 border border-border-color opacity-30 flex items-center justify-center">
-                       <div className="w-8 h-8 rounded-full border-2 border-text-main opacity-50" />
-                     </div>
-                     <div className="flex-1 bg-surface-alt rounded-xl h-24 border border-border-color opacity-30" />
-                   </div>
-                   {/* Main Graph Area */}
-                   <div className="w-full flex-1 bg-surface-alt rounded-xl border border-border-color opacity-30 relative overflow-hidden">
-                     <div className="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-brand-primary/10 to-transparent" />
-                     <div className="absolute bottom-4 left-4 right-4 h-[1px] bg-brand-primary/20" />
-                     <div className="absolute top-4 left-4 w-1/4 h-2 bg-text-muted rounded-full opacity-20" />
-                   </div>
-                 </div>
-               </div>
-            </div>
+            <img 
+              src="/hero.jpg" 
+              alt="Asthea OMS Platform" 
+              className="relative w-full max-w-[600px] rounded-[24px] shadow-2xl object-cover"
+            />
           </motion.div>
         </section>
 

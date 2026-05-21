@@ -6,6 +6,7 @@ import { useNavigate, useSearchParams, useParams, Navigate, Link } from 'react-r
 import { Lock, Mail, User as UserIcon, EyeOff, Building2, Globe, ChevronRight, Phone } from 'lucide-react';
 import { useAuth } from '../lib/AuthContext';
 import PrivacyPolicyContent from '../components/PrivacyPolicyContent';
+import { TermsOfUseContent } from '../components/TermsOfUseContent';
 import { SplashScreen } from '../components/SplashScreen';
 import { SecurityConfirmationModal } from '../components/SecurityConfirmationModal';
 import { LanguageToggle } from '../components/LanguageToggle';
@@ -30,6 +31,7 @@ export default function Join() {
   const [loading, setLoading] = useState(false);
   const [agreePrivacy, setAgreePrivacy] = useState(false);
   const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState(false);
+  const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
   const [isSecurityModalOpen, setIsSecurityModalOpen] = useState(false);
   const [isLogin, setIsLogin] = useState(false);
   
@@ -179,6 +181,27 @@ export default function Join() {
       <div className="min-h-screen bg-bg-base flex flex-col items-center justify-center p-6 text-center font-sans">
         <div className="bg-brand-danger/10 text-brand-danger p-6 rounded-[16px] max-w-[420px] w-full font-medium shadow-sm border border-brand-danger/20">
           {inviteError}
+        </div>
+      </div>
+    );
+  }
+
+  if (isTermsModalOpen) {
+    return (
+      <div className="min-h-screen bg-bg-base flex flex-col p-6 font-sans relative overflow-x-hidden">
+        <div className="max-w-3xl mx-auto w-full pt-10 pb-20 relative z-10">
+          <button 
+            onClick={() => setIsTermsModalOpen(false)} 
+            className="mb-6 flex items-center text-text-muted hover:text-text-main transition-colors text-[13px] font-medium"
+          >
+             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1.5 w-4 h-4"><path d="m15 18-6-6 6-6"/></svg>
+             Назад к регистрации
+          </button>
+          <div className="bg-surface rounded-[24px] p-8 sm:p-10 shadow-[0_4px_12px_rgba(16,24,40,0.06)] border border-border-color">
+             <div className="text-text-muted leading-relaxed text-[13px]">
+               <TermsOfUseContent lang={lang} />
+             </div>
+          </div>
         </div>
       </div>
     );
@@ -359,7 +382,7 @@ export default function Join() {
                           onChange={(e) => setAgreePrivacy(e.target.checked)}
                         />
                         <span className="text-[12px] text-text-muted leading-relaxed group-hover:text-text-main transition-colors select-none">
-                          {lang === 'RU' ? 'Я согласен с ' : 'Men '}<button type="button" onClick={(e) => { e.stopPropagation(); setIsPrivacyModalOpen(true); }} className="text-text-main hover:underline font-bold">{lang === 'RU' ? 'Политикой конфиденциальности' : 'Maxfiylik siyosatiga roziman'}</button>
+                          {lang === 'RU' ? 'Я согласен с ' : 'Men '}<button type="button" onClick={(e) => { e.stopPropagation(); setIsPrivacyModalOpen(true); }} className="text-text-main hover:underline font-bold">{lang === 'RU' ? 'Политикой конфиденциальности' : 'Maxfiylik siyosatiga'}</button> {lang === 'RU' ? 'и' : 'va'} <button type="button" onClick={(e) => { e.stopPropagation(); setIsTermsModalOpen(true); }} className="text-text-main hover:underline font-bold">{lang === 'RU' ? 'Условиями использования' : 'Foydalanish shartlariga roziman'}</button>
                         </span>
                       </label>
                    </div>

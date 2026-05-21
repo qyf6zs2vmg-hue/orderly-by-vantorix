@@ -3,7 +3,7 @@ import { collection, onSnapshot, query, where, doc, updateDoc, deleteDoc, setDoc
 import { db } from '../lib/firebase';
 import { useAuth } from '../lib/AuthContext';
 import { ThemeToggle } from '../components/ThemeToggle';
-import { LogOut, Key, Users, Copy, RefreshCcw, ShoppingCart, Settings, Bell, Mail, ChevronDown, Search, Plus, Store, Box, Menu, Shield, BarChart3, Globe, User, FileText, Palette } from 'lucide-react';
+import { LogOut, Key, Users, Copy, RefreshCcw, ShoppingCart, Settings, Bell, Mail, ChevronDown, Search, Plus, Store, Box, Menu, Shield, BarChart3, Globe, User, FileText, Palette, ClipboardList, Check, X } from 'lucide-react';
 import clsx from 'clsx';
 import PrivacyPolicyContent from '../components/PrivacyPolicyContent';
 import { SecuritySettings } from '../components/SecuritySettings';
@@ -51,6 +51,7 @@ export default function AdminDashboard() {
     }
   };
   const [activeUsers, setActiveUsers] = useState<any[]>([]);
+  const [pendingUsers, setPendingUsers] = useState<any[]>([]);
   const [orders, setOrders] = useState<any[]>([]);
   const [products, setProducts] = useState<any[]>([]);
   const [editingClient, setEditingClient] = useState<{id: string, name: string} | null>(null);
@@ -58,6 +59,7 @@ export default function AdminDashboard() {
   
   // Products Management
   const [showAddProduct, setShowAddProduct] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<any | null>(null);
   const [integrations, setIntegrations] = useState({bitrixApi: '', oneCApi: ''});
   const [newProduct, setNewProduct] = useState({ name: '', description: '', price: 0, stock: 0, imageBase64: '' });
 
@@ -70,7 +72,8 @@ export default function AdminDashboard() {
     const qUsers = query(collection(db, 'users'), where('businessId', '==', appUser.businessId));
     const unsubUsers = onSnapshot(qUsers, (snap) => {
       const allUsers = snap.docs.map(d => ({id: d.id, ...d.data()}));
-      setActiveUsers(allUsers.filter((u: any) => u.role === 'client'));
+      setActiveUsers(allUsers.filter((u: any) => u.role === 'client' && u.status !== 'pending'));
+      setPendingUsers(allUsers.filter((u: any) => u.role === 'client' && u.status === 'pending'));
     });
 
     const qOrders = query(collection(db, 'orders'), where('businessId', '==', appUser.businessId));
@@ -161,6 +164,34 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleEditProductSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingProduct) return;
+    try {
+      await updateDoc(doc(db, 'products', editingProduct.id), {
+        name: editingProduct.name,
+        description: editingProduct.description,
+        price: Number(editingProduct.price),
+        stock: Number(editingProduct.stock),
+        imageUrl: editingProduct.imageBase64 || editingProduct.imageUrl
+      });
+      setEditingProduct(null);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleEditImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && editingProduct) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setEditingProduct({ ...editingProduct, imageBase64: reader.result as string });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleSaveIntegrations = async () => {
     // Mock save logic for integrations
     alert(lang === 'RU' ? 'Интеграции успешно сохранены' : 'Integratsiya muvaffaqiyatli saqlandi');
@@ -207,6 +238,16 @@ export default function AdminDashboard() {
           >
             <Key className={clsx("w-4 h-4 mr-3 transition-transform", activeTab === 'invites' ? "text-text-main scale-110" : "text-text-muted")} />
             {t.tabs.invites}
+          </button>
+          <button
+            onClick={() => setActiveTab('requests')}
+            className={clsx("flex items-center justify-between px-4 py-3 rounded-xl text-[13px] font-bold transition-all duration-200 border-2", activeTab === 'requests' ? "bg-surface-alt text-text-main border-border-color shadow-sm" : "text-text-muted hover:text-text-main hover:bg-surface-alt border-transparent")}
+          >
+            <div className="flex items-center">
+              <ClipboardList className={clsx("w-4 h-4 mr-3 transition-transform", activeTab === 'requests' ? "text-text-main scale-110" : "text-text-muted")} />
+              {t.tabs.requests}
+            </div>
+            {pendingUsers.length > 0 && <span className="bg-brand-primary text-white text-[10px] font-bold px-2 py-0.5 rounded-full">{pendingUsers.length}</span>}
           </button>
           <button
             onClick={() => setActiveTab('users')}
@@ -326,17 +367,18 @@ export default function AdminDashboard() {
                 </button>
               </div>
               
-              <div className="bg-surface border border-border-color rounded-[32px] overflow-hidden shadow-accent card-premium backdrop-blur-sm">
-                <table className="w-full text-left text-[14px]">
-                  <thead className="bg-surface-alt/50 border-b border-border-color">
-                    <tr>
-                      <th className="px-8 py-5 font-bold text-text-muted uppercase text-[11px] tracking-[0.2em]">Код / Ссылка</th>
-                      <th className="px-8 py-5 font-bold text-text-muted uppercase text-[11px] tracking-[0.2em]">Статус</th>
-                      <th className="px-8 py-5 font-bold text-text-muted uppercase text-[11px] tracking-[0.2em]">Создан</th>
-                      <th className="px-8 py-5 font-bold text-text-muted uppercase text-[11px] tracking-[0.2em] text-right">Действия</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border-color/50 text-text-main">
+              <div className="bg-surface border border-border-color rounded-[32px] shadow-accent card-premium backdrop-blur-sm overflow-hidden">
+                <div className="overflow-x-auto w-full max-w-full">
+                  <table className="w-full text-left text-[14px] min-w-[700px]">
+                    <thead className="bg-surface-alt/50 border-b border-border-color">
+                      <tr>
+                        <th className="px-8 py-5 font-bold text-text-muted uppercase text-[11px] tracking-[0.2em] min-w-[300px]">Код / Ссылка</th>
+                        <th className="px-8 py-5 font-bold text-text-muted uppercase text-[11px] tracking-[0.2em] whitespace-nowrap">Статус</th>
+                        <th className="px-8 py-5 font-bold text-text-muted uppercase text-[11px] tracking-[0.2em] whitespace-nowrap">Создан</th>
+                        <th className="px-8 py-5 font-bold text-text-muted uppercase text-[11px] tracking-[0.2em] text-right whitespace-nowrap">Действия</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border-color/50 text-text-main">
                     {invites.sort((a,b) => b.createdAt - a.createdAt).map(invite => (
                       <tr key={invite.id} className="hover:bg-surface-alt/30 transition-all group">
                         <td className="px-8 py-5 text-text-main">
@@ -389,6 +431,67 @@ export default function AdminDashboard() {
                     )}
                   </tbody>
                 </table>
+               </div>
+              </div>
+            </div>
+          )}
+
+          {/* Requests Tab */}
+          {activeTab === 'requests' && (
+            <div className="max-w-5xl w-full mx-auto animate-in fade-in duration-300">
+              <div className="mb-6">
+                <h2 className="text-2xl font-black text-text-main tracking-tight">{t.tabs.requests}</h2>
+                <p className="text-text-muted mt-1 text-[13px]">Новые заявки от клиентов на подключение к системе.</p>
+              </div>
+
+              <div className="bg-surface rounded-2xl border border-border-color shadow-sm overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse">
+                    <thead className="bg-surface-alt/50 border-b border-border-color">
+                      <tr>
+                        <th className="px-8 py-5 font-bold text-text-muted uppercase text-[11px] tracking-[0.2em]">Имя</th>
+                        <th className="px-8 py-5 font-bold text-text-muted uppercase text-[11px] tracking-[0.2em]">Email</th>
+                        <th className="px-8 py-5 font-bold text-text-muted uppercase text-[11px] tracking-[0.2em]">Телефон</th>
+                        <th className="px-8 py-5 font-bold text-text-muted text-right uppercase text-[11px] tracking-[0.2em]">Действия</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border-color/50">
+                      {pendingUsers.length === 0 ? (
+                        <tr>
+                          <td colSpan={4} className="px-8 py-12 text-center text-text-muted font-medium">Нет новых заявок</td>
+                        </tr>
+                      ) : (
+                        pendingUsers.map(user => (
+                          <tr key={user.id} className="hover:bg-surface-alt/30 transition-colors">
+                            <td className="px-8 py-5">
+                              <div className="font-bold tracking-tight">{user.name}</div>
+                            </td>
+                            <td className="px-8 py-5 text-text-muted font-medium">{user.email}</td>
+                            <td className="px-8 py-5 text-text-muted font-medium">{user.phone || '—'}</td>
+                            <td className="px-8 py-5 text-right">
+                              <div className="flex justify-end gap-2">
+                                <button 
+                                  onClick={() => handleApproveUser(user.id)}
+                                  className="w-8 h-8 rounded-lg bg-surface hover:bg-brand-success/10 border border-border-color text-text-muted hover:text-brand-success transition-colors flex items-center justify-center"
+                                  title="Принять"
+                                >
+                                  <Check className="w-4 h-4" />
+                                </button>
+                                <button 
+                                  onClick={() => handleRejectUser(user.id)}
+                                  className="w-8 h-8 rounded-lg bg-surface hover:bg-brand-danger/10 border border-border-color text-text-muted hover:text-brand-danger transition-colors flex items-center justify-center"
+                                  title="Отклонить"
+                                >
+                                  <X className="w-4 h-4" />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
           )}
@@ -400,18 +503,19 @@ export default function AdminDashboard() {
                 <h1 className="text-[24px] font-bold text-text-main tracking-tight">Клиенты</h1>
                 <p className="text-[13px] text-text-muted mt-1">Управление активными клиентами и их доступом</p>
               </div>
-              <div className="bg-surface border border-border-color rounded-[32px] shadow-accent overflow-x-auto card-premium backdrop-blur-sm">
-                <table className="w-full text-left text-[14px] min-w-[600px]">
-                  <thead className="bg-surface-alt/50 border-b border-border-color">
-                    <tr>
-                      <th className="px-8 py-5 font-bold text-text-muted uppercase text-[11px] tracking-[0.2em]">Имя</th>
-                      <th className="px-8 py-5 font-bold text-text-muted uppercase text-[11px] tracking-[0.2em]">Email</th>
-                      <th className="px-8 py-5 font-bold text-text-muted uppercase text-[11px] tracking-[0.2em]">Телефон</th>
-                      <th className="px-8 py-5 font-bold text-text-muted uppercase text-[11px] tracking-[0.2em]">Статус</th>
-                      <th className="px-8 py-5 font-bold text-text-muted text-right uppercase text-[11px] tracking-[0.2em]">Действия</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border-color/50 text-text-main">
+              <div className="bg-surface border border-border-color rounded-[32px] shadow-accent overflow-hidden card-premium backdrop-blur-sm">
+                <div className="overflow-x-auto w-full max-w-full">
+                  <table className="w-full text-left text-[14px] min-w-[700px]">
+                    <thead className="bg-surface-alt/50 border-b border-border-color">
+                      <tr>
+                        <th className="px-8 py-5 font-bold text-text-muted uppercase text-[11px] tracking-[0.2em] whitespace-nowrap min-w-[200px]">Имя</th>
+                        <th className="px-8 py-5 font-bold text-text-muted uppercase text-[11px] tracking-[0.2em] whitespace-nowrap">Email</th>
+                        <th className="px-8 py-5 font-bold text-text-muted uppercase text-[11px] tracking-[0.2em] whitespace-nowrap">Телефон</th>
+                        <th className="px-8 py-5 font-bold text-text-muted uppercase text-[11px] tracking-[0.2em] whitespace-nowrap">Статус</th>
+                        <th className="px-8 py-5 font-bold text-text-muted text-right uppercase text-[11px] tracking-[0.2em] whitespace-nowrap">Действия</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border-color/50 text-text-main">
                     {activeUsers.map(user => (
                       <tr key={user.id} className="hover:bg-surface-alt/30 transition-all">
                         <td className="px-8 py-5 text-text-main">
@@ -442,6 +546,7 @@ export default function AdminDashboard() {
                     )}
                   </tbody>
                 </table>
+                </div>
               </div>
             </div>
           )}
@@ -539,23 +644,46 @@ export default function AdminDashboard() {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                       {products.map(product => (
                         <div key={product.id} className="bg-surface p-6 rounded-[32px] border border-border-color flex flex-col gap-4 shadow-sm group">
-                          {product.imageUrl ? (
-                             <div className="w-full h-40 bg-surface-alt rounded-2xl overflow-hidden border border-border-color mb-2 shrink-0">
-                               <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
-                             </div>
+                          {editingProduct?.id === product.id ? (
+                            <form onSubmit={handleEditProductSubmit} className="flex flex-col gap-3">
+                              <input type="text" required value={editingProduct.name} onChange={e => setEditingProduct({...editingProduct, name: e.target.value})} className="w-full bg-surface-alt border border-border-color rounded-[10px] py-1.5 px-3 text-[13px] text-text-main focus:border-text-muted outline-none transition-all" placeholder="Название товара" />
+                              <textarea required value={editingProduct.description} onChange={e => setEditingProduct({...editingProduct, description: e.target.value})} rows={2} className="w-full bg-surface-alt border border-border-color rounded-[10px] py-1.5 px-3 text-[13px] text-text-main focus:border-text-muted outline-none transition-all resize-none" placeholder="Описание" />
+                              <div className="grid grid-cols-2 gap-2">
+                                <input type="number" required min="0" value={editingProduct.price} onChange={e => setEditingProduct({...editingProduct, price: Number(e.target.value)})} className="w-full bg-surface-alt border border-border-color rounded-[10px] py-1.5 px-3 text-[13px] text-text-main" placeholder="Цена ($)" title="Цена" />
+                                <input type="number" required min="0" value={editingProduct.stock} onChange={e => setEditingProduct({...editingProduct, stock: Number(e.target.value)})} className="w-full bg-surface-alt border border-border-color rounded-[10px] py-1.5 px-3 text-[13px] text-text-main" placeholder="Остаток" title="Остаток" />
+                              </div>
+                              <input type="file" accept="image/*" onChange={handleEditImageUpload} className="block w-full text-[11px] text-text-muted file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border file:border-border-color file:text-[11px] file:bg-surface-alt file:text-text-main hover:file:bg-surface cursor-pointer" />
+                              <div className="flex gap-2 justify-end mt-2">
+                                <button type="button" onClick={() => setEditingProduct(null)} className="px-3 py-1.5 rounded-[8px] bg-surface-alt text-text-muted text-[12px] font-bold">Отмена</button>
+                                <button type="submit" className="px-3 py-1.5 rounded-[8px] bg-brand-primary text-white text-[12px] font-bold">Сохранить</button>
+                              </div>
+                            </form>
                           ) : (
-                             <div className="w-full h-40 bg-surface-alt rounded-2xl flex items-center justify-center border border-border-color mb-2 text-text-muted shrink-0">
-                               <Box className="w-10 h-10 opacity-30" />
-                             </div>
+                            <>
+                              {product.imageUrl ? (
+                                <div className="w-full h-40 bg-surface-alt rounded-2xl overflow-hidden border border-border-color mb-2 shrink-0 relative">
+                                  <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
+                                </div>
+                              ) : (
+                                <div className="w-full h-40 bg-surface-alt rounded-2xl flex items-center justify-center border border-border-color mb-2 text-text-muted shrink-0 relative">
+                                  <Box className="w-10 h-10 opacity-30" />
+                                </div>
+                              )}
+                              <div className="flex-1">
+                                <h3 className="text-text-main font-bold text-[16px] leading-tight mb-2">{product.name}</h3>
+                                <p className="text-[12px] text-text-muted font-medium line-clamp-3 leading-relaxed">{product.description || 'Нет описания'}</p>
+                              </div>
+                              <div className="mt-auto flex items-center justify-between pt-4 border-t border-border-color/50">
+                                <div className="text-text-main font-black text-xl tracking-tighter">${product.price.toLocaleString()}</div>
+                                <div className="flex items-center gap-2">
+                                  <div className="bg-surface-alt px-3 py-1 rounded-full text-[11px] font-black uppercase text-text-muted tracking-widest">{product.stock} шт.</div>
+                                  <button onClick={() => setEditingProduct({...product})} className="w-8 h-8 rounded-full bg-surface-alt hover:bg-surface border border-border-color flex items-center justify-center transition-colors text-text-muted hover:text-text-main" title="Редактировать">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
+                                  </button>
+                                </div>
+                              </div>
+                            </>
                           )}
-                          <div className="flex-1">
-                            <h3 className="text-text-main font-bold text-[16px] leading-tight mb-2">{product.name}</h3>
-                            <p className="text-[12px] text-text-muted font-medium line-clamp-3 leading-relaxed">{product.description || 'Нет описания'}</p>
-                          </div>
-                          <div className="mt-auto flex items-center justify-between pt-4 border-t border-border-color/50">
-                            <div className="text-text-main font-black text-xl tracking-tighter">${product.price.toLocaleString()}</div>
-                            <div className="bg-surface-alt px-3 py-1 rounded-full text-[11px] font-black uppercase text-text-muted tracking-widest">{product.stock} шт.</div>
-                          </div>
                         </div>
                       ))}
                     </div>

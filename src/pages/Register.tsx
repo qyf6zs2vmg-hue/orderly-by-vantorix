@@ -6,6 +6,7 @@ import { Link, useNavigate, Navigate } from 'react-router-dom';
 import { useAuth } from '../lib/AuthContext';
 import { Lock, Mail, User as UserIcon, EyeOff, Building2, Globe } from 'lucide-react';
 import PrivacyPolicyContent from '../components/PrivacyPolicyContent';
+import { TermsOfUseContent } from '../components/TermsOfUseContent';
 import { LanguageToggle } from '../components/LanguageToggle';
 import { translations, Language } from '../constants/translations';
 
@@ -20,6 +21,7 @@ export default function Register() {
   const [loading, setLoading] = useState(false);
   const [agreePrivacy, setAgreePrivacy] = useState(false);
   const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState(false);
+  const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
   const [lang, setLang] = useState<Language>('RU');
   const t = translations[lang];
   const navigate = useNavigate();
@@ -76,6 +78,27 @@ export default function Register() {
       setLoading(false);
     }
   };
+
+  if (isTermsModalOpen) {
+    return (
+      <div className="min-h-screen bg-bg-base flex flex-col p-6 font-sans relative overflow-x-hidden">
+        <div className="max-w-3xl mx-auto w-full pt-10 pb-20 relative z-10">
+          <button 
+            onClick={() => setIsTermsModalOpen(false)} 
+            className="mb-6 flex items-center text-text-muted hover:text-text-main transition-colors text-sm font-medium"
+          >
+             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1.5 w-4 h-4"><path d="m15 18-6-6 6-6"/></svg>
+             {lang === 'RU' ? 'Назад к регистрации' : 'Ro\'yxatdan o\'tishga qaytish'}
+          </button>
+          <div className="bg-surface rounded-[24px] p-8 sm:p-10 shadow-[0_4px_12px_rgba(16,24,40,0.06)] border border-border-color">
+             <div className="text-text-muted leading-relaxed text-[13px]">
+               <TermsOfUseContent lang={lang} />
+             </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (isPrivacyModalOpen) {
     return (
@@ -223,7 +246,7 @@ export default function Register() {
                         onChange={(e) => setAgreePrivacy(e.target.checked)}
                       />
                       <span className="text-[12px] text-text-muted leading-relaxed group-hover:text-text-main transition-colors select-none">
-                        {lang === 'RU' ? 'Я согласен с ' : 'Men '}<button type="button" onClick={(e) => { e.stopPropagation(); setIsPrivacyModalOpen(true); }} className="text-text-main hover:underline font-bold">{lang === 'RU' ? 'Политикой конфиденциальности' : 'Maxfiylik siyosatiga roziman'}</button>
+                        {lang === 'RU' ? 'Я согласен с ' : 'Men '}<button type="button" onClick={(e) => { e.stopPropagation(); setIsPrivacyModalOpen(true); }} className="text-text-main hover:underline font-bold">{lang === 'RU' ? 'Политикой конфиденциальности' : 'Maxfiylik siyosatiga'}</button> {lang === 'RU' ? 'и' : 'va'} <button type="button" onClick={(e) => { e.stopPropagation(); setIsTermsModalOpen(true); }} className="text-text-main hover:underline font-bold">{lang === 'RU' ? 'Условиями использования' : 'Foydalanish shartlariga roziman'}</button>
                       </span>
                     </label>
                 </motion.div>

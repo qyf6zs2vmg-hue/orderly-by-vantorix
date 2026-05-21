@@ -156,8 +156,8 @@ export default function ClientDashboard() {
         setTimeout(() => {
           setCheckoutState('idle');
           setActiveTab('active');
-        }, 4500);
-      }, 5500);
+        }, 3000);
+      }, 3000);
     } catch (err) {
       console.error(err);
       setCheckoutState('idle');
@@ -179,7 +179,15 @@ export default function ClientDashboard() {
             className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-bg-base"
           >
             {checkoutState === 'processing' ? (
-              <SplashScreen />
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1.1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                transition={{ duration: 1.5, repeat: Infinity, repeatType: "reverse" }}
+                className="flex flex-col items-center"
+              >
+                <img src="https://drive.google.com/thumbnail?id=1l7HkE_p4K09Xwkv9g9JAiFzfTuViiWvZ&sz=w1000" alt="ASTHEA Logo" className="w-48 h-auto object-contain" />
+              </motion.div>
             ) : (
               <motion.div 
                 initial={{ scale: 0.9, opacity: 0 }}
@@ -193,8 +201,8 @@ export default function ClientDashboard() {
                  >
                    <CheckCircle className="w-20 h-20 text-brand-success mb-6" />
                  </motion.div>
-                 <h2 className="text-2xl font-bold text-text-main tracking-tight mb-2">{lang === 'RU' ? 'Заказ успешно оформлен!' : 'Buyurtma muvaffaqiyatli rasmiylashtirildi!'}</h2>
-                 <p className="text-text-muted">{lang === 'RU' ? 'Спасибо за ваш заказ. Возвращаемся в дашборд...' : 'Buyurtmangiz uchun rahmat. Boshqaruv paneliga qaytilmoqda...'}</p>
+                 <h2 className="text-2xl font-bold text-text-main tracking-tight mb-2">Ваш заказ успешно оформлен!</h2>
+                 <p className="text-text-muted">Спасибо за покупку</p>
               </motion.div>
             )}
           </motion.div>

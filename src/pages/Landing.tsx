@@ -43,7 +43,7 @@ export default function Landing() {
       <nav className="fixed top-0 w-full z-50 border-b border-border-color bg-bg-base backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src="/logo.png" alt="ASTHEA Logo" className="w-8 h-8 object-contain" />
+            <img src="https://drive.google.com/thumbnail?id=1l7HkE_p4K09Xwkv9g9JAiFzfTuViiWvZ&sz=w1000" alt="ASTHEA Logo" className="w-8 h-8 object-contain"  referrerPolicy="no-referrer" />
             <span className="font-bold tracking-tight text-[15px] uppercase">Asthea OMS</span>
           </div>
 
@@ -273,7 +273,7 @@ export default function Landing() {
       <footer className="border-t border-border-color pt-24 pb-12 bg-surface">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex items-center gap-3 mb-6">
-             <img src="/logo.png" alt="ASTHEA Logo" className="w-8 h-8 object-contain" />
+             <img src="https://drive.google.com/thumbnail?id=1l7HkE_p4K09Xwkv9g9JAiFzfTuViiWvZ&sz=w1000" alt="ASTHEA Logo" className="w-8 h-8 object-contain"  referrerPolicy="no-referrer" />
              <span className="font-bold tracking-tight text-[15px] uppercase">Asthea OMS</span>
           </div>
           <p className="text-[13px] text-text-muted leading-relaxed font-medium mb-16 max-w-sm">

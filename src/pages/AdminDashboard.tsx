@@ -215,7 +215,7 @@ export default function AdminDashboard() {
         
         {/* User Profile Summary in Sidebar */}
         <div className="flex items-center gap-2 px-3 mb-8">
-           <img src="/logo.png" alt="ASTHEA Logo" className="w-8 h-auto object-contain" />
+           <img src="https://drive.google.com/thumbnail?id=1l7HkE_p4K09Xwkv9g9JAiFzfTuViiWvZ&sz=w1000" alt="ASTHEA Logo" className="w-8 h-auto object-contain"  referrerPolicy="no-referrer" />
            <span className="font-bold tracking-widest uppercase text-[15px] text-text-main">Asthea OMS</span>
         </div>
 

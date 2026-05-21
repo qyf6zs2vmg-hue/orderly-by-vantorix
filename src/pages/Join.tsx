@@ -291,7 +291,9 @@ export default function Join() {
           <div className="text-center mb-8 w-full flex flex-col items-center">
             <h1 className="text-[18px] font-bold text-text-main tracking-tight mb-2 text-center">{inviteData?.businessName || "Загрузка..."}</h1>
             <p className="text-[13px] text-text-muted font-medium mb-4 text-center" style={{ textWrap: "balance" }}>
-               {lang === 'RU' ? 'Завершение регистрации: заполните форму, чтобы присоединиться' : 'Ro\'yxatdan o\'tishni yakunlash: qo\'shilish uchun shaklni to\'ldiring'}
+               {inviteData?.used 
+                 ? (lang === 'RU' ? 'Вход в портал клиента' : 'Mijoz portaliga kirish') 
+                 : (lang === 'RU' ? 'Завершение регистрации: заполните форму, чтобы присоединиться' : 'Ro\'yxatdan o\'tishni yakunlash: qo\'shilish uchun shaklni to\'ldiring')}
             </p>
           </div>
 
@@ -302,11 +304,7 @@ export default function Join() {
                 </div>
               )}
               
-              {inviteData?.used ? (
-                 <div className="bg-surface-alt/50 border border-border-color text-text-muted p-3 rounded-[10px] text-[13px] font-medium mb-6 text-center">
-                    {lang === 'RU' ? 'Этот инвайт-код уже использован. Если это ваш код, пожалуйста, войдите в систему.' : 'Ushbu taklif kodi allaqachon ishlatilgan. Agar bu sizning kodingiz bo\'lsa, tizimga kiring.'}
-                 </div>
-              ) : (
+              {!inviteData?.used && (
                 <div className="flex bg-surface-alt rounded-[12px] p-1.5 mb-8 border border-border-color">
                    <button
                      onClick={() => { setIsLogin(false); setError(''); }}

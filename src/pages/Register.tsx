@@ -183,7 +183,7 @@ export default function Register() {
           className="w-full max-w-[440px] relative z-10"
         >
           <div className="bg-surface/80 backdrop-blur-xl rounded-[24px] p-6 sm:p-10 shadow-[0_20px_50px_rgba(17,24,39,0.05)] border border-white/20 flex flex-col items-center text-left">
-            <img src="/logo.png" alt="ASTHEA Logo" className="w-16 h-auto mb-2 object-contain" />
+            <img src="https://drive.google.com/thumbnail?id=1l7HkE_p4K09Xwkv9g9JAiFzfTuViiWvZ&sz=w1000" alt="ASTHEA Logo" className="w-16 h-auto mb-2 object-contain"  referrerPolicy="no-referrer" />
             <h1 className="text-xl font-black text-text-main tracking-tight mb-4">Asthea OMS</h1>
             <h3 className="text-[16px] font-black tracking-tight text-text-main mb-6 w-full uppercase text-center">{t.auth.registerTitle}</h3>
 

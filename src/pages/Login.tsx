@@ -80,7 +80,7 @@ export default function Login() {
       >
         <div className="bg-surface/80 backdrop-blur-xl rounded-[24px] p-6 sm:p-10 border border-white/20 flex flex-col items-center">
           
-          <img src="/logo.png" alt="ASTHEA Logo" className="w-24 h-auto mb-2 object-contain" />
+          <img src="https://drive.google.com/thumbnail?id=1l7HkE_p4K09Xwkv9g9JAiFzfTuViiWvZ&sz=w1000" alt="ASTHEA Logo" className="w-24 h-auto mb-2 object-contain"  referrerPolicy="no-referrer" />
           <h1 className="text-2xl font-black text-text-main tracking-tight mb-8">Asthea OMS</h1>
 
           <motion.div 

@@ -25,7 +25,9 @@ interface AuthContextType {
   appUser: AppUser | null;
   business: BusinessData | null;
   loading: boolean;
+  authError: string | null;
   logout: () => Promise<void>;
+  retryAuth: () => void;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -33,7 +35,9 @@ const AuthContext = createContext<AuthContextType>({
   appUser: null,
   business: null,
   loading: true,
+  authError: null,
   logout: async () => {},
+  retryAuth: () => {},
 });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -41,28 +45,134 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [appUser, setAppUser] = useState<AppUser | null>(null);
   const [business, setBusiness] = useState<BusinessData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [authError, setAuthError] = useState<string | null>(null);
+  const [retryTrigger, setRetryTrigger] = useState(0);
+
+  const retryAuth = () => setRetryTrigger(prev => prev + 1);
 
   useEffect(() => {
     const tg = getTelegramWebApp();
     if (tg) {
-      tg.ready();
-      tg.expand();
-      // Set theme variables 
-      document.documentElement.style.setProperty('--bg-base', tg.themeParams.bg_color || '#ffffff');
-      document.documentElement.style.setProperty('--text-main', tg.themeParams.text_color || '#000000');
-      document.documentElement.style.setProperty('--surface', tg.themeParams.secondary_bg_color || '#f4f4f5');
+      try {
+        tg.ready();
+        tg.expand();
+        // Set theme variables 
+        document.documentElement.style.setProperty('--bg-base', tg.themeParams.bg_color || '#ffffff');
+        document.documentElement.style.setProperty('--text-main', tg.themeParams.text_color || '#000000');
+        document.documentElement.style.setProperty('--surface', tg.themeParams.secondary_bg_color || '#f4f4f5');
+      } catch (e) {
+        console.error("Telegram init error:", e);
+      }
     }
   }, []);
 
   useEffect(() => {
     let unsubscribeDoc: (() => void) | null = null;
+    let isCancelled = false;
+    let authTimeout: any = null;
     
+    // Attempt Telegram auto-login separately from onAuthStateChanged
+    // because if firebaseUser is null initially, we want to actively try to authorize.
+    const authenticateWithTelegram = async () => {
+       const tg = getTelegramWebApp();
+       console.log("Init Data:", tg?.initData);
+       const tgUser = tg?.initDataUnsafe?.user;
+       
+       if (!tgUser) {
+         if (!isCancelled) {
+           setUser(null);
+           setAppUser(null);
+           setBusiness(null);
+           // Only set error if TG is actually initialized but missing user (rare). 
+           // If tg is completely missing, it's just a browser visit.
+           if (tg && tg.initData) {
+             setAuthError("Ошибка: не удалось получить профиль пользователя. Попробуйте перезапустить Mini App.");
+           } else {
+             setAuthError(null);
+           }
+           setLoading(false);
+         }
+         return;
+       }
+
+       if (!isCancelled) {
+         setLoading(true);
+         setAuthError(null);
+       }
+
+       try {
+         // Setup timeout for auth
+         const authPromise = (async () => {
+            const email = `telegram_${tgUser.id}@orderflow.internal`;
+            const password = `tg_secret_${tgUser.id}_#orderflow`;
+            try {
+               await signInWithEmailAndPassword(auth, email, password);
+               return true;
+            } catch (err: any) {
+               if (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential') {
+                  const cred = await createUserWithEmailAndPassword(auth, email, password);
+                  // Determine if there's a start_param for invite
+                  const startParam = tg.initDataUnsafe?.start_param;
+                  let businessId: string | null = null;
+                  
+                  if (startParam) {
+                     try {
+                       const inviteRef = doc(db, 'invites', startParam);
+                       const inviteDoc = await getDoc(inviteRef);
+                       if (inviteDoc.exists()) {
+                          const data = inviteDoc.data();
+                          if (!data.blocked && !data.used) {
+                             businessId = data.businessId;
+                             await updateDoc(inviteRef, { used: true });
+                          }
+                       }
+                     } catch (e) {
+                       console.error("Invite processing failed", e);
+                     }
+                  }
+                  
+                  await setDoc(doc(db, 'users', cred.user.uid), {
+                      name: [tgUser.first_name, tgUser.last_name].filter(Boolean).join(' ') || tgUser.username || 'Telegram User',
+                      email: email,
+                      role: 'client',
+                      status: businessId ? 'pending' : 'active',
+                      businessId: businessId,
+                      telegramId: tgUser.id
+                  });
+                  return true;
+               } else {
+                 throw err;
+               }
+            }
+         })();
+
+         const timeoutPromise = new Promise((_, reject) => {
+            authTimeout = setTimeout(() => reject(new Error("Timeout")), 10000);
+         });
+
+         await Promise.race([authPromise, timeoutPromise]);
+         // Wait for onAuthStateChanged to pick up the user, so we don't setLoading(false) here,
+         // unless it failed.
+       } catch (err: any) {
+         console.error("Telegram auto-login failed:", err);
+         if (!isCancelled) {
+           setAuthError(err.message === "Timeout" ? "Превышено время ожидания авторизации." : "Ошибка авторизации. Попробуйте еще раз.");
+           setLoading(false);
+         }
+       } finally {
+         if (authTimeout) clearTimeout(authTimeout);
+       }
+    };
+
     const unsubscribeAuth = onAuthStateChanged(auth, async (firebaseUser) => {
-      setLoading(true);
       if (firebaseUser) {
-        setUser(firebaseUser);
+        if (!isCancelled) {
+           setUser(firebaseUser);
+           setAuthError(null);
+        }
         
         unsubscribeDoc = onSnapshot(doc(db, 'users', firebaseUser.uid), async (userDoc) => {
+          if (isCancelled) return;
           if (userDoc.exists()) {
             const userData = userDoc.data() as Omit<AppUser, 'uid'>;
             setAppUser({ uid: firebaseUser.uid, ...userData });
@@ -70,106 +180,60 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             if (userData.businessId) {
               try {
                 const busDoc = await getDoc(doc(db, 'businesses', userData.businessId));
-                if (busDoc.exists()) {
-                  setBusiness({ id: busDoc.id, ...busDoc.data() } as BusinessData);
-                } else {
-                  setBusiness(null);
+                if (!isCancelled) {
+                   if (busDoc.exists()) {
+                     setBusiness({ id: busDoc.id, ...busDoc.data() } as BusinessData);
+                   } else {
+                     setBusiness(null);
+                   }
                 }
               } catch (err) {
                 console.error("Error fetching business:", err);
-                setBusiness(null);
+                if (!isCancelled) setBusiness(null);
               }
             } else {
-              setBusiness(null);
+              if (!isCancelled) setBusiness(null);
             }
           } else {
-            setAppUser(null);
-            setBusiness(null);
+            if (!isCancelled) {
+               setAppUser(null);
+               setBusiness(null);
+            }
           }
-          setLoading(false);
+          if (!isCancelled) setLoading(false);
         }, (error) => {
           console.error("Error fetching user data:", error);
-          setAppUser(null);
-          setBusiness(null);
-          setLoading(false);
+          if (!isCancelled) {
+             setAppUser(null);
+             setBusiness(null);
+             setLoading(false);
+          }
         });
       } else {
-        // Attempt Telegram auto-login
-        const tg = getTelegramWebApp();
-        const tgUser = tg?.initDataUnsafe?.user;
-        if (tgUser) {
-           const email = `telegram_${tgUser.id}@orderflow.internal`;
-           const password = `tg_secret_${tgUser.id}_#orderflow`;
-           try {
-              await signInWithEmailAndPassword(auth, email, password);
-           } catch (err: any) {
-              if (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential') {
-                 try {
-                    const cred = await createUserWithEmailAndPassword(auth, email, password);
-                    // Determine if there's a start_param for invite
-                    const startParam = tg.initDataUnsafe?.start_param;
-                    let businessId = null;
-                    let role = 'client';
-                    
-                    if (startParam) {
-                       try {
-                         const inviteRef = doc(db, 'invites', startParam);
-                         const inviteDoc = await getDoc(inviteRef);
-                         if (inviteDoc.exists()) {
-                            const data = inviteDoc.data();
-                            if (!data.blocked && !data.used) {
-                               businessId = data.businessId;
-                               await updateDoc(inviteRef, { used: true });
-                            }
-                         }
-                       } catch (e) {
-                         console.error("Invite processing failed", e);
-                       }
-                    }
-                    
-                    await setDoc(doc(db, 'users', cred.user.uid), {
-                        name: [tgUser.first_name, tgUser.last_name].filter(Boolean).join(' ') || tgUser.username || 'Telegram User',
-                        email: email,
-                        role: role,
-                        status: businessId ? 'pending' : 'active',
-                        businessId: businessId,
-                        telegramId: tgUser.id
-                    });
-                 } catch (createErr) {
-                    console.error("Telegram auto-signup failed", createErr);
-                    setLoading(false);
-                 }
-              } else {
-                console.error("Telegram auto-login failed", err);
-                setLoading(false);
-              }
-           }
-        } else {
-          setUser(null);
-          setAppUser(null);
-          setBusiness(null);
-          setLoading(false);
-        }
+         // User is logged out, trigger authenticateWithTelegram
+         authenticateWithTelegram();
         
-        if (unsubscribeDoc) {
-          unsubscribeDoc();
-          unsubscribeDoc = null;
-        }
+         if (unsubscribeDoc) {
+           unsubscribeDoc();
+           unsubscribeDoc = null;
+         }
       }
     });
 
     return () => {
+      isCancelled = true;
+      if (authTimeout) clearTimeout(authTimeout);
       unsubscribeAuth();
       if (unsubscribeDoc) unsubscribeDoc();
     };
-  }, []);
+  }, [retryTrigger]);
 
   const logout = async () => {
     await auth.signOut();
   };
 
   return (
-    <AuthContext.Provider value={{ user, appUser, business, loading, logout }}>
+    <AuthContext.Provider value={{ user, appUser, business, loading, authError, logout, retryAuth }}>
       {children}
     </AuthContext.Provider>
   );

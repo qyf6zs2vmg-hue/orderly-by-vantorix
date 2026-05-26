@@ -15,9 +15,10 @@ import { getTelegramWebApp } from './lib/telegram';
 import { AlertCircle } from 'lucide-react';
 
 function ProtectedRoute({ children, requiredRole }: { children: React.ReactNode, requiredRole?: 'owner' | 'client' }) {
-  const { user, appUser, loading, logout } = useAuth();
+  const { user, appUser, loading, logout, onboardingState } = useAuth();
   
   if (loading) return <SplashScreen />;
+  if (onboardingState !== 'dashboard') return <Navigate to="/welcome" replace />;
   if (!user) return <Navigate to="/welcome" replace />;
   if (!appUser) {
     return (
@@ -64,9 +65,10 @@ function MissingInvite() {
 }
 
 function HomeRedirect() {
-  const { user, appUser, loading, logout } = useAuth();
+  const { user, appUser, loading, logout, onboardingState } = useAuth();
   
   if (loading) return <SplashScreen />;
+  if (onboardingState !== 'dashboard') return <Navigate to="/welcome" replace />;
   if (!user) return <Navigate to="/welcome" replace />;
   if (!appUser) {
     return (

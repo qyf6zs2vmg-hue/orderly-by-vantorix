@@ -9,7 +9,7 @@
     --border: #EAEAEA;
     --fg-primary: #111111;
     --muted: #666666;
-    --asthea-orange: #FF5931;
+    --orderflow-orange: #FF5931;
     
     /* Legacy variables used across the project */
     --bg-site: var(--bg-primary);
@@ -19,7 +19,7 @@
     --text-main: var(--fg-primary);
     --text-muted: var(--muted);
     --border-color: var(--border);
-    --brand-primary: var(--asthea-orange);
+    --brand-primary: var(--OrderFlow-orange);
     --brand-danger: #333333;
     --brand-success: #333333;
     --brand-warning: #333333;
@@ -32,7 +32,7 @@
     --border: #262629;
     --fg-primary: #F3F3F3;
     --muted: #9A9A9A;
-    --asthea-orange: #FF5931;
+    --OrderFlow-orange: #FF5931;
     --brand-danger: #9A9A9A;
     --brand-success: #9A9A9A;
     --brand-warning: #9A9A9A;
@@ -57,7 +57,7 @@
   --color-muted: var(--muted);
   --color-text-muted: var(--muted);
   
-  --color-asthea-orange: #FF5931;
+  --color-OrderFlow-orange: #FF5931;
   --color-brand-primary: var(--brand-primary);
   --color-brand-danger: var(--brand-danger);
   --color-brand-success: var(--brand-success);
@@ -70,6 +70,14 @@ body {
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  touch-action: manipulation;
+  overscroll-behavior: none;
 }
 
 @layer utilities {
@@ -107,7 +115,7 @@ body {
   }
   
   .btn-primary:hover {
-    background-color: var(--asthea-orange);
+    background-color: var(--OrderFlow-orange);
     color: #FFFFFF;
     transform: scale(1.02);
   }

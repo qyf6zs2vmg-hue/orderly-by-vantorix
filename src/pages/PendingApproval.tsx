@@ -26,7 +26,7 @@ export default function PendingApproval() {
         </button>
 
          <div className="mt-8 text-center text-[11px] text-text-muted font-medium">
-             ASTHEA OMS © {new Date().getFullYear()} — Created by Salmon Davronov
+             OrderFlow © {new Date().getFullYear()} — Powered by BlackBridge
          </div>
       </div>
     </div>

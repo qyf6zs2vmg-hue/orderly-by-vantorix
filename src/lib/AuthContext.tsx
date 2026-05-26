@@ -1,15 +1,17 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { User as FirebaseUser, onAuthStateChanged } from 'firebase/auth';
-import { doc, getDoc, onSnapshot } from 'firebase/firestore';
+import { User as FirebaseUser, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
+import { doc, getDoc, setDoc, onSnapshot, updateDoc } from 'firebase/firestore';
 import { auth, db } from './firebase';
+import { getTelegramWebApp } from './telegram';
 
 interface AppUser {
   uid: string;
   email: string;
   role: 'owner' | 'client';
   status: 'pending' | 'active' | 'blocked';
-  businessId: string;
+  businessId?: string;
   name: string;
+  telegramId?: number;
 }
 
 interface BusinessData {
@@ -41,11 +43,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const tg = getTelegramWebApp();
+    if (tg) {
+      tg.ready();
+      tg.expand();
+      // Set theme variables 
+      document.documentElement.style.setProperty('--bg-base', tg.themeParams.bg_color || '#ffffff');
+      document.documentElement.style.setProperty('--text-main', tg.themeParams.text_color || '#000000');
+      document.documentElement.style.setProperty('--surface', tg.themeParams.secondary_bg_color || '#f4f4f5');
+    }
+  }, []);
+
+  useEffect(() => {
     let unsubscribeDoc: (() => void) | null = null;
     
-    const unsubscribeAuth = onAuthStateChanged(auth, (firebaseUser) => {
+    const unsubscribeAuth = onAuthStateChanged(auth, async (firebaseUser) => {
+      setLoading(true);
       if (firebaseUser) {
-        setLoading(true);
         setUser(firebaseUser);
         
         unsubscribeDoc = onSnapshot(doc(db, 'users', firebaseUser.uid), async (userDoc) => {
@@ -79,12 +93,64 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setBusiness(null);
           setLoading(false);
         });
-        
       } else {
-        setUser(null);
-        setAppUser(null);
-        setBusiness(null);
-        setLoading(false);
+        // Attempt Telegram auto-login
+        const tg = getTelegramWebApp();
+        const tgUser = tg?.initDataUnsafe?.user;
+        if (tgUser) {
+           const email = `telegram_${tgUser.id}@orderflow.internal`;
+           const password = `tg_secret_${tgUser.id}_#orderflow`;
+           try {
+              await signInWithEmailAndPassword(auth, email, password);
+           } catch (err: any) {
+              if (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential') {
+                 try {
+                    const cred = await createUserWithEmailAndPassword(auth, email, password);
+                    // Determine if there's a start_param for invite
+                    const startParam = tg.initDataUnsafe?.start_param;
+                    let businessId = null;
+                    let role = 'client';
+                    
+                    if (startParam) {
+                       try {
+                         const inviteRef = doc(db, 'invites', startParam);
+                         const inviteDoc = await getDoc(inviteRef);
+                         if (inviteDoc.exists()) {
+                            const data = inviteDoc.data();
+                            if (!data.blocked && !data.used) {
+                               businessId = data.businessId;
+                               await updateDoc(inviteRef, { used: true });
+                            }
+                         }
+                       } catch (e) {
+                         console.error("Invite processing failed", e);
+                       }
+                    }
+                    
+                    await setDoc(doc(db, 'users', cred.user.uid), {
+                        name: [tgUser.first_name, tgUser.last_name].filter(Boolean).join(' ') || tgUser.username || 'Telegram User',
+                        email: email,
+                        role: role,
+                        status: businessId ? 'pending' : 'active',
+                        businessId: businessId,
+                        telegramId: tgUser.id
+                    });
+                 } catch (createErr) {
+                    console.error("Telegram auto-signup failed", createErr);
+                    setLoading(false);
+                 }
+              } else {
+                console.error("Telegram auto-login failed", err);
+                setLoading(false);
+              }
+           }
+        } else {
+          setUser(null);
+          setAppUser(null);
+          setBusiness(null);
+          setLoading(false);
+        }
+        
         if (unsubscribeDoc) {
           unsubscribeDoc();
           unsubscribeDoc = null;

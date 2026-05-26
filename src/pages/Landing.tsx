@@ -1,12 +1,17 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { Shield, AlertCircle, RefreshCw } from 'lucide-react';
 import { getTelegramWebApp } from '../lib/telegram';
 import { useAuth } from '../lib/AuthContext';
+import { Navigate } from 'react-router-dom';
 
 export default function Landing() {
   const tg = getTelegramWebApp();
-  const { authError, loading, retryAuth } = useAuth();
+  const { authError, loading, retryAuth, user, appUser } = useAuth();
   
+  if (!loading && user && !authError) {
+     return <Navigate to="/" replace />;
+  }
+
   return (
     <div className="min-h-screen bg-bg-base font-sans text-text-main flex flex-col items-center justify-center p-6 text-center">
         <div className="w-20 h-20 mb-8 rounded-[24px] bg-surface flex items-center justify-center border border-border-color shadow-sm">

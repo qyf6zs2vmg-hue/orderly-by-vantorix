@@ -15,11 +15,24 @@ import { getTelegramWebApp } from './lib/telegram';
 import { AlertCircle } from 'lucide-react';
 
 function ProtectedRoute({ children, requiredRole }: { children: React.ReactNode, requiredRole?: 'owner' | 'client' }) {
-  const { user, appUser, loading } = useAuth();
+  const { user, appUser, loading, logout } = useAuth();
   
   if (loading) return <SplashScreen />;
   if (!user) return <Navigate to="/welcome" replace />;
-  if (!appUser) return <SplashScreen />;
+  if (!appUser) {
+    return (
+      <div className="h-screen flex flex-col items-center justify-center p-6 text-center font-sans">
+        <AlertCircle className="w-16 h-16 text-brand-danger mb-4 opacity-70" />
+        <h1 className="text-xl font-bold tracking-tight mb-2">Ошибка профиля</h1>
+        <p className="text-[14px] text-text-muted mb-8 leading-relaxed max-w-[260px]">
+          Не удалось загрузить данные вашего профиля. Пожалуйста, попробуйте войти заново.
+        </p>
+        <button onClick={logout} className="w-full bg-brand-danger/10 text-brand-danger font-bold py-3.5 rounded-2xl active:scale-95 transition-transform text-[14px]">
+          Выйти
+        </button>
+      </div>
+    );
+  }
 
   if (appUser.status === 'blocked') return <div className="min-h-screen flex items-center justify-center bg-bg-base text-brand-danger text-lg font-bold font-sans">Ваш аккаунт заблокирован.</div>;
 
@@ -51,11 +64,24 @@ function MissingInvite() {
 }
 
 function HomeRedirect() {
-  const { user, appUser, loading } = useAuth();
+  const { user, appUser, loading, logout } = useAuth();
   
   if (loading) return <SplashScreen />;
   if (!user) return <Navigate to="/welcome" replace />;
-  if (!appUser) return <SplashScreen />;
+  if (!appUser) {
+    return (
+      <div className="h-screen flex flex-col items-center justify-center p-6 text-center font-sans">
+        <AlertCircle className="w-16 h-16 text-brand-danger mb-4 opacity-70" />
+        <h1 className="text-xl font-bold tracking-tight mb-2">Ошибка профиля</h1>
+        <p className="text-[14px] text-text-muted mb-8 leading-relaxed max-w-[260px]">
+          Не удалось загрузить данные вашего профиля.
+        </p>
+        <button onClick={logout} className="w-full bg-brand-danger/10 text-brand-danger font-bold py-3.5 rounded-2xl active:scale-95 transition-transform text-[14px]">
+          Выйти
+        </button>
+      </div>
+    );
+  }
 
   if (appUser.role === 'owner' || appUser.role === 'admin') return <Navigate to="/admin" replace />;
   

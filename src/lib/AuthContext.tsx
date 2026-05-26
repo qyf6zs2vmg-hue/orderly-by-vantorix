@@ -105,12 +105,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
          const authPromise = (async () => {
             const email = `telegram_${tgUser.id}@orderflow.internal`;
             const password = `tg_secret_${tgUser.id}_#orderflow`;
+            console.log("Auth Request Payload:", { email, telegramId: tgUser.id });
             try {
-               await signInWithEmailAndPassword(auth, email, password);
+               const result = await signInWithEmailAndPassword(auth, email, password);
+               console.log("Auth Response (Sign In Success):", result.user.uid);
                return true;
             } catch (err: any) {
                if (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential') {
+                  console.log("Target user not found, executing rapid registration.");
                   const cred = await createUserWithEmailAndPassword(auth, email, password);
+                  console.log("Auth Response (Reg Success):", cred.user.uid);
                   // Determine if there's a start_param for invite
                   const startParam = tg.initDataUnsafe?.start_param;
                   let businessId: string | null = null;
@@ -171,8 +175,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
            setAuthError(null);
         }
         
+        let hasFiredSnapshot = false;
+        const snapshotTimeout = setTimeout(() => {
+           if (!hasFiredSnapshot && !isCancelled) {
+              setAuthError("Время ожидания профиля истекло. Проверьте сеть или повторите попытку.");
+              setLoading(false);
+           }
+        }, 12000);
+        
         unsubscribeDoc = onSnapshot(doc(db, 'users', firebaseUser.uid), async (userDoc) => {
           if (isCancelled) return;
+          hasFiredSnapshot = true;
+          clearTimeout(snapshotTimeout);
+          setAuthError(null);
+          
           if (userDoc.exists()) {
             const userData = userDoc.data() as Omit<AppUser, 'uid'>;
             setAppUser({ uid: firebaseUser.uid, ...userData });
@@ -204,6 +220,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }, (error) => {
           console.error("Error fetching user data:", error);
           if (!isCancelled) {
+             clearTimeout(snapshotTimeout);
              setAppUser(null);
              setBusiness(null);
              setLoading(false);

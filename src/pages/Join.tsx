@@ -233,7 +233,7 @@ export default function Join() {
           </button>
           <div className="bg-surface rounded-[24px] p-8 sm:p-10 shadow-[0_4px_12px_rgba(16,24,40,0.06)] border border-border-color">
              <h1 className="text-[22px] font-bold text-text-main tracking-tight mb-8">
-               {lang === 'RU' ? 'Политика конфиденциальности Asthea OMS' : 'Asthea OMS maxfiylik siyosati'}
+               {lang === 'RU' ? 'Политика конфиденциальности Relible Commerce' : 'Relible Commerce maxfiylik siyosati'}
              </h1>
              <div className="text-text-muted leading-relaxed text-[13px]">
                <PrivacyPolicyContent lang={lang} />
@@ -365,7 +365,7 @@ export default function Join() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       className="w-full pl-11 pr-4 py-3 rounded-xl bg-surface border border-border-color text-text-main focus:border-text-muted focus:ring-4 focus:ring-text-muted/10 outline-none transition-all placeholder:text-text-muted text-[13px] shadow-sm"
-                      placeholder="example@asthea.com"
+                      placeholder="example@relible.com"
                     />
                   </div>
                 </div>
@@ -431,7 +431,7 @@ export default function Join() {
                   >
                     Подробная информация о сайте
                   </Link>
-                  <span>DEVELOPED BY ASTHEA OMS</span>
+                  <span>DEVELOPED BY Relible Commerce</span>
                </div>
           </div>
         </div>

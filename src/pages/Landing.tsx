@@ -33,7 +33,7 @@ export default function Landing() {
   }, []);
 
   const handleStart = () => {
-    localStorage.setItem('asthea_visited', 'true');
+    localStorage.setItem('relible_visited', 'true');
     navigate('/register');
   };
 
@@ -43,8 +43,8 @@ export default function Landing() {
       <nav className="fixed top-0 w-full z-50 border-b border-border-color bg-bg-base backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src="https://drive.google.com/thumbnail?id=1l7HkE_p4K09Xwkv9g9JAiFzfTuViiWvZ&sz=w1000" alt="ASTHEA Logo" className="w-8 h-8 object-contain"  referrerPolicy="no-referrer" />
-            <span className="font-bold tracking-tight text-[15px] uppercase">Asthea OMS</span>
+            <svg width="100%" height="auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-8 h-8 object-contain text-brand-primary"><path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4"/><path d="M2 7h20"/><path d="M22 7v3a2 2 0 0 1-2 2v0a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 16 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 12 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 8 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 4 12v0a2 2 0 0 1-2-2V7"/></svg>
+            <span className="font-bold tracking-tight text-[15px] uppercase">Relible Commerce</span>
           </div>
 
           <div className="hidden md:flex items-center gap-8 text-[13px] font-medium text-text-muted">
@@ -86,7 +86,7 @@ export default function Landing() {
               {translations[lang].landing.verifiedAccessOnly}
             </div>
           <h1 className="text-4xl md:text-5xl lg:text-7xl font-bold tracking-tighter leading-[1.05] mb-6">
-              Asthea OMS<br />
+              Relible Commerce<br />
               <span className="text-text-muted text-3xl md:text-4xl lg:text-5xl block mt-4 font-light">{translations[lang].landing.heroSubtitle}</span>
             </h1>
             <p className="text-lg text-text-muted max-w-xl leading-relaxed mb-10 font-medium">
@@ -129,7 +129,7 @@ export default function Landing() {
           >
             <img 
               src="/hero.jpg" 
-              alt="Asthea OMS Platform" 
+              alt="Relible Commerce Platform" 
               className="relative w-full max-w-[600px] rounded-[24px] shadow-2xl object-cover"
             />
           </motion.div>
@@ -139,7 +139,7 @@ export default function Landing() {
         <section id="overview" className="max-w-7xl mx-auto px-6 mb-24 md:mb-56">
            <div className="text-center mb-16 md:mb-20">
              <h2 className="text-3xl font-bold tracking-tighter mb-4">{translations[lang].landing.overviewTitle}</h2>
-             <p className="text-[#FF5931] text-[13px] font-semibold uppercase tracking-[0.15em]">{translations[lang].landing.overviewSubtitle}</p>
+             <p className="text-brand-primary text-[13px] font-semibold uppercase tracking-[0.15em]">{translations[lang].landing.overviewSubtitle}</p>
            </div>
            
            <div className="grid md:grid-cols-3 gap-8">
@@ -180,7 +180,7 @@ export default function Landing() {
            <div className="max-w-7xl mx-auto px-6">
              <div className="text-center mb-16 md:mb-20">
                <h2 className="text-3xl font-bold tracking-tighter mb-4">{translations[lang].landing.featuresTitle}</h2>
-               <p className="text-[#FF5931] text-[13px] font-semibold uppercase tracking-[0.15em]">{translations[lang].landing.featuresSubtitle}</p>
+               <p className="text-brand-primary text-[13px] font-semibold uppercase tracking-[0.15em]">{translations[lang].landing.featuresSubtitle}</p>
              </div>
              
              <div className="grid md:grid-cols-2 gap-x-12 gap-y-10">
@@ -273,8 +273,8 @@ export default function Landing() {
       <footer className="border-t border-border-color pt-24 pb-12 bg-surface">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex items-center gap-3 mb-6">
-             <img src="https://drive.google.com/thumbnail?id=1l7HkE_p4K09Xwkv9g9JAiFzfTuViiWvZ&sz=w1000" alt="ASTHEA Logo" className="w-8 h-8 object-contain"  referrerPolicy="no-referrer" />
-             <span className="font-bold tracking-tight text-[15px] uppercase">Asthea OMS</span>
+             <svg width="100%" height="auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-8 h-8 object-contain text-brand-primary"><path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4"/><path d="M2 7h20"/><path d="M22 7v3a2 2 0 0 1-2 2v0a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 16 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 12 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 8 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 4 12v0a2 2 0 0 1-2-2V7"/></svg>
+             <span className="font-bold tracking-tight text-[15px] uppercase">Relible Commerce</span>
           </div>
           <p className="text-[13px] text-text-muted leading-relaxed font-medium mb-16 max-w-sm">
              {translations[lang].landing.footerDesc}

@@ -146,8 +146,8 @@ export default function Register() {
             </h2>
             <p className="mt-6 text-text-muted text-[15px] leading-relaxed">
               {lang === 'RU' 
-                ? 'Asthea OMS предоставляет все необходимые инструменты для автоматизации оптовых продаж: удобные каталоги, управление заказами и клиентской базой.' 
-                : 'Asthea OMS ulgurji savdoni avtomatlashtirish uchun barcha zarur vositalarni taqdim etadi: qulay kataloglar, buyurtmalar va mijozlar bazasini boshqarish.'}
+                ? 'Relible Commerce предоставляет все необходимые инструменты для автоматизации оптовых продаж: удобные каталоги, управление заказами и клиентской базой.' 
+                : 'Relible Commerce ulgurji savdoni avtomatlashtirish uchun barcha zarur vositalarni taqdim etadi: qulay kataloglar, buyurtmalar va mijozlar bazasini boshqarish.'}
             </p>
             
             <div className="mt-12 flex flex-col gap-6">
@@ -183,8 +183,8 @@ export default function Register() {
           className="w-full max-w-[440px] relative z-10"
         >
           <div className="bg-surface/80 backdrop-blur-xl rounded-[24px] p-6 sm:p-10 shadow-[0_20px_50px_rgba(17,24,39,0.05)] border border-white/20 flex flex-col items-center text-left">
-            <img src="https://drive.google.com/thumbnail?id=1l7HkE_p4K09Xwkv9g9JAiFzfTuViiWvZ&sz=w1000" alt="ASTHEA Logo" className="w-16 h-auto mb-2 object-contain"  referrerPolicy="no-referrer" />
-            <h1 className="text-xl font-black text-text-main tracking-tight mb-4">Asthea OMS</h1>
+            <svg width="100%" height="auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-16 h-auto mb-2 object-contain text-brand-primary"><path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4"/><path d="M2 7h20"/><path d="M22 7v3a2 2 0 0 1-2 2v0a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 16 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 12 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 8 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 4 12v0a2 2 0 0 1-2-2V7"/></svg>
+            <h1 className="text-xl font-black text-text-main tracking-tight mb-4">Relible Commerce</h1>
             <h3 className="text-[16px] font-black tracking-tight text-text-main mb-6 w-full uppercase text-center">{t.auth.registerTitle}</h3>
 
             <motion.div 
@@ -279,7 +279,7 @@ export default function Register() {
 
                 <div className="pt-6 border-t border-border-color/50 w-full text-center">
                     <span className="text-[10px] font-bold text-text-muted tracking-[0.3em] uppercase opacity-50">
-                      ASTHEA OMS © {new Date().getFullYear()} — Created by Salmon Davronov
+                      Relible Commerce © {new Date().getFullYear()} — Created by Salmon Davronov
                     </span>
                 </div>
               </div>

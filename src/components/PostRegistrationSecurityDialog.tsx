@@ -41,7 +41,7 @@ export const PostRegistrationSecurityDialog: React.FC<Props> = ({ isOpen, onClos
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="absolute inset-0 bg-[#0F1115]/90 backdrop-blur-md" 
+        className="absolute inset-0 bg-[#0F172A]/90 backdrop-blur-md" 
       />
       
       <motion.div

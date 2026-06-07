@@ -23,7 +23,7 @@ export const SecurityConfirmationModal: React.FC<Props> = ({ isOpen, onConfirm, 
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="absolute inset-0 bg-[#0F1115]/80 backdrop-blur-md" 
+        className="absolute inset-0 bg-[#0F172A]/80 backdrop-blur-md" 
       />
       
       <motion.div

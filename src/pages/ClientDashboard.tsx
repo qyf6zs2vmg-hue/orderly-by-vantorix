@@ -151,13 +151,11 @@ export default function ClientDashboard() {
 
       setCart([]);
       
+      setCheckoutState('success');
       setTimeout(() => {
-        setCheckoutState('success');
-        setTimeout(() => {
-          setCheckoutState('idle');
-          setActiveTab('active');
-        }, 3000);
-      }, 3000);
+        setCheckoutState('idle');
+        setActiveTab('shop');
+      }, 1500);
     } catch (err) {
       console.error(err);
       setCheckoutState('idle');
@@ -170,44 +168,15 @@ export default function ClientDashboard() {
 
   return (
     <>
-      <AnimatePresence>
-        {checkoutState !== 'idle' && (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-bg-base"
-          >
-            {checkoutState === 'processing' ? (
-              <motion.div 
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1.1 }}
-                exit={{ opacity: 0, scale: 0.8 }}
-                transition={{ duration: 1.5, repeat: Infinity, repeatType: "reverse" }}
-                className="flex flex-col items-center"
-              >
-                <img src="https://drive.google.com/thumbnail?id=1l7HkE_p4K09Xwkv9g9JAiFzfTuViiWvZ&sz=w1000" alt="ASTHEA Logo" className="w-48 h-auto object-contain"  referrerPolicy="no-referrer" />
-              </motion.div>
-            ) : (
-              <motion.div 
-                initial={{ scale: 0.9, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                className="flex flex-col items-center text-center px-6"
-              >
-                 <motion.div 
-                    initial={{ scale: 0 }} 
-                    animate={{ scale: 1 }} 
-                    transition={{ type: 'spring', bounce: 0.5 }}
-                 >
-                   <CheckCircle className="w-20 h-20 text-brand-success mb-6" />
-                 </motion.div>
-                 <h2 className="text-2xl font-bold text-text-main tracking-tight mb-2">Ваш заказ успешно оформлен!</h2>
-                 <p className="text-text-muted">Спасибо за покупку</p>
-              </motion.div>
-            )}
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {checkoutState === 'success' && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm">
+           <div className="bg-surface rounded-2xl p-8 max-w-sm w-full mx-4 shadow-xl border border-border-color text-center flex flex-col items-center">
+               <CheckCircle className="w-16 h-16 text-brand-success mb-4" />
+               <h2 className="text-xl font-bold text-text-main mb-2">Ваш заказ успешно оформлен!</h2>
+               <p className="text-text-muted text-[13px]">Спасибо за покупку</p>
+           </div>
+        </div>
+      )}
 
       <div className="h-screen overflow-hidden bg-bg-base flex flex-row font-sans text-text-main">
         {/* Mobile Backdrop */}
@@ -226,8 +195,8 @@ export default function ClientDashboard() {
           
         {/* User Profile Summary in Sidebar */}
         <div className="flex items-center gap-2 px-3 mb-8">
-           <img src="https://drive.google.com/thumbnail?id=1l7HkE_p4K09Xwkv9g9JAiFzfTuViiWvZ&sz=w1000" alt="ASTHEA Logo" className="w-8 h-auto object-contain"  referrerPolicy="no-referrer" />
-           <span className="font-bold tracking-widest uppercase text-[15px] text-text-main">Asthea OMS</span>
+           <svg width="100%" height="auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-8 h-auto object-contain text-brand-primary"><path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4"/><path d="M2 7h20"/><path d="M22 7v3a2 2 0 0 1-2 2v0a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 16 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 12 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 8 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 4 12v0a2 2 0 0 1-2-2V7"/></svg>
+           <span className="font-bold tracking-widest uppercase text-[15px] text-text-main">Relible Commerce</span>
         </div>
 
         <div className="flex items-center gap-3 px-3 mb-8">
@@ -279,7 +248,7 @@ export default function ClientDashboard() {
              <LogOut className="w-4 h-4 mr-2" /> {t.common.logout}
            </button>
            <div className="text-[10px] text-text-muted font-bold tracking-widest opacity-60 uppercase text-center px-2">
-             ASTHEA OMS © {new Date().getFullYear()} — Created by Salmon Davronov
+             Relible Commerce © {new Date().getFullYear()} — Created by Salmon Davronov
            </div>
         </div>
       </div>
@@ -433,8 +402,8 @@ export default function ClientDashboard() {
                   <span className="text-[13px] font-medium">Корзина пуста</span>
                 </div>
               ) : (
-                <>
-                  <div className="space-y-4 mb-6">
+                <div className="flex flex-col flex-1 h-full max-h-fit">
+                  <div className="space-y-4 mb-6 custom-scrollbar shrink overflow-y-auto max-h-[45vh] pr-2">
                     {cart.map(item => (
                       <div key={item.product.id} className="flex items-center justify-between">
                         <div className="flex-1 pr-2">
@@ -466,7 +435,7 @@ export default function ClientDashboard() {
                     ))}
                   </div>
                   
-                  <div className="border-t border-border-color pt-6 mb-6">
+                  <div className="border-t border-border-color pt-4 mb-4 mt-auto">
                     <div className="flex justify-between items-center">
                       <span className="text-[13px] font-medium text-text-muted">Итого:</span>
                       <span className="text-text-main font-bold text-[20px] tracking-tight">${cartTotal.toLocaleString()}</span>
@@ -475,12 +444,12 @@ export default function ClientDashboard() {
 
                   <button 
                     onClick={handleCheckout}
-                    className="w-full bg-gradient-to-r from-brand-primary via-brand-secondary to-brand-accent hover:opacity-90 text-white font-medium py-3 px-4 rounded-[10px] transition-all flex justify-center items-center shadow-lg shadow-brand-primary/20 text-[13px]"
+                    className="w-full bg-gradient-to-r from-brand-primary via-brand-secondary to-brand-accent hover:opacity-90 text-white font-medium py-3 px-4 rounded-[10px] transition-all flex justify-center items-center shadow-lg shadow-brand-primary/20 text-[13px] shrink-0"
                   >
                     <CreditCard className="w-4 h-4 mr-2" />
                     Оформить заказ
                   </button>
-                </>
+                </div>
               )}
             </div>
           </div>

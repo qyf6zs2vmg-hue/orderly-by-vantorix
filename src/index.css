@@ -4,38 +4,39 @@
 @layer base {
   /* Default: Light Theme */
   :root {
-    --bg-primary: #FFFFFF;
-    --surface: #FAFAFA;
-    --border: #EAEAEA;
-    --fg-primary: #111111;
-    --muted: #666666;
-    --asthea-orange: #FF5931;
+    --bg-primary: #F8FAFC;
+    --surface: #FFFFFF;
+    --surface-alt: #F1F5F9;
+    --border: #E2E8F0;
+    --fg-primary: #0F172A;
+    --muted: #475569;
+    --brand-accent: #2563EB;
     
     /* Legacy variables used across the project */
     --bg-site: var(--bg-primary);
     --bg-card: var(--surface);
     --bg-base: var(--bg-primary);
-    --surface-alt: var(--surface);
     --text-main: var(--fg-primary);
     --text-muted: var(--muted);
     --border-color: var(--border);
-    --brand-primary: var(--asthea-orange);
-    --brand-danger: #333333;
-    --brand-success: #333333;
-    --brand-warning: #333333;
+    --brand-primary: var(--brand-accent);
+    --brand-danger: #EF4444;
+    --brand-success: #10B981;
+    --brand-warning: #F59E0B;
   }
 
   /* Dark Theme */
   html.dark, .dark {
-    --bg-primary: #0E0E0F;
-    --surface: #161618;
-    --border: #262629;
-    --fg-primary: #F3F3F3;
-    --muted: #9A9A9A;
-    --asthea-orange: #FF5931;
-    --brand-danger: #9A9A9A;
-    --brand-success: #9A9A9A;
-    --brand-warning: #9A9A9A;
+    --bg-primary: #020617;
+    --surface: #0F172A;
+    --surface-alt: #1E293B;
+    --border: #1E293B;
+    --fg-primary: #F8FAFC;
+    --muted: #94A3B8;
+    --brand-accent: #3B82F6;
+    --brand-danger: #F87171;
+    --brand-success: #34D399;
+    --brand-warning: #FBBF24;
   }
 }
 
@@ -57,7 +58,7 @@
   --color-muted: var(--muted);
   --color-text-muted: var(--muted);
   
-  --color-asthea-orange: #FF5931;
+  --color-brand-accent: var(--brand-accent);
   --color-brand-primary: var(--brand-primary);
   --color-brand-danger: var(--brand-danger);
   --color-brand-success: var(--brand-success);
@@ -91,8 +92,8 @@ body {
   .bg-brand-success\/10 { background-color: color-mix(in srgb, var(--brand-success) 10%, transparent); }
   .border-brand-success\/20 { border-color: color-mix(in srgb, var(--brand-success) 20%, transparent); }
 
-  .bg-surface-alt\/50 { background-color: color-mix(in srgb, var(--surface) 50%, transparent); }
-  .bg-surface-alt\/30 { background-color: color-mix(in srgb, var(--surface) 30%, transparent); }
+  .bg-surface-alt\/50 { background-color: color-mix(in srgb, var(--surface-alt) 50%, transparent); }
+  .bg-surface-alt\/30 { background-color: color-mix(in srgb, var(--surface-alt) 30%, transparent); }
   .bg-bg-base\/50 { background-color: color-mix(in srgb, var(--bg-primary) 50%, transparent); }
   .border-border-color\/50 { border-color: color-mix(in srgb, var(--border) 50%, transparent); }
 }
@@ -107,7 +108,7 @@ body {
   }
   
   .btn-primary:hover {
-    background-color: var(--asthea-orange);
+    background-color: var(--brand-accent);
     color: #FFFFFF;
     transform: scale(1.02);
   }

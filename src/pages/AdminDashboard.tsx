@@ -53,6 +53,7 @@ export default function AdminDashboard() {
   const [activeUsers, setActiveUsers] = useState<any[]>([]);
   const [pendingUsers, setPendingUsers] = useState<any[]>([]);
   const [orders, setOrders] = useState<any[]>([]);
+  const [showAllOrders, setShowAllOrders] = useState(false);
   const [products, setProducts] = useState<any[]>([]);
   const [editingClient, setEditingClient] = useState<{id: string, name: string} | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -176,6 +177,15 @@ export default function AdminDashboard() {
         imageUrl: editingProduct.imageBase64 || editingProduct.imageUrl
       });
       setEditingProduct(null);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleDeleteProduct = async (productId: string) => {
+    if (!window.confirm('Вы уверены, что хотите удалить этот товар?')) return;
+    try {
+      await deleteDoc(doc(db, 'products', productId));
     } catch (err) {
       console.error(err);
     }
@@ -554,9 +564,17 @@ export default function AdminDashboard() {
           {/* Orders Tab */}
           {activeTab === 'orders' && (
             <div className="max-w-5xl w-full mx-auto animate-in fade-in duration-300">
-              <div className="mb-6">
-                <h1 className="text-[24px] font-bold text-text-main tracking-tight">Заказы</h1>
-                <p className="text-[13px] text-text-muted mt-1">Все транзакции и их статус</p>
+              <div className="flex justify-between items-center mb-6">
+                <div>
+                  <h1 className="text-[24px] font-bold text-text-main tracking-tight">Заказы</h1>
+                  <p className="text-[13px] text-text-muted mt-1">{showAllOrders ? 'Все заказы за всё время' : 'Заказы за сегодня'}</p>
+                </div>
+                <button
+                  onClick={() => setShowAllOrders(!showAllOrders)}
+                  className="bg-surface-alt border border-border-color text-text-main px-4 py-2 rounded-xl text-[12px] font-bold hover:bg-surface transition-all shadow-sm"
+                >
+                  {showAllOrders ? 'Показать только сегодняшние' : 'Открыть все заказы'}
+                </button>
               </div>
               <div className="bg-surface border border-border-color rounded-[32px] shadow-accent card-premium backdrop-blur-sm relative">
                 <div className="overflow-x-auto w-full custom-scrollbar rounded-[32px]">
@@ -570,7 +588,7 @@ export default function AdminDashboard() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border-color text-text-main">
-                    {orders.sort((a,b) => b.createdAt - a.createdAt).map(order => (
+                    {(showAllOrders ? orders : orders.filter(order => new Date(order.createdAt) >= new Date(new Date().setHours(0,0,0,0)))).sort((a,b) => b.createdAt - a.createdAt).map(order => (
                       <tr key={order.id} className="hover:bg-surface-alt/50 transition-colors">
                         <td className="px-6 py-4">
                           <div className="font-mono text-[11px] text-text-muted bg-surface-alt border border-border-color inline-block px-1.5 py-0.5 rounded mb-1.5 tracking-wider">{order.id.slice(0, 8).toUpperCase()}</div>
@@ -583,8 +601,8 @@ export default function AdminDashboard() {
                         <td className="px-6 py-4 font-bold text-text-main text-right text-[14px]">${order.total.toLocaleString()}</td>
                       </tr>
                     ))}
-                    {orders.length === 0 && (
-                      <tr><td colSpan={4} className="px-6 py-12 text-center text-text-muted text-[13px]">У вас пока нет заказов.</td></tr>
+                    {(showAllOrders ? orders : orders.filter(order => new Date(order.createdAt) >= new Date(new Date().setHours(0,0,0,0)))).length === 0 && (
+                      <tr><td colSpan={4} className="px-6 py-12 text-center text-text-muted text-[13px]">{showAllOrders ? 'У вас пока нет заказов.' : 'Сегодня еще нет заказов.'}</td></tr>
                     )}
                   </tbody>
                 </table>
@@ -681,6 +699,9 @@ export default function AdminDashboard() {
                                   <div className="bg-surface-alt px-3 py-1 rounded-full text-[11px] font-black uppercase text-text-muted tracking-widest">{product.stock} шт.</div>
                                   <button onClick={() => setEditingProduct({...product})} className="w-8 h-8 rounded-full bg-surface-alt hover:bg-surface border border-border-color flex items-center justify-center transition-colors text-text-muted hover:text-text-main" title="Редактировать">
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
+                                  </button>
+                                  <button onClick={() => handleDeleteProduct(product.id)} className="w-8 h-8 rounded-full bg-surface-alt hover:bg-surface border border-brand-danger/20 hover:border-brand-danger flex items-center justify-center transition-colors text-brand-danger" title="Удалить">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
                                   </button>
                                 </div>
                               </div>

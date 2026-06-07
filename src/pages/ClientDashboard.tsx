@@ -44,6 +44,7 @@ export default function ClientDashboard() {
   
   const [cart, setCart] = useState<{product: any, quantity: number}[]>([]);
   const [myOrders, setMyOrders] = useState<any[]>([]);
+  const [showAllOrders, setShowAllOrders] = useState(false);
   const [products, setProducts] = useState<any[]>([]);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [checkoutState, setCheckoutState] = useState<'idle' | 'processing' | 'success'>('idle');
@@ -457,12 +458,20 @@ export default function ClientDashboard() {
 
         {activeTab === 'orders' && (
           <div className="max-w-4xl relative z-10 w-full mx-auto animate-in fade-in duration-300">
-            <div className="mb-6">
-              <h1 className="text-[24px] font-bold text-text-main tracking-tight">Мои заказы</h1>
-              <p className="text-[13px] text-text-muted mt-1">Все ваши покупки</p>
+            <div className="flex justify-between items-center mb-6">
+              <div>
+                <h1 className="text-[24px] font-bold text-text-main tracking-tight">Мои заказы</h1>
+                <p className="text-[13px] text-text-muted mt-1">{showAllOrders ? 'Все ваши покупки' : 'Покупки за сегодня'}</p>
+              </div>
+               <button
+                  onClick={() => setShowAllOrders(!showAllOrders)}
+                  className="bg-surface-alt border border-border-color text-text-main px-4 py-2 rounded-xl text-[12px] font-bold hover:bg-surface transition-all shadow-sm"
+                >
+                  {showAllOrders ? 'Показать только сегодняшние' : 'Открыть все заказы'}
+               </button>
             </div>
             <div className="space-y-6">
-              {myOrders.sort((a,b) => b.createdAt - a.createdAt).map(order => (
+              {(showAllOrders ? myOrders : myOrders.filter(order => new Date(order.createdAt) >= new Date(new Date().setHours(0,0,0,0)))).sort((a,b) => b.createdAt - a.createdAt).map(order => (
                 <div key={order.id} className="bg-surface p-8 rounded-[32px] shadow-sm border border-border-color flex flex-col md:flex-row md:items-center justify-between gap-8 hover:shadow-accent transition-all card-premium-hover backdrop-blur-sm group">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-4">
@@ -488,10 +497,10 @@ export default function ClientDashboard() {
                   </div>
                 </div>
               ))}
-              {myOrders.length === 0 && (
+              {(showAllOrders ? myOrders : myOrders.filter(order => new Date(order.createdAt) >= new Date(new Date().setHours(0,0,0,0)))).length === 0 && (
                 <div className="bg-surface p-12 rounded-[16px] shadow-[0_4px_12px_rgba(16,24,40,0.03)] border border-border-color text-center flex flex-col items-center">
                   <PackageCheck className="w-10 h-10 text-text-muted mb-3 opacity-30" />
-                  <p className="text-text-muted text-[13px] font-medium">У вас пока нет заказов</p>
+                  <p className="text-text-muted text-[13px] font-medium">{showAllOrders ? 'У вас пока нет заказов' : 'Сегодня еще нет заказов'}</p>
                 </div>
               )}
             </div>

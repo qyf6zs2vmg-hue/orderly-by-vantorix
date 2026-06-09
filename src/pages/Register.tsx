@@ -17,11 +17,13 @@ export default function Register() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [accessMode, setAccessMode] = useState<'private' | 'public' | ''>('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [agreePrivacy, setAgreePrivacy] = useState(false);
   const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState(false);
   const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
+  const [isAccessModeModalOpen, setIsAccessModeModalOpen] = useState(false);
   const [lang, setLang] = useState<Language>('RU');
   const t = translations[lang];
   const navigate = useNavigate();
@@ -35,6 +37,10 @@ export default function Register() {
     e.preventDefault();
     if (!agreePrivacy) {
       setError(lang === 'RU' ? 'Вы должны согласиться с Политикой конфиденциальности' : 'Maxfiylik siyosatiga rozilik berishingiz kerak');
+      return;
+    }
+    if (!accessMode) {
+      setError(lang === 'RU' ? 'Выберите режим доступа' : 'Kirish rejimini tanlang');
       return;
     }
 
@@ -54,6 +60,7 @@ export default function Register() {
       batch.set(newBusinessRef, {
         name: businessName,
         ownerId: uid,
+        accessMode: accessMode,
         createdAt: Date.now()
       });
 
@@ -122,70 +129,103 @@ export default function Register() {
   }
 
   return (
-    <div className="min-h-screen bg-bg-base flex flex-col md:flex-row font-sans overflow-x-hidden relative">
+    <>
+      {isAccessModeModalOpen && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-text-main/50 backdrop-blur-sm">
+          <div className="max-w-2xl w-full relative z-10 animate-in fade-in zoom-in-95 duration-200">
+            <div className="bg-surface rounded-[24px] p-6 sm:p-8 shadow-2xl border border-border-color">
+              <div className="flex items-center justify-between mb-8">
+                <h2 className="text-xl font-bold text-text-main tracking-tight">{lang === 'RU' ? 'Режим доступа' : 'Kirish rejimi'}</h2>
+                <button onClick={() => setIsAccessModeModalOpen(false)} className="w-8 h-8 rounded-full bg-surface-alt flex items-center justify-center text-text-muted hover:text-text-main hover:bg-border-color/50 transition-colors border border-border-color">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                </button>
+              </div>
+              
+              <div className="space-y-8">
+                <div className="space-y-2 border border-border-color rounded-2xl p-4 bg-surface-alt/30">
+                  <h3 className="text-[16px] font-bold text-text-main flex items-center gap-2 mb-3">
+                    <Lock className="w-5 h-5 text-text-muted" /> Private Access
+                  </h3>
+                  {lang === 'RU' ? (
+                    <div className="text-[13px] text-text-muted leading-relaxed space-y-2">
+                      <p className="font-bold text-text-main">Доступ только для приглашённых клиентов.</p>
+                      <ul className="list-disc pl-5 space-y-1">
+                        <li>Каждый клиент получает персональную invite-ссылку и должен зарегистрироваться для входа.</li>
+                        <li>Только зарегистрированные и одобренные пользователи могут просматривать каталог, остатки и цены.</li>
+                      </ul>
+                      <p className="mt-2 pt-2 border-t border-border-color text-text-muted"><i>Подходит для компаний с закрытой клиентской базой и ограниченным доступом к информации.</i></p>
+                    </div>
+                  ) : (
+                    <div className="text-[13px] text-text-muted leading-relaxed space-y-2">
+                      <p className="font-bold text-text-main">Faqat taklif qilingan mijozlar kirishi mumkin.</p>
+                      <ul className="list-disc pl-5 space-y-1">
+                        <li>Har bir mijoz shaxsiy invite-havola orqali ro‘yxatdan o‘tadi.</li>
+                        <li>Faqat ro‘yxatdan o‘tgan va tasdiqlangan foydalanuvchilar katalog, narxlar va qoldiqlarni ko‘ra oladi.</li>
+                      </ul>
+                      <p className="mt-2 pt-2 border-t border-border-color text-text-muted"><i>Yopiq mijozlar bazasiga ega kompaniyalar uchun mos.</i></p>
+                    </div>
+                  )}
+                </div>
+                
+                <div className="space-y-2 border border-border-color rounded-2xl p-4 bg-surface-alt/30">
+                  <h3 className="text-[16px] font-bold text-text-main flex items-center gap-2 mb-3">
+                    <Globe className="w-5 h-5 text-text-muted" /> Public Access
+                  </h3>
+                  {lang === 'RU' ? (
+                    <div className="text-[13px] text-text-muted leading-relaxed space-y-2">
+                      <p className="font-bold text-text-main">Доступ без регистрации.</p>
+                      <ul className="list-disc pl-5 space-y-1">
+                        <li>Любой пользователь, имеющий ссылку на компанию, может открыть каталог и просматривать товары, остатки и цены.</li>
+                        <li>Invite-ссылки и регистрация клиентов не требуются.</li>
+                      </ul>
+                      <p className="mt-2 pt-2 border-t border-border-color text-text-muted"><i>Подходит для компаний, которым важно быстро делиться каталогом с клиентами.</i></p>
+                    </div>
+                  ) : (
+                    <div className="text-[13px] text-text-muted leading-relaxed space-y-2">
+                      <p className="font-bold text-text-main">Ro‘yxatdan o‘tmasdan kirish mumkin.</p>
+                      <ul className="list-disc pl-5 space-y-1">
+                        <li>Kompaniya havolasiga ega bo‘lgan har qanday foydalanuvchi katalog, narxlar va qoldiqlarni ko‘ra oladi.</li>
+                        <li>Invite-havola va mijoz ro‘yxatdan o‘tishi talab qilinmaydi.</li>
+                      </ul>
+                      <p className="mt-2 pt-2 border-t border-border-color text-text-muted"><i>Katalogni tez ulashishni istagan kompaniyalar uchun mos.</i></p>
+                    </div>
+                  )}
+                </div>
+              </div>
+              
+              <div className="mt-6 pt-6 flex justify-end">
+                <button 
+                  onClick={() => setIsAccessModeModalOpen(false)}
+                  className="px-6 py-2.5 bg-text-main text-bg-base rounded-xl font-bold text-[13px] hover:bg-text-main/90 transition-all"
+                >
+                  {lang === 'RU' ? 'Понятно' : 'Tushunarli'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    <div className="min-h-screen bg-bg-base flex flex-col font-sans overflow-x-hidden relative">
       <div className="absolute top-6 right-6 z-[100]">
         <LanguageToggle currentLang={lang} onLangChange={setLang} variant="minimal" />
       </div>
 
-      {/* Desktop Branding Column */}
-      <div className="hidden md:flex md:w-[45%] lg:w-[50%] bg-surface border-r border-border-color flex-col justify-center px-10 xl:px-20 relative overflow-hidden">
-        {/* Background blobs for desktop */}
-        <div className="absolute inset-0 z-0 pointer-events-none">
-          <div className="absolute top-[10%] left-[10%] w-[40rem] h-[40rem] bg-text-main/10 rounded-full blur-[120px]" />
-          <div className="absolute bottom-[10%] right-[10%] w-[30rem] h-[30rem] bg-brand-accent/10 rounded-full blur-[100px]" />
-        </div>
-        
-        <div className="relative z-10 max-w-lg">
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8 }}
-          >
-            <h2 className="mt-16 text-3xl lg:text-4xl font-bold text-text-main tracking-tight leading-tight">
-              {lang === 'RU' ? 'Ваш B2B портал готов к запуску.' : 'Sizning B2B portalingiz ishga tushishga tayyor.'}
-            </h2>
-            <p className="mt-6 text-text-muted text-[15px] leading-relaxed">
-              {lang === 'RU' 
-                ? 'Relible Commerce предоставляет все необходимые инструменты для автоматизации оптовых продаж: удобные каталоги, управление заказами и клиентской базой.' 
-                : 'Relible Commerce ulgurji savdoni avtomatlashtirish uchun barcha zarur vositalarni taqdim etadi: qulay kataloglar, buyurtmalar va mijozlar bazasini boshqarish.'}
-            </p>
-            
-            <div className="mt-12 flex flex-col gap-6">
-              {[
-                  lang === 'RU' ? "Удобные каталоги и актуальные остатки" : "Qulay kataloglar va dolzarb qoldiqlar",
-                  lang === 'RU' ? "Работа только с проверенными клиентами по инвайт-кодам" : "Faqat tasdiqlangan mijozlar bilan ishlash",
-                  lang === 'RU' ? "Полный контроль над статусами заказов" : "Buyurtma holatlarini to'liq nazorat qilish"
-              ].map((text, i) => (
-                <div key={i} className="flex items-center gap-4">
-                   <div className="w-10 h-10 card-largexl bg-surface-alt flex items-center justify-center flex-shrink-0 text-text-main font-bold shadow-sm border border-border-color">
-                      {(i + 1).toString().padStart(2, '0')}
-                   </div>
-                   <span className="font-bold text-text-main text-[14px]">{text}</span>
-                </div>
-              ))}
-            </div>
-          </motion.div>
-        </div>
+      {/* Global Background blobs */}
+      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-[10%] left-[10%] w-[30rem] md:w-[40rem] h-[30rem] md:h-[40rem] bg-text-main/10 rounded-full blur-[100px] md:blur-[120px]" />
+        <div className="absolute bottom-[10%] right-[10%] w-[20rem] md:w-[30rem] h-[20rem] md:h-[30rem] bg-brand-accent/10 rounded-full blur-[80px] md:blur-[100px]" />
       </div>
 
       {/* Form Column */}
-      <div className="w-full md:w-[55%] lg:w-[50%] flex flex-col items-center justify-center p-4 md:p-12 relative min-h-[100dvh] md:min-h-screen">
-        {/* Mobile Background blobs */}
-        <div className="absolute inset-0 z-0 pointer-events-none md:hidden">
-          <div className="absolute top-[5%] right-[5%] w-[20rem] h-[20rem] bg-text-main/10 rounded-full blur-[80px]" />
-          <div className="absolute bottom-[5%] left-[5%] w-[20rem] h-[20rem] bg-brand-accent/10 rounded-full blur-[80px]" />
-        </div>
-
+      <div className="w-full flex flex-col items-center justify-center py-4 px-4 relative min-h-[100dvh] md:min-h-screen">
       <motion.div 
         initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5, ease: "easeOut" }}
-          className="w-full max-w-[440px] relative z-10"
+          className="w-full max-w-[400px] relative z-10 my-auto"
         >
-          <div className="bg-surface/80 backdrop-blur-xl rounded-[24px] p-6 sm:p-10 shadow-[0_20px_50px_rgba(17,24,39,0.05)] border border-white/20 flex flex-col items-center text-left">
-            <svg width="100%" height="auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-16 h-auto mb-2 object-contain text-brand-primary"><path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4"/><path d="M2 7h20"/><path d="M22 7v3a2 2 0 0 1-2 2v0a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 16 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 12 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 8 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 4 12v0a2 2 0 0 1-2-2V7"/></svg>
-            <h1 className="text-xl font-black text-text-main tracking-tight mb-4">Relible Commerce</h1>
-            <h3 className="text-[16px] font-black tracking-tight text-text-main mb-6 w-full uppercase text-center">{t.auth.registerTitle}</h3>
+          <div className="bg-surface/80 backdrop-blur-xl rounded-[20px] p-5 sm:p-6 shadow-[0_20px_50px_rgba(17,24,39,0.05)] border border-white/20 flex flex-col items-center text-left">
+            <h3 className="text-[14px] font-bold tracking-tight text-text-main mb-4 w-full uppercase text-center">{t.auth.registerTitle}</h3>
 
             <motion.div 
               initial={{ opacity: 0 }}
@@ -194,12 +234,12 @@ export default function Register() {
               className="w-full"
             >
               {error && (
-                <div className="bg-brand-danger/10 border border-brand-danger/20 text-brand-danger p-3 rounded-[12px] text-[13px] font-medium mb-6 text-center animate-shake">
+                <div className="bg-brand-danger/10 border border-brand-danger/20 text-brand-danger p-2 rounded-[10px] text-[12px] font-medium mb-4 text-center animate-shake">
                   {error}
                 </div>
               )}
               
-              <form onSubmit={registerOwner} className="space-y-5">
+              <form onSubmit={registerOwner} className="space-y-3">
                 {[
                   { id: 'business', label: t.auth.companyName, icon: Building2, value: businessName, setter: setBusinessName, placeholder: t.auth.companyPlaceholder },
                   { id: 'name', label: t.auth.contactPerson, icon: UserIcon, value: name, setter: setName, placeholder: t.auth.contactPlaceholder },
@@ -211,17 +251,17 @@ export default function Register() {
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.5 + idx * 0.1 }}
-                    className="space-y-1.5"
+                    className="space-y-1"
                   >
-                    <label className="text-[12px] font-bold text-text-main uppercase tracking-wider ml-1">{field.label}</label>
+                    <label className="text-[11px] font-bold text-text-main uppercase tracking-wider ml-1">{field.label}</label>
                     <div className="relative group">
-                         <field.icon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-text-main transition-colors" />
+                         <field.icon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-text-main transition-colors" />
                          <input
                           type={field.type || 'text'}
                           required
                           value={field.value}
                           onChange={(e) => field.setter(e.target.value)}
-                          className="w-full pl-11 pr-4 py-3 rounded-[12px] bg-bg-base/50 border border-border-color/50 text-text-main focus:bg-surface focus:border-text-muted focus:ring-4 focus:ring-text-muted/10 outline-none transition-all placeholder:text-text-muted/60 text-[14px] shadow-sm"
+                          className="w-full pl-10 pr-3 py-2 rounded-[10px] bg-bg-base/50 border border-border-color/50 text-text-main focus:bg-surface focus:border-text-muted focus:ring-2 focus:ring-text-muted/10 outline-none transition-all placeholder:text-text-muted/60 text-[13px] shadow-sm"
                           placeholder={field.placeholder}
                           minLength={field.id === 'password' ? 6 : undefined}
                         />
@@ -229,15 +269,51 @@ export default function Register() {
                   </motion.div>
                 ))}
 
+
+                <motion.div 
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.8 }}
+                  className="space-y-1.5 pt-1"
+                >
+                  <div className="flex items-center gap-2 ml-1">
+                    <label className="text-[11px] font-bold text-text-main uppercase tracking-wider">{lang === 'RU' ? 'Режим доступа' : 'Kirish rejimi'}</label>
+                    <button 
+                      type="button" 
+                      onClick={() => setIsAccessModeModalOpen(true)}
+                      className="bg-surface-alt border border-border-color rounded-full w-4 h-4 flex items-center justify-center text-[10px] text-text-muted hover:text-text-main transition-colors"
+                      title={lang === 'RU' ? 'Что это?' : "Bu nima?"}
+                    >
+                      ?
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button 
+                      type="button" 
+                      onClick={() => setAccessMode('private')}
+                      className={`p-2 rounded-[10px] border transition-all text-left flex flex-col justify-center gap-1 ${accessMode === 'private' ? 'bg-text-main border-text-main shadow-md' : 'bg-surface-alt border-border-color hover:border-text-muted/50'}`}
+                    >
+                      <span className={`text-[12px] font-bold flex items-center gap-1.5 ${accessMode === 'private' ? 'text-bg-base' : 'text-text-main'}`}><Lock className="w-3.5 h-3.5 opacity-70" /> Private Access</span>
+                    </button>
+                    <button 
+                      type="button" 
+                      onClick={() => setAccessMode('public')}
+                      className={`p-2 rounded-[10px] border transition-all text-left flex flex-col justify-center gap-1 ${accessMode === 'public' ? 'bg-text-main border-text-main shadow-md' : 'bg-surface-alt border-border-color hover:border-text-muted/50'}`}
+                    >
+                      <span className={`text-[12px] font-bold flex items-center gap-1.5 ${accessMode === 'public' ? 'text-bg-base' : 'text-text-main'}`}><Globe className="w-3.5 h-3.5 opacity-70" /> Public Access</span>
+                    </button>
+                  </div>
+                </motion.div>
+
                  <motion.div 
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.9 }}
-                  className="pt-2 px-1"
+                  className="pt-1 px-1"
                  >
-                    <label className="flex items-start gap-4 group cursor-pointer">
-                      <div className={`mt-0.5 w-5 h-5 flex items-center justify-center rounded-lg border transition-all ${agreePrivacy ? 'bg-text-main border-text-main shadow-[0_0_10px_rgba(255,255,255,0.2)]' : 'bg-surface-alt border-border-color group-hover:border-text-muted'}`}>
-                        {agreePrivacy && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" className="text-white"><polyline points="20 6 9 17 4 12"/></svg>}
+                    <label className="flex items-start gap-3 group cursor-pointer">
+                      <div className={`mt-0.5 w-4 h-4 shrink-0 flex items-center justify-center rounded border transition-all ${agreePrivacy ? 'bg-text-main border-text-main shadow-[0_0_10px_rgba(255,255,255,0.2)]' : 'bg-surface-alt border-border-color group-hover:border-text-muted'}`}>
+                        {agreePrivacy && <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" className="text-white"><polyline points="20 6 9 17 4 12"/></svg>}
                       </div>
                       <input 
                         type="checkbox" 
@@ -245,7 +321,7 @@ export default function Register() {
                         checked={agreePrivacy}
                         onChange={(e) => setAgreePrivacy(e.target.checked)}
                       />
-                      <span className="text-[12px] text-text-muted leading-relaxed group-hover:text-text-main transition-colors select-none">
+                      <span className="text-[11px] text-text-muted leading-tight group-hover:text-text-main transition-colors select-none">
                         {lang === 'RU' ? 'Я согласен с ' : 'Men '}<button type="button" onClick={(e) => { e.stopPropagation(); setIsPrivacyModalOpen(true); }} className="text-text-main hover:underline font-bold">{lang === 'RU' ? 'Политикой конфиденциальности' : 'Maxfiylik siyosatiga'}</button> {lang === 'RU' ? 'и' : 'va'} <button type="button" onClick={(e) => { e.stopPropagation(); setIsTermsModalOpen(true); }} className="text-text-main hover:underline font-bold">{lang === 'RU' ? 'Условиями использования' : 'Foydalanish shartlariga roziman'}</button>
                       </span>
                     </label>
@@ -256,31 +332,18 @@ export default function Register() {
                   whileTap={{ scale: 0.98 }}
                   type="submit"
                   disabled={loading}
-                  className="w-full bg-text-main hover:bg-text-main/90 text-bg-base py-3.5 px-6 rounded-[14px] font-bold hover:shadow-xl transition-all disabled:opacity-70 flex justify-center items-center text-[15px] tracking-wide uppercase mt-6"
+                  className="w-full bg-text-main hover:bg-text-main/90 text-bg-base py-2.5 px-6 rounded-[10px] font-bold hover:shadow-xl transition-all disabled:opacity-70 flex justify-center items-center text-[13px] tracking-wide uppercase mt-3"
                 >
                   {loading ? t.auth.registering : t.auth.registerButton}
                 </motion.button>
               </form>
 
-              <div className="mt-8 flex flex-col items-center gap-3">
-                <div className="text-[13px] text-text-muted">
+              <div className="mt-4 flex flex-col items-center gap-2">
+                <div className="text-[12px] text-text-muted">
                   {t.auth.alreadyHaveAccount}{' '}
                   <Link to="/login" className="font-bold text-text-main hover:text-text-muted transition-colors underline underline-offset-4">
                     {t.auth.loginLink}
                   </Link>
-                </div>
-
-                <Link 
-                  to="/welcome" 
-                  className="text-[13px] font-bold text-text-main hover:text-text-muted transition-colors underline underline-offset-4 mt-2"
-                >
-                  {t.auth.moreInfo}
-                </Link>
-
-                <div className="pt-6 border-t border-border-color/50 w-full text-center">
-                    <span className="text-[10px] font-bold text-text-muted tracking-[0.3em] uppercase opacity-50">
-                      Relible Commerce © {new Date().getFullYear()} — Created by Salmon Davronov
-                    </span>
                 </div>
               </div>
             </motion.div>
@@ -288,5 +351,6 @@ export default function Register() {
         </motion.div>
       </div>
     </div>
+    </>
   );
 }

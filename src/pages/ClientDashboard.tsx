@@ -249,7 +249,7 @@ export default function ClientDashboard() {
              <LogOut className="w-4 h-4 mr-2" /> {t.common.logout}
            </button>
            <div className="text-[10px] text-text-muted font-bold tracking-widest opacity-60 uppercase text-center px-2">
-             Relible Commerce © {new Date().getFullYear()} — Created by Salmon Davronov
+             Relible Commerce © {new Date().getFullYear()} — CREATED BY RELIBLE LABS
            </div>
         </div>
       </div>

@@ -58,7 +58,7 @@ export const translations = {
       privacyPolicy: 'Политика конфиденциальности',
       termsOfService: 'Условия обслуживания',
       cookiesSettings: 'Настройки файлов cookie',
-      footerCopyright: 'Relible Commerce © {year} — Created by Salmon Davronov',
+      footerCopyright: 'Relible Commerce © {year} — CREATED BY RELIBLE LABS',
       footerDesc: 'Специализированная B2B платформа для централизованного управления оптовыми заказами.',
       
       systematicFlow: 'Синхронизация заказов',
@@ -191,7 +191,7 @@ export const translations = {
       privacyPolicy: 'Maxfiylik siyosati',
       termsOfService: 'Xizmat ko\'rsatish shartlari',
       cookiesSettings: 'Cookie sozlamalari',
-      footerCopyright: 'Relible Commerce © {year} — Created by Salmon Davronov',
+      footerCopyright: 'Relible Commerce © {year} — CREATED BY RELIBLE LABS',
       footerDesc: 'Ulgurji buyurtmalar, qoldiqlar va mijozlarni boshqarish uchun ixtisoslashtirilgan B2B platformasi.',
       
       systematicFlow: 'Buyurtmalar sinxronizatsiyasi',

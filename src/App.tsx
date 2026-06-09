@@ -20,7 +20,7 @@ function ProtectedRoute({ children, requiredRole }: { children: React.ReactNode,
 
   if (loading) return <SplashScreen />;
 
-  if (!user) return <Navigate to="/welcome" replace />;
+  if (!user) return <Navigate to="/login" replace />;
 
   if (loading) return <SplashScreen />;
 
@@ -54,7 +54,7 @@ function HomeRedirect() {
   if (loading) return <SplashScreen />;
   
   if (!user) {
-    return <Navigate to="/welcome" replace />;
+    return <Navigate to="/login" replace />;
   }
 
   if (loading || !appUser) {
@@ -64,10 +64,8 @@ function HomeRedirect() {
   if (appUser.role === 'owner' || appUser.role === 'admin') return <Navigate to="/admin" replace />;
   if (appUser.role === 'client') return <Navigate to="/client" replace />;
 
-  return <Navigate to="/welcome" replace />;
+  return <Navigate to="/login" replace />;
 }
-
-import Landing from './pages/Landing';
 
 export default function App() {
   return (
@@ -75,7 +73,6 @@ export default function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<HomeRedirect />} />
-          <Route path="/welcome" element={<Landing />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/join" element={<Join />} />

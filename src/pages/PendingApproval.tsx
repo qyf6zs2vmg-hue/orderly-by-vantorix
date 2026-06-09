@@ -26,7 +26,7 @@ export default function PendingApproval() {
         </button>
 
          <div className="mt-8 text-center text-[11px] text-text-muted font-medium">
-             Relible Commerce © {new Date().getFullYear()} — Created by Salmon Davronov
+             Relible Commerce © {new Date().getFullYear()} — CREATED BY RELIBLE LABS
          </div>
       </div>
     </div>

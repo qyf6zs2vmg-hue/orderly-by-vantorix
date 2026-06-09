@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { collection, onSnapshot, query, where, doc, updateDoc, deleteDoc, setDoc, addDoc } from 'firebase/firestore';
+import { collection, onSnapshot, query, where, doc, updateDoc, deleteDoc, setDoc, addDoc, getDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { useAuth } from '../lib/AuthContext';
 import { ThemeToggle } from '../components/ThemeToggle';
@@ -33,6 +33,51 @@ export default function AdminDashboard() {
   const [isSecurityDialogOpen, setIsSecurityDialogOpen] = useState(false);
   
   const [invites, setInvites] = useState<any[]>([]);
+  const [publicDomainInput, setPublicDomainInput] = useState('');
+  const [publicLinkStatus, setPublicLinkStatus] = useState<'idle' | 'loading' | 'success' | 'error_exists'>('idle');
+  const publicInvite = invites.find(inv => inv.isPublicLink);
+
+  const handleCreatePublicLink = async () => {
+    if (!publicDomainInput.trim() || !appUser?.businessId) return;
+    const slug = publicDomainInput.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '');
+    if (!slug) return;
+    
+    setPublicLinkStatus('loading');
+    
+    try {
+      const docRef = doc(db, 'invites', slug);
+      const snap = await getDoc(docRef);
+      if (snap.exists()) {
+         setPublicLinkStatus('error_exists');
+         return;
+      }
+      
+      await setDoc(docRef, {
+        businessId: appUser.businessId,
+        isPublicLink: true,
+        used: false,
+        blocked: false,
+        createdAt: Date.now()
+      });
+      setPublicLinkStatus('success');
+      setPublicDomainInput('');
+    } catch (e) {
+      console.error(e);
+      setPublicLinkStatus('idle');
+    }
+  };
+
+  const handleTogglePublicLinkBlock = async () => {
+     if (!publicInvite) return;
+     await updateDoc(doc(db, 'invites', publicInvite.id), { blocked: !publicInvite.blocked });
+  };
+
+  const handleDeletePublicLink = async () => {
+     if (!publicInvite) return;
+     if (window.confirm('Вы уверены что хотите удалить ссылку? Клиенты больше не смогут присоединиться по старой ссылке.')) {
+         await deleteDoc(doc(db, 'invites', publicInvite.id));
+     }
+  };
 
   useEffect(() => {
     if (appUser && appUser.onboardingComplete === false) {
@@ -249,16 +294,18 @@ export default function AdminDashboard() {
             <Key className={clsx("w-4 h-4 mr-3 transition-transform", activeTab === 'invites' ? "text-text-main scale-110" : "text-text-muted")} />
             {t.tabs.invites}
           </button>
-          <button
-            onClick={() => setActiveTab('requests')}
-            className={clsx("flex items-center justify-between px-4 py-3 rounded-xl text-[13px] font-bold transition-all duration-200 border-2", activeTab === 'requests' ? "bg-surface-alt text-text-main border-border-color shadow-sm" : "text-text-muted hover:text-text-main hover:bg-surface-alt border-transparent")}
-          >
-            <div className="flex items-center">
-              <ClipboardList className={clsx("w-4 h-4 mr-3 transition-transform", activeTab === 'requests' ? "text-text-main scale-110" : "text-text-muted")} />
-              {t.tabs.requests}
-            </div>
-            {pendingUsers.length > 0 && <span className="bg-brand-primary text-white text-[10px] font-bold px-2 py-0.5 rounded-full">{pendingUsers.length}</span>}
-          </button>
+          {business?.accessMode !== 'public' && (
+            <button
+              onClick={() => setActiveTab('requests')}
+              className={clsx("flex items-center justify-between px-4 py-3 rounded-xl text-[13px] font-bold transition-all duration-200 border-2", activeTab === 'requests' ? "bg-surface-alt text-text-main border-border-color shadow-sm" : "text-text-muted hover:text-text-main hover:bg-surface-alt border-transparent")}
+            >
+              <div className="flex items-center">
+                <ClipboardList className={clsx("w-4 h-4 mr-3 transition-transform", activeTab === 'requests' ? "text-text-main scale-110" : "text-text-muted")} />
+                {t.tabs.requests}
+              </div>
+              {pendingUsers.length > 0 && <span className="bg-brand-primary text-white text-[10px] font-bold px-2 py-0.5 rounded-full">{pendingUsers.length}</span>}
+            </button>
+          )}
           <button
             onClick={() => setActiveTab('users')}
             className={clsx("flex items-center justify-between px-4 py-3 rounded-xl text-[13px] font-bold transition-all duration-200 border-2", activeTab === 'users' ? "bg-surface-alt text-text-main border-border-color shadow-sm" : "text-text-muted hover:text-text-main hover:bg-surface-alt border-transparent")}
@@ -299,7 +346,7 @@ export default function AdminDashboard() {
              <LogOut className="w-4 h-4 mr-2" /> {t.common.logout}
            </button>
            <div className="text-[10px] text-text-muted font-bold tracking-widest opacity-60 uppercase text-center px-2">
-             Relible Commerce © {new Date().getFullYear()} — Created by Salmon Davronov
+             Relible Commerce © {new Date().getFullYear()} — CREATED BY RELIBLE LABS
            </div>
         </div>
       </div>
@@ -364,90 +411,180 @@ export default function AdminDashboard() {
           {/* Invites Tab */}
           {activeTab === 'invites' && (
             <div className="max-w-5xl w-full mx-auto animate-in fade-in duration-300">
-              <div className="flex flex-col md:flex-row md:justify-between md:items-end mb-6 gap-4">
-                <div>
-                  <h1 className="text-[24px] font-bold text-text-main tracking-tight">Инвайт-коды</h1>
-                  <p className="text-[13px] text-text-muted mt-1">Организуйте доступ для ваших клиентов</p>
+              {business?.accessMode === 'public' ? (
+                <div className="bg-surface border border-border-color rounded-[32px] p-8 shadow-accent card-premium">
+                  {!publicInvite ? (
+                    <div className="flex flex-col items-center text-center max-w-lg mx-auto py-12">
+                      <div className="w-16 h-16 bg-surface-alt rounded-full flex items-center justify-center mb-6 border border-border-color shadow-inner">
+                        <Globe className="w-8 h-8 text-text-main" />
+                      </div>
+                      <h2 className="text-2xl font-bold text-text-main tracking-tight mb-3">Создайте публичную ссылку</h2>
+                      <p className="text-[14px] text-text-muted leading-relaxed mb-8">
+                        Сгенерируйте уникальную ссылку для вашего бизнеса. Любой клиент, перешедший по ней, сможет просматривать каталог и делать заказы.
+                      </p>
+                      
+                      <div className="w-full relative group">
+                         <div className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted font-mono text-[13px]">{window.location.host}/join?code=</div>
+                         <input
+                           type="text"
+                           value={publicDomainInput}
+                           onChange={(e) => setPublicDomainInput(e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ''))}
+                           placeholder="my-company"
+                           className="w-full pl-[185px] pr-4 py-3.5 rounded-2xl bg-bg-base/50 border border-border-color text-text-main focus:bg-surface focus:border-text-muted focus:ring-4 focus:ring-text-muted/10 outline-none transition-all font-mono shadow-sm"
+                           maxLength={30}
+                         />
+                      </div>
+                      
+                      {publicLinkStatus === 'error_exists' && (
+                        <div className="mt-3 text-brand-danger text-[12px] font-bold">Этот домен уже занят, выберите другой.</div>
+                      )}
+                      
+                      <button 
+                        onClick={handleCreatePublicLink}
+                        disabled={!publicDomainInput.trim() || publicLinkStatus === 'loading'}
+                        className="mt-6 w-full bg-text-main hover:bg-text-main/90 text-bg-base py-3.5 px-6 rounded-2xl font-bold hover:shadow-xl transition-all disabled:opacity-70 flex justify-center items-center text-[14px]"
+                      >
+                        {publicLinkStatus === 'loading' ? 'Создание...' : 'Создать ссылку'}
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col">
+                      <div className="flex items-center justify-between mb-8 pb-6 border-b border-border-color">
+                        <div>
+                          <h2 className="text-xl font-bold text-text-main flex items-center gap-2">
+                             <Globe className="w-5 h-5" /> Публичная ссылка активна
+                          </h2>
+                          <p className="text-[13px] text-text-muted mt-1.5">Отправьте эту ссылку вашим клиентам</p>
+                        </div>
+                        <div className="flex items-center gap-3">
+                           <button 
+                               onClick={handleDeletePublicLink}
+                               className="px-4 py-2.5 rounded-xl text-[12px] font-bold transition-all border border-transparent text-text-muted hover:text-brand-danger hover:bg-brand-danger/10"
+                           >
+                              Изменить ссылку
+                           </button>
+                           <button 
+                               onClick={handleTogglePublicLinkBlock}
+                               className={clsx("px-4 py-2.5 rounded-xl text-[12px] font-bold transition-all border", publicInvite.blocked ? "bg-text-main text-bg-base border-text-main" : "bg-brand-danger/10 text-brand-danger border-brand-danger/20 hover:bg-brand-danger hover:text-white")}
+                           >
+                              {publicInvite.blocked ? 'Разблокировать' : 'Временно заблокировать'}
+                           </button>
+                        </div>
+                      </div>
+                      
+                      <div className="bg-bg-base/50 rounded-2xl p-6 border border-border-color relative overflow-hidden group">
+                         <div className={clsx("absolute inset-0 z-10 backdrop-blur-[2px] bg-bg-base/60 flex items-center justify-center transition-all", publicInvite.blocked ? "opacity-100 visible" : "opacity-0 invisible")}>
+                             <span className="bg-surface px-4 py-2 rounded-xl text-[13px] font-bold text-text-main shadow-lg border border-border-color flex items-center gap-2">
+                               <Shield className="w-4 h-4 text-brand-danger" /> Временно заблокировано
+                             </span>
+                         </div>
+                         
+                         <div className="flex items-center justify-between gap-4">
+                           <div className="flex flex-col gap-1.5 flex-1 min-w-0">
+                              <span className="text-[11px] font-bold text-text-muted uppercase tracking-widest">Основная ссылка</span>
+                              <span className="font-mono text-[16px] text-text-main truncate">{window.location.origin}/join?code={publicInvite.id}</span>
+                           </div>
+                           
+                           <button 
+                              onClick={() => navigator.clipboard.writeText(`${window.location.origin}/join?code=${publicInvite.id}`)}
+                              className="w-12 h-12 flex items-center justify-center bg-surface border border-border-color rounded-full hover:bg-text-main hover:text-bg-base transition-all shrink-0 shadow-sm"
+                              title="Копировать"
+                           >
+                             <Copy className="w-5 h-5" />
+                           </button>
+                         </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
-                <button 
-                  onClick={handleCreateInvite} 
-                  className="bg-gradient-to-r from-brand-primary via-brand-secondary to-brand-accent hover:opacity-90 text-white px-4 py-2 rounded-[10px] text-[13px] font-medium transition-all flex items-center shadow-lg shadow-brand-primary/20"
-                >
-                  <Plus className="w-4 h-4 mr-2" /> Сгенерировать код
-                </button>
-              </div>
-              
-              <div className="bg-surface border border-border-color rounded-[32px] shadow-accent card-premium backdrop-blur-sm relative">
-                <div className="overflow-x-auto w-full custom-scrollbar rounded-[32px]">
-                  <table className="w-full text-left text-[14px] min-w-[700px]">
-                    <thead className="bg-surface-alt/50 border-b border-border-color">
-                      <tr>
-                        <th className="px-8 py-5 font-bold text-text-muted uppercase text-[11px] tracking-[0.2em] min-w-[300px]">Код / Ссылка</th>
-                        <th className="px-8 py-5 font-bold text-text-muted uppercase text-[11px] tracking-[0.2em] whitespace-nowrap">Статус</th>
-                        <th className="px-8 py-5 font-bold text-text-muted uppercase text-[11px] tracking-[0.2em] whitespace-nowrap">Создан</th>
-                        <th className="px-8 py-5 font-bold text-text-muted uppercase text-[11px] tracking-[0.2em] text-right whitespace-nowrap">Действия</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-border-color/50 text-text-main">
-                    {invites.sort((a,b) => b.createdAt - a.createdAt).map(invite => (
-                      <tr key={invite.id} className="hover:bg-surface-alt/30 transition-all group">
-                        <td className="px-8 py-5 text-text-main">
-                          <div className="flex flex-col gap-1">
-                            <span className="font-mono font-bold text-[14px] text-text-main group-hover:text-text-muted transition-all">{invite.id}</span>
-                            <div className="flex items-center group/link">
-                              <span className="text-[11px] text-text-muted truncate max-w-[200px] font-sans opacity-70 group-hover/link:opacity-100 transition-opacity">{window.location.origin}/join?code={invite.id}</span>
-                              <button 
-                                onClick={() => navigator.clipboard.writeText(`${window.location.origin}/join?code=${invite.id}`)} 
-                                className="ml-2 p-1 text-text-muted hover:text-text-main transition-colors"
-                                title="Копировать ссылку"
-                              >
-                                <Copy className="w-3 h-3" />
-                              </button>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-8 py-5">
-                          {invite.blocked ? (
-                            <span className="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-brand-danger/10 text-brand-danger border border-brand-danger/20">
-                              Заблокирован
-                            </span>
-                          ) : invite.used ? (
-                            <span className="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-surface-alt text-text-muted border border-border-color">
-                              Использован
-                            </span>
-                          ) : (
-                            <span className="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-surface-alt text-text-main border border-border-color mt-3">
-                              Свободен
-                            </span>
-                          )}
-                        </td>
-                        <td className="px-8 py-5 text-text-muted font-medium">
-                          {new Date(invite.createdAt).toLocaleString('ru-RU', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
-                        </td>
-                        <td className="px-8 py-5 text-right">
-                          {!invite.blocked && !invite.used && (
-                            <button 
-                              onClick={() => handleBlockInvite(invite.id)}
-                              className="text-[11px] font-bold text-brand-danger/60 hover:text-brand-danger transition-colors uppercase tracking-widest"
-                            >
-                              Отменить
-                            </button>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                    {invites.length === 0 && (
-                      <tr><td colSpan={4} className="px-6 py-12 text-center text-text-muted text-[13px]">Нажмите «Сгенерировать код» чтобы создать первый инвайт.</td></tr>
-                    )}
-                  </tbody>
-                </table>
-               </div>
-              </div>
+              ) : (
+                <>
+                  <div className="flex flex-col md:flex-row md:justify-between md:items-end mb-6 gap-4">
+                    <div>
+                      <h1 className="text-[24px] font-bold text-text-main tracking-tight">Инвайт-коды</h1>
+                      <p className="text-[13px] text-text-muted mt-1">Организуйте доступ для ваших клиентов</p>
+                    </div>
+                    <button 
+                      onClick={handleCreateInvite} 
+                      className="bg-gradient-to-r from-brand-primary via-brand-secondary to-brand-accent hover:opacity-90 text-white px-4 py-2 rounded-[10px] text-[13px] font-medium transition-all flex items-center shadow-lg shadow-brand-primary/20"
+                    >
+                      <Plus className="w-4 h-4 mr-2" /> Сгенерировать код
+                    </button>
+                  </div>
+                  
+                  <div className="bg-surface border border-border-color rounded-[32px] shadow-accent card-premium backdrop-blur-sm relative">
+                    <div className="overflow-x-auto w-full custom-scrollbar rounded-[32px]">
+                      <table className="w-full text-left text-[14px] min-w-[700px]">
+                        <thead className="bg-surface-alt/50 border-b border-border-color">
+                          <tr>
+                            <th className="px-8 py-5 font-bold text-text-muted uppercase text-[11px] tracking-[0.2em] min-w-[300px]">Код / Ссылка</th>
+                            <th className="px-8 py-5 font-bold text-text-muted uppercase text-[11px] tracking-[0.2em] whitespace-nowrap">Статус</th>
+                            <th className="px-8 py-5 font-bold text-text-muted uppercase text-[11px] tracking-[0.2em] whitespace-nowrap">Создан</th>
+                            <th className="px-8 py-5 font-bold text-text-muted uppercase text-[11px] tracking-[0.2em] text-right whitespace-nowrap">Действия</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-border-color/50 text-text-main">
+                        {invites.sort((a,b) => b.createdAt - a.createdAt).map(invite => (
+                          <tr key={invite.id} className="hover:bg-surface-alt/30 transition-all group">
+                            <td className="px-8 py-5 text-text-main">
+                              <div className="flex flex-col gap-1">
+                                <span className="font-mono font-bold text-[14px] text-text-main group-hover:text-text-muted transition-all">{invite.id}</span>
+                                <div className="flex items-center group/link">
+                                  <span className="text-[11px] text-text-muted truncate max-w-[200px] font-sans opacity-70 group-hover/link:opacity-100 transition-opacity">{window.location.origin}/join?code={invite.id}</span>
+                                  <button 
+                                    onClick={() => navigator.clipboard.writeText(`${window.location.origin}/join?code=${invite.id}`)} 
+                                    className="ml-2 p-1 text-text-muted hover:text-text-main transition-colors"
+                                    title="Копировать ссылку"
+                                  >
+                                    <Copy className="w-3 h-3" />
+                                  </button>
+                                </div>
+                              </div>
+                            </td>
+                            <td className="px-8 py-5">
+                              {invite.blocked ? (
+                                <span className="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-brand-danger/10 text-brand-danger border border-brand-danger/20">
+                                  Заблокирован
+                                </span>
+                              ) : invite.used ? (
+                                <span className="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-surface-alt text-text-muted border border-border-color">
+                                  Использован
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-surface-alt text-text-main border border-border-color mt-3">
+                                  Свободен
+                                </span>
+                              )}
+                            </td>
+                            <td className="px-8 py-5 text-text-muted font-medium">
+                              {new Date(invite.createdAt).toLocaleString('ru-RU', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                            </td>
+                            <td className="px-8 py-5 text-right">
+                              {!invite.blocked && !invite.used && (
+                                <button 
+                                  onClick={() => handleBlockInvite(invite.id)}
+                                  className="text-[11px] font-bold text-brand-danger/60 hover:text-brand-danger transition-colors uppercase tracking-widest"
+                                >
+                                  Отменить
+                                </button>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                        {invites.length === 0 && (
+                          <tr><td colSpan={4} className="px-6 py-12 text-center text-text-muted text-[13px]">Нажмите «Сгенерировать код» чтобы создать первый инвайт.</td></tr>
+                        )}
+                      </tbody>
+                    </table>
+                   </div>
+                  </div>
+                </>
+              )}
             </div>
           )}
 
           {/* Requests Tab */}
-          {activeTab === 'requests' && (
+          {activeTab === 'requests' && business?.accessMode !== 'public' && (
             <div className="max-w-5xl w-full mx-auto animate-in fade-in duration-300">
               <div className="mb-6">
                 <h2 className="text-2xl font-black text-text-main tracking-tight">{t.tabs.requests}</h2>

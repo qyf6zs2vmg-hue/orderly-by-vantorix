@@ -66,24 +66,24 @@ export default function Join() {
             if (data.businessId) {
               const busDoc = await getDoc(doc(db, 'businesses', data.businessId));
               if (busDoc.exists()) {
-                setInviteData({ id: inviteDoc.id, businessName: busDoc.data().name, ...data });
+                setInviteData({ id: inviteDoc.id, businessName: busDoc.data().name, accessMode: busDoc.data().accessMode || 'private', ...data });
               } else {
-                setInviteData({ id: inviteDoc.id, businessName: lang === 'RU' ? 'Неизвестный бизнес' : 'Noma\'lum biznes', ...data });
+                setInviteData({ id: inviteDoc.id, businessName: lang === 'RU' ? 'Неизвестный бизнес' : 'Noma\'lum biznes', accessMode: 'private', ...data });
               }
             } else {
-              setInviteData({ id: inviteDoc.id, businessName: lang === 'RU' ? 'Неизвестный бизнес' : 'Noma\'lum biznes', ...data });
+              setInviteData({ id: inviteDoc.id, businessName: lang === 'RU' ? 'Неизвестный бизнес' : 'Noma\'lum biznes', accessMode: 'private', ...data });
             }
             setIsLogin(true);
           } else {
             if (data.businessId) {
               const busDoc = await getDoc(doc(db, 'businesses', data.businessId));
               if (busDoc.exists()) {
-                setInviteData({ id: inviteDoc.id, businessName: busDoc.data().name, ...data });
+                setInviteData({ id: inviteDoc.id, businessName: busDoc.data().name, accessMode: busDoc.data().accessMode || 'private', ...data });
               } else {
-                setInviteData({ id: inviteDoc.id, businessName: lang === 'RU' ? 'Неизвестный бизнес' : 'Noma\'lum biznes', ...data });
+                setInviteData({ id: inviteDoc.id, businessName: lang === 'RU' ? 'Неизвестный бизнес' : 'Noma\'lum biznes', accessMode: 'private', ...data });
               }
             } else {
-              setInviteData({ id: inviteDoc.id, businessName: lang === 'RU' ? 'Неизвестный бизнес' : 'Noma\'lum biznes', ...data });
+              setInviteData({ id: inviteDoc.id, businessName: lang === 'RU' ? 'Неизвестный бизнес' : 'Noma\'lum biznes', accessMode: 'private', ...data });
             }
           }
         }
@@ -137,9 +137,11 @@ export default function Join() {
                 await updateDoc(doc(db, 'users', uid), {
                     businessId: inviteData.businessId,
                     inviteCode: code,
-                    status: ud.status === 'blocked' ? 'blocked' : 'pending' 
+                    status: inviteData.accessMode === 'public' ? 'active' : (ud.status === 'blocked' ? 'blocked' : 'pending') 
                 });
-                await updateDoc(doc(db, 'invites', inviteData.id), { used: true });
+                if (!inviteData.isPublicLink) {
+                    await updateDoc(doc(db, 'invites', inviteData.id), { used: true });
+                }
             }
             navigate('/client');
           } else {
@@ -157,16 +159,18 @@ export default function Join() {
             phone: phone,
             email: email,
             role: 'client',
-            status: 'pending',
+            status: inviteData.accessMode === 'public' ? 'active' : 'pending',
             inviteCode: code,
             businessId: inviteData.businessId,
             securityAcknowledged: true,
             onboardingComplete: false
           });
 
-        await updateDoc(doc(db, 'invites', inviteData.id), {
-          used: true
-        });
+        if (!inviteData.isPublicLink) {
+          await updateDoc(doc(db, 'invites', inviteData.id), {
+            used: true
+          });
+        }
 
         // Skip email verification and don't sign out. The AuthContext will pick up the user,
         // and the useEffect above will redirect them to /client, which in turn will show PendingApproval.
@@ -423,16 +427,6 @@ export default function Join() {
                   )}
                 </button>
               </form>
-
-               <div className="mt-8 text-center text-[11px] text-text-muted font-medium uppercase tracking-[0.2em] flex flex-col items-center gap-4">
-                  <Link 
-                    to="/welcome" 
-                    className="text-[13px] font-bold text-text-main hover:text-text-muted transition-colors underline underline-offset-4 normal-case tracking-normal"
-                  >
-                    Подробная информация о сайте
-                  </Link>
-                  <span>DEVELOPED BY Relible Commerce</span>
-               </div>
           </div>
         </div>
       </div>

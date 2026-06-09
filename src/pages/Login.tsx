@@ -160,19 +160,6 @@ export default function Login() {
                     Создать компанию
                   </Link>
                 </div>
-
-                <Link 
-                  to="/welcome" 
-                  className="text-[13px] font-bold text-text-main hover:text-text-muted transition-colors underline underline-offset-4 mt-2"
-                >
-                  Подробная информация о сайте
-                </Link>
-
-                <div className="pt-4 border-t border-border-color/50 w-full text-center">
-                    <span className="text-[10px] font-bold text-text-muted tracking-[0.3em] uppercase opacity-50">
-                      Relible Commerce © {new Date().getFullYear()} — Created by Salmon Davronov
-                    </span>
-                </div>
               </div>
           </motion.div>
         </div>

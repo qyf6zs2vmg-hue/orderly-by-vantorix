@@ -15,6 +15,8 @@ import ClientDashboard from './pages/ClientDashboard';
 import PendingApproval from './pages/PendingApproval';
 import { SplashScreen } from './components/SplashScreen';
 
+import DeveloperPanel from './pages/DeveloperPanel';
+
 function ProtectedRoute({ children, requiredRole }: { children: React.ReactNode, requiredRole?: 'owner' | 'client' }) {
   const { user, appUser, loading } = useAuth();
 
@@ -79,6 +81,7 @@ export default function App() {
           <Route path="/invite/:code" element={<Join />} />
           <Route path="/admin" element={<ProtectedRoute requiredRole="owner"><AdminDashboard /></ProtectedRoute>} />
           <Route path="/client" element={<ProtectedRoute requiredRole="client"><ClientDashboard /></ProtectedRoute>} />
+          <Route path="/dev" element={<DeveloperPanel />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>

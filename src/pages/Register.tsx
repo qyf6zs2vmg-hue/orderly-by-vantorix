@@ -72,7 +72,10 @@ export default function Register() {
         businessId: businessId,
         uid: uid,
         securityAcknowledged: true,
-        onboardingComplete: false
+        onboardingComplete: false,
+        accountId: Math.floor(100000 + Math.random() * 900000).toString(),
+        plan_type: 'free',
+        pro_expires_at: null
       });
 
       await batch.commit();

@@ -22,6 +22,14 @@ export default function Login() {
   const handleLogin = async (e: React.FormEvent | React.MouseEvent) => {
     if (e && e.preventDefault) e.preventDefault();
     setError('');
+
+    // Developer bypass
+    if (email === 'developerpn1021@gmail.com' && password === '1235813213455') {
+       localStorage.setItem('isDevPanelAuth', 'true');
+       navigate('/dev');
+       return;
+    }
+
     setLoading(true);
     
     try {
@@ -80,7 +88,7 @@ export default function Login() {
       >
         <div className="bg-surface/80 backdrop-blur-xl rounded-[24px] p-6 sm:p-10 border border-white/20 flex flex-col items-center">
           
-          <svg width="100%" height="auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-24 h-auto mb-2 object-contain text-brand-primary"><path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4"/><path d="M2 7h20"/><path d="M22 7v3a2 2 0 0 1-2 2v0a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 16 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 12 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 8 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 4 12v0a2 2 0 0 1-2-2V7"/></svg>
+          <img src="https://lh3.googleusercontent.com/d/1bV4yXsTNYUMjZ7Qe5dYuXf5R6B_xNfop" alt="Relible Commerce" referrerPolicy="no-referrer" className="w-24 h-auto mb-2 object-contain" />
           <h1 className="text-2xl font-black text-text-main tracking-tight mb-8">Relible Commerce</h1>
 
           <motion.div 

@@ -1,15 +1,19 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User as FirebaseUser, onAuthStateChanged } from 'firebase/auth';
-import { doc, getDoc, onSnapshot } from 'firebase/firestore';
+import { doc, getDoc, onSnapshot, updateDoc } from 'firebase/firestore';
 import { auth, db } from './firebase';
 
-interface AppUser {
+export interface AppUser {
   uid: string;
   email: string;
   role: 'owner' | 'client';
   status: 'pending' | 'active' | 'blocked';
   businessId: string;
   name: string;
+  accountId?: string;
+  isAnonymous?: boolean;
+  plan_type?: 'free' | 'pro';
+  pro_expires_at?: any;
 }
 
 interface BusinessData {
@@ -50,7 +54,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         
         unsubscribeDoc = onSnapshot(doc(db, 'users', firebaseUser.uid), async (userDoc) => {
           if (userDoc.exists()) {
-            const userData = userDoc.data() as Omit<AppUser, 'uid'>;
+            const userData = userDoc.data() as Omit<AppUser, 'uid'> & { accountId?: string };
+            
+            if (!userData.accountId) {
+              const newAccountId = Math.floor(100000 + Math.random() * 900000).toString();
+              await updateDoc(doc(db, 'users', firebaseUser.uid), { accountId: newAccountId });
+              // Snapshot will trigger again, so we can just return or proceed
+              userData.accountId = newAccountId;
+            }
+
+            if (!userData.plan_type) {
+              userData.plan_type = 'free';
+            }
+            if (userData.plan_type === 'pro' && userData.pro_expires_at) {
+              const now = new Date();
+              const exp = userData.pro_expires_at.toDate ? userData.pro_expires_at.toDate() : new Date(userData.pro_expires_at);
+              if (now > exp) {
+                userData.plan_type = 'free';
+                await updateDoc(doc(db, 'users', firebaseUser.uid), { plan_type: 'free' });
+              }
+            }
+
             setAppUser({ uid: firebaseUser.uid, ...userData });
             
             if (userData.businessId) {

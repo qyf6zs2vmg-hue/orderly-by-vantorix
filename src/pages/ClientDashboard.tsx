@@ -3,7 +3,7 @@ import { collection, onSnapshot, query, where, addDoc, updateDoc, doc } from 'fi
 import { db } from '../lib/firebase';
 import { useAuth } from '../lib/AuthContext';
 import { ThemeToggle } from '../components/ThemeToggle';
-import { LogOut, Store, ShoppingBag, Archive, Box, Plus, Minus, CreditCard, PackageCheck, ShoppingCart, Settings, Bell, Mail, ChevronDown, Menu, Search, Loader2, CheckCircle, Shield, Globe, User, FileText, Palette } from 'lucide-react';
+import { LogOut, Store, ShoppingBag, Archive, Box, Plus, Minus, CreditCard, PackageCheck, ShoppingCart, Settings, Bell, Mail, ChevronDown, Menu, Search, Loader2, CheckCircle, Shield, Globe, User, FileText, Palette, MapPin } from 'lucide-react';
 import clsx from 'clsx';
 import { motion, AnimatePresence } from 'motion/react';
 import PrivacyPolicyContent from '../components/PrivacyPolicyContent';
@@ -48,6 +48,35 @@ export default function ClientDashboard() {
   const [products, setProducts] = useState<any[]>([]);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [checkoutState, setCheckoutState] = useState<'idle' | 'processing' | 'success'>('idle');
+
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [clientDetails, setClientDetails] = useState({ name: '', phone: '', locationStr: '' });
+  
+  useEffect(() => {
+    if (appUser) {
+        setClientDetails({
+            name: appUser.name || '',
+            phone: appUser.phone || '',
+            locationStr: appUser.locationStr || '' // We will save this to user
+        });
+    }
+  }, [appUser]);
+
+  const requestGeolocation = () => {
+      if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(
+              (pos) => {
+                  setClientDetails(prev => ({ ...prev, locationStr: `${pos.coords.latitude}, ${pos.coords.longitude}` }));
+              },
+              (err) => {
+                  console.error(err);
+                  alert('Не удалось получить геопозицию. Укажите адрес вручную.');
+              }
+          );
+      } else {
+          alert('Геолокация не поддерживается вашим устройством.');
+      }
+  };
 
   useEffect(() => {
     if (!appUser?.uid || !appUser?.businessId) return;
@@ -113,10 +142,17 @@ export default function ClientDashboard() {
 
   const cartTotal = cart.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
 
-  const handleCheckout = async () => {
+  const submitOrderWithDetails = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     if (cart.length === 0) return;
     if (!appUser?.businessId) return;
+
+    if (!clientDetails.phone || !clientDetails.locationStr) {
+       alert('Пожалуйста, заполните все данные для доставки.');
+       return;
+    }
     
+    setIsDetailsModalOpen(false);
     setCheckoutState('processing');
 
     const orderItems = cart.map(i => ({
@@ -127,10 +163,24 @@ export default function ClientDashboard() {
     }));
 
     try {
+      // Update user with these details if they don't have them
+      if (!appUser.phone || !appUser.locationStr) {
+          const updateData: any = {
+             phone: clientDetails.phone,
+             locationStr: clientDetails.locationStr
+          };
+          if (!appUser.isAnonymous && clientDetails.name) {
+              updateData.name = clientDetails.name;
+          }
+          await updateDoc(doc(db, 'users', appUser.uid), updateData);
+      }
+
       await addDoc(collection(db, 'orders'), {
         businessId: appUser.businessId,
         clientId: appUser?.uid,
-        clientName: appUser?.name,
+        clientName: clientDetails.name || appUser?.name || 'Anonymous',
+        clientPhone: clientDetails.phone || appUser?.phone || '',
+        clientLocation: clientDetails.locationStr,
         items: orderItems,
         total: cartTotal,
         status: 'active',
@@ -161,6 +211,18 @@ export default function ClientDashboard() {
       console.error(err);
       setCheckoutState('idle');
     }
+  };
+
+  const handleCheckout = async () => {
+    if (cart.length === 0) return;
+    if (!appUser?.businessId) return;
+
+    if (!appUser.phone || !appUser.locationStr) {
+       setIsDetailsModalOpen(true);
+       return;
+    }
+    
+    await submitOrderWithDetails();
   };
 
   const handleMarkReceived = async (orderId: string) => {
@@ -196,7 +258,7 @@ export default function ClientDashboard() {
           
         {/* User Profile Summary in Sidebar */}
         <div className="flex items-center gap-2 px-3 mb-8">
-           <svg width="100%" height="auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-8 h-auto object-contain text-brand-primary"><path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4"/><path d="M2 7h20"/><path d="M22 7v3a2 2 0 0 1-2 2v0a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 16 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 12 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 8 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 4 12v0a2 2 0 0 1-2-2V7"/></svg>
+           <img src="https://lh3.googleusercontent.com/d/1bV4yXsTNYUMjZ7Qe5dYuXf5R6B_xNfop" alt="Relible Commerce" referrerPolicy="no-referrer" className="w-8 h-auto object-contain" />
            <span className="font-bold tracking-widest uppercase text-[15px] text-text-main">Relible Commerce</span>
         </div>
 
@@ -287,7 +349,7 @@ export default function ClientDashboard() {
                    </div>
                    <div className="hidden md:flex flex-col">
                      <span className="text-[13px] font-bold text-text-main leading-tight group-hover:text-text-muted transition-colors">{appUser?.name || 'Client'}</span>
-                     <span className="text-[10px] text-text-muted leading-tight mt-0.5 font-bold uppercase tracking-wider">{t.common.clientAccount}</span>
+                     <span className="text-[10px] text-text-muted leading-tight mt-0.5 font-bold uppercase tracking-wider font-mono">{appUser?.accountId ? `ID: ${appUser.accountId}` : t.common.clientAccount}</span>
                    </div>
                    <ChevronDown className="w-4 h-4 text-text-muted hidden md:block transition-transform group-hover:translate-y-0.5" />
                 </div>
@@ -625,8 +687,81 @@ export default function ClientDashboard() {
         )}
         </main>
       </div>
+      {isDetailsModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 min-h-[100dvh]">
+          <div className="absolute inset-0 bg-bg-base/80 backdrop-blur-sm" onClick={() => setIsDetailsModalOpen(false)}></div>
+          <div className="relative bg-surface border border-border-color rounded-[32px] p-6 max-w-md w-full shadow-accent card-premium">
+            <h2 className="text-[20px] font-bold text-text-main mb-2">Данные для доставки</h2>
+            <p className="text-[13px] text-text-muted mb-6">Введите {appUser?.isAnonymous ? 'телефон и адрес' : 'ваше имя, телефон и адрес'} (или геолокацию) для оформления заказа. Эти данные сохранятся для будущих покупок.</p>
+            
+            <form onSubmit={submitOrderWithDetails} className="space-y-4">
+              {!appUser?.isAnonymous && (
+              <div>
+                 <label className="text-[12px] font-bold text-text-main uppercase tracking-wider mb-1 block">Имя</label>
+                 <input 
+                   type="text" 
+                   required
+                   value={clientDetails.name}
+                   onChange={e => setClientDetails(p => ({...p, name: e.target.value}))}
+                   className="w-full pl-4 pr-4 py-3 rounded-xl bg-surface border border-border-color text-text-main focus:border-text-muted outline-none placeholder:text-text-muted/50 text-[13px]"
+                   placeholder="Иван Иванов"
+                 />
+              </div>
+              )}
+              <div>
+                 <label className="text-[12px] font-bold text-text-main uppercase tracking-wider mb-1 block">Телефон</label>
+                 <input 
+                   type="tel" 
+                   required
+                   value={clientDetails.phone}
+                   onChange={e => setClientDetails(p => ({...p, phone: e.target.value}))}
+                   className="w-full pl-4 pr-4 py-3 rounded-xl bg-surface border border-border-color text-text-main focus:border-text-muted outline-none placeholder:text-text-muted/50 text-[13px]"
+                   placeholder="+998 90 123 45 67"
+                 />
+              </div>
+              <div>
+                 <label className="text-[12px] font-bold text-text-main uppercase tracking-wider mb-1 block">Адрес или Геолокация</label>
+                 <div className="relative">
+                   <input 
+                     type="text" 
+                     required
+                     value={clientDetails.locationStr}
+                     onChange={e => setClientDetails(p => ({...p, locationStr: e.target.value}))}
+                     className="w-full bg-surface border border-border-color rounded-xl pl-4 pr-12 py-3 text-[13px] text-text-main focus:border-text-muted outline-none placeholder:text-text-muted/50"
+                     placeholder="Введите адрес..."
+                   />
+                   <button 
+                     type="button" 
+                     onClick={requestGeolocation}
+                     className="absolute right-2 top-1/2 -translate-y-1/2 p-2 hover:bg-surface-alt rounded-lg transition-colors text-text-main"
+                     title="Определить по GPS"
+                   >
+                     <MapPin className="w-5 h-5 text-text-muted" />
+                   </button>
+                 </div>
+              </div>
+              <div className="pt-4 flex gap-3">
+                 <button 
+                   type="button" 
+                   onClick={() => setIsDetailsModalOpen(false)}
+                   className="flex-1 px-4 py-3 border border-border-color border-transparent text-text-muted rounded-xl font-bold hover:bg-surface transition-colors/50"
+                 >
+                   Отмена
+                 </button>
+                 <button 
+                   type="submit" 
+                   className="flex-1 px-4 py-3 bg-text-main hover:bg-text-main/90 text-bg-base rounded-xl font-bold transition-all shadow-md active:scale-95 flex items-center justify-center text-[13px]"
+                 >
+                   Подтвердить
+                 </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       <PostRegistrationSecurityDialog 
-        isOpen={isSecurityDialogOpen} 
+        isOpen={isSecurityDialogOpen && !appUser?.isAnonymous} 
         onClose={handleCloseSecurityDialog} 
         lang={lang}
         onLanguageChange={setLang}

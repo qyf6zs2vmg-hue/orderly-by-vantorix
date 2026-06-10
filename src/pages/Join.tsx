@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification, signOut } from 'firebase/auth';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification, signOut, signInAnonymously } from 'firebase/auth';
 import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { auth, db } from '../lib/firebase';
 import { useNavigate, useSearchParams, useParams, Navigate, Link } from 'react-router-dom';
@@ -60,31 +60,66 @@ export default function Join() {
           setInviteError(lang === 'RU' ? 'Неверный код приглашения' : 'Taklif kodi noto\'g\'ri');
         } else {
           const data = inviteDoc.data();
+          const doAnonymousJoin = async (businessId: string, isPublicLink: boolean, inviteId: string) => {
+             try {
+                const userCred = await signInAnonymously(auth);
+                const uid = userCred.user.uid;
+                const userDoc = await getDoc(doc(db, 'users', uid));
+                if (!userDoc.exists()) {
+                    await setDoc(doc(db, 'users', uid), {
+                      uid: uid,
+                      role: 'client',
+                      status: 'active',
+                      inviteCode: code || '',
+                      businessId: businessId,
+                      securityAcknowledged: true,
+                      onboardingComplete: false,
+                      isAnonymous: true,
+                      accountId: Math.floor(100000 + Math.random() * 900000).toString(),
+                      plan_type: 'free',
+                      pro_expires_at: null
+                    });
+                } else {
+                    await updateDoc(doc(db, 'users', uid), {
+                       businessId: businessId,
+                       inviteCode: code || '',
+                       status: 'active'
+                    });
+                }
+                
+                if (!isPublicLink && inviteId) {
+                    await updateDoc(doc(db, 'invites', inviteId), { used: true });
+                }
+          
+                navigate('/client');
+             } catch (err: any) {
+                console.error(err);
+                setInviteError(lang === 'RU' ? 'Ошибка входа' : 'Kirishda xatolik');
+             }
+          };
+
+          let accessMode = 'private';
+          let businessName = lang === 'RU' ? 'Неизвестный бизнес' : 'Noma\'lum biznes';
+
+          if (data.businessId) {
+            const busDoc = await getDoc(doc(db, 'businesses', data.businessId));
+            if (busDoc.exists()) {
+              accessMode = busDoc.data().accessMode || 'private';
+              businessName = busDoc.data().name;
+            }
+          }
+
+          setInviteData({ id: inviteDoc.id, businessName, accessMode, ...data });
+
+          if (accessMode === 'public' || data.isPublicLink) {
+             doAnonymousJoin(data.businessId, !!data.isPublicLink, inviteDoc.id);
+             return;
+          }
+
           if (data.blocked) {
             setInviteError(lang === 'RU' ? 'Этот инвайт-код заблокирован' : 'Ushbu taklif kodi bloklangan');
           } else if (data.used) {
-            if (data.businessId) {
-              const busDoc = await getDoc(doc(db, 'businesses', data.businessId));
-              if (busDoc.exists()) {
-                setInviteData({ id: inviteDoc.id, businessName: busDoc.data().name, accessMode: busDoc.data().accessMode || 'private', ...data });
-              } else {
-                setInviteData({ id: inviteDoc.id, businessName: lang === 'RU' ? 'Неизвестный бизнес' : 'Noma\'lum biznes', accessMode: 'private', ...data });
-              }
-            } else {
-              setInviteData({ id: inviteDoc.id, businessName: lang === 'RU' ? 'Неизвестный бизнес' : 'Noma\'lum biznes', accessMode: 'private', ...data });
-            }
             setIsLogin(true);
-          } else {
-            if (data.businessId) {
-              const busDoc = await getDoc(doc(db, 'businesses', data.businessId));
-              if (busDoc.exists()) {
-                setInviteData({ id: inviteDoc.id, businessName: busDoc.data().name, accessMode: busDoc.data().accessMode || 'private', ...data });
-              } else {
-                setInviteData({ id: inviteDoc.id, businessName: lang === 'RU' ? 'Неизвестный бизнес' : 'Noma\'lum biznes', accessMode: 'private', ...data });
-              }
-            } else {
-              setInviteData({ id: inviteDoc.id, businessName: lang === 'RU' ? 'Неизвестный бизнес' : 'Noma\'lum biznes', accessMode: 'private', ...data });
-            }
           }
         }
       } catch (err: any) {
@@ -110,6 +145,48 @@ export default function Join() {
       setIsSecurityModalOpen(true);
     } else {
       processSubmit();
+    }
+  };
+
+  const handleAnonymousJoin = async () => {
+    setError('');
+    setLoading(true);
+    try {
+      const userCred = await signInAnonymously(auth);
+      const uid = userCred.user.uid;
+      const userDoc = await getDoc(doc(db, 'users', uid));
+      if (!userDoc.exists()) {
+          await setDoc(doc(db, 'users', uid), {
+            uid: uid,
+            role: 'client',
+            status: 'active',
+            inviteCode: code || '',
+            businessId: inviteData.businessId,
+            securityAcknowledged: true,
+            onboardingComplete: false,
+            isAnonymous: true,
+            accountId: Math.floor(100000 + Math.random() * 900000).toString(),
+            plan_type: 'free',
+            pro_expires_at: null
+          });
+      } else {
+          await updateDoc(doc(db, 'users', uid), {
+             businessId: inviteData.businessId,
+             inviteCode: code || '',
+             status: 'active'
+          });
+      }
+      
+      if (!inviteData.isPublicLink && inviteData.id) {
+          await updateDoc(doc(db, 'invites', inviteData.id), { used: true });
+      }
+
+      navigate('/client');
+    } catch (err: any) {
+      console.error(err);
+      setError(lang === 'RU' ? 'Ошибка входа' : 'Kirishda xatolik');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -163,7 +240,10 @@ export default function Join() {
             inviteCode: code,
             businessId: inviteData.businessId,
             securityAcknowledged: true,
-            onboardingComplete: false
+            onboardingComplete: false,
+            accountId: Math.floor(100000 + Math.random() * 900000).toString(),
+            plan_type: 'free',
+            pro_expires_at: null
           });
 
         if (!inviteData.isPublicLink) {
@@ -295,9 +375,11 @@ export default function Join() {
           <div className="text-center mb-8 w-full flex flex-col items-center">
             <h1 className="text-[18px] font-bold text-text-main tracking-tight mb-2 text-center">{inviteData?.businessName || "Загрузка..."}</h1>
             <p className="text-[13px] text-text-muted font-medium mb-4 text-center" style={{ textWrap: "balance" }}>
-               {inviteData?.used 
-                 ? (lang === 'RU' ? 'Вход в портал клиента' : 'Mijoz portaliga kirish') 
-                 : (lang === 'RU' ? 'Завершение регистрации: заполните форму, чтобы присоединиться' : 'Ro\'yxatdan o\'tishni yakunlash: qo\'shilish uchun shaklni to\'ldiring')}
+               {inviteData?.accessMode === 'public' || inviteData?.isPublicLink
+                 ? (lang === 'RU' ? 'Добро пожаловать в наш каталог' : 'Katalogimizga xush kelibsiz') 
+                 : inviteData?.used 
+                   ? (lang === 'RU' ? 'Вход в портал клиента' : 'Mijoz portaliga kirish') 
+                   : (lang === 'RU' ? 'Завершение регистрации: заполните форму, чтобы присоединиться' : 'Ro\'yxatdan o\'tishni yakunlash: qo\'shilish uchun shaklni to\'ldiring')}
             </p>
           </div>
 
@@ -308,7 +390,27 @@ export default function Join() {
                 </div>
               )}
               
-              {!inviteData?.used && (
+              {inviteData?.accessMode === 'public' || inviteData?.isPublicLink ? (
+                <button
+                  onClick={handleAnonymousJoin}
+                  disabled={loading}
+                  className="w-full bg-text-main hover:bg-text-main/90 text-bg-base font-bold h-12 rounded-xl text-[14px] transition-all shadow-sm active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 group"
+                >
+                  {loading ? (
+                    <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                  ) : (
+                    <>
+                      {lang === 'RU' ? 'Перейти в каталог' : 'Katalogga o\'tish'}
+                      <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                    </>
+                  )}
+                </button>
+              ) : (
+                <>
+                  {!inviteData?.used && (
                 <div className="flex bg-surface-alt rounded-[12px] p-1.5 mb-8 border border-border-color">
                    <button
                      onClick={() => { setIsLogin(false); setError(''); }}
@@ -427,6 +529,8 @@ export default function Join() {
                   )}
                 </button>
               </form>
+            </>
+          )}
           </div>
         </div>
       </div>

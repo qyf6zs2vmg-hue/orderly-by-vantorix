@@ -11,6 +11,7 @@ import { PostRegistrationSecurityDialog } from '../components/PostRegistrationSe
 import { SecurityIndicator } from '../components/SecurityIndicator';
 import { LanguageToggle } from '../components/LanguageToggle';
 import { translations, Language } from '../constants/translations';
+import { UpgradeModal } from '../components/UpgradeModal';
 
 function generateRandomCode(length = 24) {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
@@ -31,6 +32,7 @@ export default function AdminDashboard() {
   const t = translations[lang];
   const [activeTab, setActiveTab] = useState<'invites' | 'requests' | 'users' | 'orders' | 'products' | 'settings'>('invites');
   const [isSecurityDialogOpen, setIsSecurityDialogOpen] = useState(false);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   
   const [invites, setInvites] = useState<any[]>([]);
   const [publicDomainInput, setPublicDomainInput] = useState('');
@@ -138,6 +140,10 @@ export default function AdminDashboard() {
 
   const handleCreateInvite = async () => {
     if (!appUser?.businessId) return;
+    if (appUser?.plan_type !== 'pro' && invites.length >= 1) {
+      setShowUpgradeModal(true);
+      return;
+    }
     const code = generateRandomCode();
     await setDoc(doc(db, 'invites', code), {
       businessId: appUser.businessId,
@@ -180,6 +186,11 @@ export default function AdminDashboard() {
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (appUser?.plan_type !== 'pro') {
+      e.preventDefault();
+      setShowUpgradeModal(true);
+      return;
+    }
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
@@ -193,6 +204,10 @@ export default function AdminDashboard() {
   const handleAddProduct = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!appUser?.businessId) return;
+    if (appUser?.plan_type !== 'pro' && products.length >= 20) {
+      setShowUpgradeModal(true);
+      return;
+    }
     try {
       await addDoc(collection(db, 'products'), {
         businessId: appUser.businessId,
@@ -237,6 +252,11 @@ export default function AdminDashboard() {
   };
 
   const handleEditImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (appUser?.plan_type !== 'pro') {
+      e.preventDefault();
+      setShowUpgradeModal(true);
+      return;
+    }
     const file = e.target.files?.[0];
     if (file && editingProduct) {
       const reader = new FileReader();
@@ -270,7 +290,7 @@ export default function AdminDashboard() {
         
         {/* User Profile Summary in Sidebar */}
         <div className="flex items-center gap-2 px-3 mb-8">
-           <svg width="100%" height="auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-8 h-auto object-contain text-brand-primary"><path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4"/><path d="M2 7h20"/><path d="M22 7v3a2 2 0 0 1-2 2v0a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 16 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 12 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 8 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 4 12v0a2 2 0 0 1-2-2V7"/></svg>
+           <img src="https://lh3.googleusercontent.com/d/1bV4yXsTNYUMjZ7Qe5dYuXf5R6B_xNfop" alt="Relible Commerce" referrerPolicy="no-referrer" className="w-8 h-auto object-contain" />
            <span className="font-bold tracking-widest uppercase text-[15px] text-text-main">Relible Commerce</span>
         </div>
 
@@ -379,7 +399,12 @@ export default function AdminDashboard() {
              
              {/* Icons */}
              <div className="flex items-center gap-4 ml-auto">
-                <div className="hidden lg:flex items-center gap-2 mr-2">
+                <div className="hidden lg:flex items-center gap-4 mr-2">
+                   {appUser?.plan_type === 'pro' ? (
+                     <span className="px-2.5 py-1 rounded-md bg-yellow-500/10 text-yellow-600 text-[11px] font-bold border border-yellow-500/20 shadow-sm">Pro ✓</span>
+                   ) : (
+                     <span className="px-2.5 py-1 rounded-md bg-surface-alt text-text-muted text-[11px] font-bold border border-border-color shadow-sm">Free</span>
+                   )}
                   <LanguageToggle currentLang={lang} onLangChange={setLang} variant="minimal" />
                 </div>
                 <div className="hidden lg:block">
@@ -399,7 +424,7 @@ export default function AdminDashboard() {
                    </div>
                    <div className="hidden md:flex flex-col">
                       <span className="text-[13px] font-semibold text-text-main leading-tight">{appUser?.name || 'Administrator'}</span>
-                      <span className="text-[10px] text-text-muted leading-tight mt-0.5">Administrator</span>
+                      <span className="text-[10px] text-text-muted leading-tight mt-0.5 font-mono">{appUser?.accountId ? `ID: ${appUser.accountId}` : 'Administrator'}</span>
                    </div>
                    <ChevronDown className="w-3.5 h-3.5 text-text-muted hidden md:block ml-1" />
                 </div>
@@ -524,7 +549,7 @@ export default function AdminDashboard() {
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-border-color/50 text-text-main">
-                        {invites.sort((a,b) => b.createdAt - a.createdAt).map(invite => (
+                        {invites.sort((a,b) => b.createdAt - a.createdAt).slice(0, appUser?.plan_type === 'pro' ? invites.length : 1).map(invite => (
                           <tr key={invite.id} className="hover:bg-surface-alt/30 transition-all group">
                             <td className="px-8 py-5 text-text-main">
                               <div className="flex flex-col gap-1">
@@ -799,7 +824,7 @@ export default function AdminDashboard() {
                   <div className="mt-4 overflow-x-auto min-w-full">
                     <h3 className="text-[18px] font-bold text-text-main tracking-tight mb-4">Ваши товары</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {products.map(product => (
+                      {products.slice(0, appUser?.plan_type === 'pro' ? products.length : 20).map(product => (
                         <div key={product.id} className="bg-surface p-6 rounded-[32px] border border-border-color flex flex-col gap-4 shadow-sm group">
                           {editingProduct?.id === product.id ? (
                             <form onSubmit={handleEditProductSubmit} className="flex flex-col gap-3">
@@ -817,7 +842,7 @@ export default function AdminDashboard() {
                             </form>
                           ) : (
                             <>
-                              {product.imageUrl ? (
+                              {product.imageUrl && appUser?.plan_type === 'pro' ? (
                                 <div className="w-full h-40 bg-surface-alt rounded-2xl overflow-hidden border border-border-color mb-2 shrink-0 relative">
                                   <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
                                 </div>
@@ -1015,6 +1040,7 @@ export default function AdminDashboard() {
             </div>
           )}
 
+          <UpgradeModal isOpen={showUpgradeModal} onClose={() => setShowUpgradeModal(false)} />
         </main>
       </div>
       <PostRegistrationSecurityDialog 

@@ -36,15 +36,21 @@ service cloud.firestore {
     match /invites/{inviteId} {
       allow read: if true;
       allow create: if isOwner() && request.resource.data.businessId == getUserData().businessId;
-      allow update: if isOwner() || (isSignedIn() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['used']));
-      allow delete: if isOwner();
+      allow update: if (isOwner() && resource.data.businessId == getUserData().businessId) || 
+                       (isSignedIn() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['used']));
+      allow delete: if isOwner() && resource.data.businessId == getUserData().businessId;
     }
     
     match /users/{userId} {
-      allow read: if isSignedIn();
+      allow read: if (isSignedIn() && isDocOwner(userId)) || 
+                     (isOwner() && resource.data.businessId == getUserData().businessId) || 
+                     (isSignedIn() && request.auth.token.email == 'salmondavronov2110@gmail.com');
       allow create: if isOwner() || (isSignedIn() && isDocOwner(userId) && (request.resource.data.role == 'client' || (request.resource.data.role == 'owner' && getAfter(/databases/$(database)/documents/businesses/$(request.resource.data.businessId)).data.ownerId == userId)));
-      allow update: if isOwner() || (isSignedIn() && isDocOwner(userId) && request.resource.data.role == resource.data.role && request.resource.data.businessId == resource.data.businessId);
-      allow delete: if isOwner();
+      allow update: if (isSignedIn() && isDocOwner(userId) && request.resource.data.role == resource.data.role && request.resource.data.businessId == resource.data.businessId) || 
+                       (isOwner() && resource.data.businessId == getUserData().businessId && resource.data.role == 'client') ||
+                       (isSignedIn() && request.auth.token.email == 'salmondavronov2110@gmail.com');
+      allow delete: if (isOwner() && resource.data.businessId == getUserData().businessId && resource.data.role == 'client') ||
+                       (isSignedIn() && request.auth.token.email == 'salmondavronov2110@gmail.com');
     }
     
     match /orders/{orderId} {
@@ -54,10 +60,10 @@ service cloud.firestore {
       allow delete: if isOwner() && resource.data.businessId == getUserData().businessId;
     }
     match /products/{productId} {
-      allow read: if isSignedIn();
+      allow read: if isSignedIn() && resource.data.businessId == getUserData().businessId;
       allow create: if isOwner() && request.resource.data.businessId == getUserData().businessId;
       allow update: if (isOwner() && resource.data.businessId == getUserData().businessId) || 
-                       (isSignedIn() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['stock']));
+                       (isSignedIn() && resource.data.businessId == getUserData().businessId && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['stock']));
       allow delete: if isOwner() && resource.data.businessId == getUserData().businessId;
     }
   }

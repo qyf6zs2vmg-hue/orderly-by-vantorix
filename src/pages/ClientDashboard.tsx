@@ -306,7 +306,7 @@ export default function ClientDashboard() {
           </button>
         </nav>
         
-        <div className="hidden md:flex flex-col items-center justify-center mt-auto gap-4 pt-6 border-t border-border-color/50">
+        <div className="flex flex-col items-center justify-center mt-auto gap-4 pt-6 border-t border-border-color/50">
            <button onClick={logout} className="w-full flex justify-center items-center py-3 px-4 rounded-xl text-[13px] font-bold text-brand-danger hover:bg-brand-danger/5 border border-transparent hover:border-brand-danger/10 transition-all active:scale-[0.98]">
              <LogOut className="w-4 h-4 mr-2" /> {t.common.logout}
            </button>

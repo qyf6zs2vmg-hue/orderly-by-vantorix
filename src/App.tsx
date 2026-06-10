@@ -14,6 +14,7 @@ import AdminDashboard from './pages/AdminDashboard';
 import ClientDashboard from './pages/ClientDashboard';
 import PendingApproval from './pages/PendingApproval';
 import { SplashScreen } from './components/SplashScreen';
+import { AccountStatusScreen } from './components/AccountStatusScreen';
 
 import DeveloperPanel from './pages/DeveloperPanel';
 
@@ -27,13 +28,16 @@ function ProtectedRoute({ children, requiredRole }: { children: React.ReactNode,
   if (loading) return <SplashScreen />;
 
   if (!appUser) {
-    // If we have a firebase user but no firestore profile yet, 
-    // we might be in the middle of registration.
-    // Let's show the splash screen instead of immediately redirecting.
+    const creationTime = new Date(user.metadata.creationTime || '').getTime();
+    const now = Date.now();
+    // If auth user exists but no firestore document AND the account is older than 10 seconds, it's been deleted.
+    if (now - creationTime > 10000) {
+      return <AccountStatusScreen status="deleted" />;
+    }
     return <SplashScreen />;
   }
 
-  if (appUser.status === 'blocked') return <div className="min-h-screen flex items-center justify-center bg-bg-base text-brand-danger text-xl font-medium font-sans">Ваш аккаунт заблокирован.</div>;
+  if (appUser.status === 'blocked') return <AccountStatusScreen status="blocked" />;
 
   if (requiredRole && requiredRole === 'owner') {
     if (appUser.role !== 'owner' && appUser.role !== 'admin') {

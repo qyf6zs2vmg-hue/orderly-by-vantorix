@@ -62,7 +62,9 @@ export default function Join() {
           const data = inviteDoc.data();
           const doAnonymousJoin = async (businessId: string, isPublicLink: boolean, inviteId: string) => {
              try {
-                const userCred = await signInAnonymously(auth);
+                const randomPassword = Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8);
+                const randomEmail = `guest_${Math.random().toString(36).substring(2, 10)}_${Date.now()}@relible.local`;
+                const userCred = await createUserWithEmailAndPassword(auth, randomEmail, randomPassword);
                 const uid = userCred.user.uid;
                 const userDoc = await getDoc(doc(db, 'users', uid));
                 if (!userDoc.exists()) {
@@ -152,7 +154,9 @@ export default function Join() {
     setError('');
     setLoading(true);
     try {
-      const userCred = await signInAnonymously(auth);
+      const randomPassword = Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8);
+      const randomEmail = `guest_${Math.random().toString(36).substring(2, 10)}_${Date.now()}@relible.local`;
+      const userCred = await createUserWithEmailAndPassword(auth, randomEmail, randomPassword);
       const uid = userCred.user.uid;
       const userDoc = await getDoc(doc(db, 'users', uid));
       if (!userDoc.exists()) {

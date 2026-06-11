@@ -383,7 +383,7 @@ export default function AdminDashboard() {
 
       {/* Sidebar */}
       <div className={clsx(
-        "fixed md:static inset-y-0 left-0 w-[260px] flex-shrink-0 flex flex-col py-6 px-4 bg-bg-base border-r border-border-color z-50 transition-transform duration-300 select-none h-full overflow-y-auto no-scrollbar",
+        "fixed md:static inset-y-0 left-0 w-[260px] flex-shrink-0 flex flex-col pt-6 pb-12 md:pb-6 px-4 bg-bg-base border-r border-border-color z-50 transition-transform duration-300 select-none h-[100dvh] md:h-auto overflow-y-auto no-scrollbar",
         isMobileMenuOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
       )}>
         
@@ -460,7 +460,7 @@ export default function AdminDashboard() {
           </button>
         </nav>
 
-        <div className="flex flex-col items-center justify-center mt-auto gap-4 pt-6 border-t border-border-color/50">
+        <div className="flex flex-col items-center justify-center mt-auto gap-4 pt-6 pb-6 md:pb-0 border-t border-border-color/50">
            <button onClick={logout} className="w-full flex justify-center items-center py-3 px-4 rounded-xl text-[13px] font-bold text-brand-danger hover:bg-brand-danger/5 border border-transparent hover:border-brand-danger/10 transition-all active:scale-[0.98]">
              <LogOut className="w-4 h-4 mr-2" /> {t.common.logout}
            </button>
@@ -498,26 +498,15 @@ export default function AdminDashboard() {
              
              {/* Icons */}
              <div className="flex items-center gap-3 md:gap-4 ml-auto">
-                {appUser?.plan_type === 'pro' ? (
-                  <span className="px-2.5 py-1 rounded-md bg-yellow-500/10 text-yellow-600 text-[11px] font-bold border border-yellow-500/20 shadow-sm whitespace-nowrap">Pro ✓</span>
-                ) : (
-                  <span className="px-2.5 py-1 rounded-md bg-surface-alt text-text-muted text-[11px] font-bold border border-border-color shadow-sm whitespace-nowrap">Free</span>
+                <span className={clsx("px-3 py-1.5 rounded-lg text-[13px] font-bold border shadow-sm whitespace-nowrap", appUser?.plan_type === 'pro' ? 'bg-yellow-500/10 text-yellow-600 border-yellow-500/20' : 'bg-surface-alt text-text-muted border-border-color')}>
+                  {appUser?.plan_type === 'pro' ? 'Pro ✓' : 'Free'}
+                </span>
+                
+                {appUser?.plan_type !== 'pro' && (
+                  <button onClick={() => setShowUpgradeModal(true)} className="px-4 py-2 rounded-xl bg-yellow-500 hover:bg-yellow-400 text-black text-[13px] font-bold shadow-[0_4px_14px_0_rgba(234,179,8,0.39)] whitespace-nowrap transition-colors">Купить Pro</button>
                 )}
-                <div className="hidden lg:flex items-center gap-4 mr-2">
-                  <LanguageToggle currentLang={lang} onLangChange={setLang} variant="minimal" />
-                </div>
-                <div className="hidden lg:block">
-                  <SecurityIndicator variant="shield" />
-                </div>
-                <button className="relative w-10 h-10 flex items-center justify-center rounded-xl hover:bg-surface-alt transition-colors text-text-muted hover:text-text-main border border-transparent hover:border-border-color">
-                   <Bell className="w-[18px] h-[18px]" />
-                   <span className="absolute top-2 right-2 w-[8px] h-[8px] bg-brand-danger rounded-full border-2 border-surface"></span>
-                </button>
-                <button className="relative text-text-muted hover:text-text-main transition-colors">
-                   <Mail className="w-[18px] h-[18px]" />
-                </button>
-                <div className="h-5 w-px bg-border-color hidden md:block mx-1"></div>
-                <div className="flex items-center gap-2.5 cursor-pointer">
+                
+                <div className="flex items-center gap-2.5 cursor-pointer ml-2">
                    <div className="h-8 w-8 bg-surface-alt rounded-full flex items-center justify-center font-bold text-text-main border border-border-color shadow-sm text-[12px]">
                       {appUser?.name?.[0]?.toUpperCase() || 'A'}
                    </div>

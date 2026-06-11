@@ -23,8 +23,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   const updateTimeContext = useCallback(() => {
     const hour = new Date().getHours();
-    // Night is 19:00 to 07:00
-    const isNight = hour >= 19 || hour < 7;
+    // Night is 21:00 to 05:00
+    const isNight = hour >= 21 || hour < 5;
     setTimeContext(isNight ? 'night' : 'day');
   }, []);
 

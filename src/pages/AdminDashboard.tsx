@@ -103,7 +103,7 @@ export default function AdminDashboard() {
   const [showAllOrders, setShowAllOrders] = useState(false);
   const [products, setProducts] = useState<any[]>([]);
   const [editingClient, setEditingClient] = useState<{id: string, name: string} | null>(null);
-  const [isNavVisible, setIsNavVisible] = useState(true);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
   // Products Management
   const [showAddProduct, setShowAddProduct] = useState(false);
@@ -373,8 +373,19 @@ export default function AdminDashboard() {
 
   return (
     <div className="h-screen overflow-hidden bg-bg-base flex flex-row font-sans text-text-main">
+      {/* Mobile Backdrop */}
+      {isMobileMenuOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-40 md:hidden transition-opacity"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
-      <div className="hidden md:flex inset-y-0 left-0 w-[260px] flex-shrink-0 flex-col pt-6 pb-6 px-4 bg-bg-base border-r border-border-color z-50 select-none h-auto overflow-y-auto no-scrollbar">
+      <div className={clsx(
+        "fixed md:static inset-y-0 left-0 w-[260px] flex-shrink-0 flex flex-col pt-6 pb-12 md:pb-6 px-4 bg-bg-base border-r border-border-color z-50 transition-transform duration-300 select-none h-[100dvh] md:h-auto overflow-y-auto no-scrollbar",
+        isMobileMenuOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+      )}>
         
         {/* User Profile Summary in Sidebar */}
         <div className="flex items-center gap-2 px-3 mb-8">
@@ -460,78 +471,20 @@ export default function AdminDashboard() {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden relative w-full h-full">
-        {/* Floating Bottom Nav */}
-        <div className="fixed md:hidden bottom-6 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-3 w-max">
-           <div className={clsx(
-              "flex items-center gap-1 sm:gap-2 px-2 py-1.5 bg-surface/40 backdrop-blur-2xl border border-border-color shadow-[0_8px_32px_rgba(0,0,0,0.12)] transition-all duration-300 ease-in-out rounded-full",
-              isNavVisible ? "translate-y-0 opacity-100" : "translate-y-20 opacity-0 pointer-events-none"
-           )}>
-             <button
-               onClick={() => setActiveTab('invites')}
-               className={clsx("flex flex-col items-center justify-center min-w-[72px] py-2 px-2 rounded-full transition-all duration-200", activeTab === 'invites' ? "bg-text-main/10 text-text-main font-bold" : "text-text-muted hover:text-text-main hover:bg-text-main/5")}
-             >
-               <Key className={clsx("w-5 h-5 mb-1", activeTab === 'invites' && "scale-110 transition-transform")} />
-               <span className="text-[10px] sm:text-[11px] font-medium tracking-wide">{t.tabs.invites}</span>
-             </button>
-             {business?.accessMode !== 'public' && (
-               <button
-                 onClick={() => setActiveTab('requests')}
-                 className={clsx("flex flex-col items-center justify-center min-w-[72px] py-2 px-2 rounded-full transition-all duration-200 relative", activeTab === 'requests' ? "bg-text-main/10 text-text-main font-bold" : "text-text-muted hover:text-text-main hover:bg-text-main/5")}
-               >
-                 <ClipboardList className={clsx("w-5 h-5 mb-1", activeTab === 'requests' && "scale-110 transition-transform")} />
-                 <span className="text-[10px] sm:text-[11px] font-medium tracking-wide">{t.tabs.requests}</span>
-                 {pendingUsers.length > 0 && <span className="absolute top-1 right-1 bg-brand-primary text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">{pendingUsers.length}</span>}
-               </button>
-             )}
-             <button
-               onClick={() => setActiveTab('users')}
-               className={clsx("flex flex-col items-center justify-center min-w-[72px] py-2 px-2 rounded-full transition-all duration-200 relative", activeTab === 'users' ? "bg-text-main/10 text-text-main font-bold" : "text-text-muted hover:text-text-main hover:bg-text-main/5")}
-             >
-               <Users className={clsx("w-5 h-5 mb-1", activeTab === 'users' && "scale-110 transition-transform")} />
-               <span className="text-[10px] sm:text-[11px] font-medium tracking-wide">{t.tabs.users}</span>
-               {activeUsers.length > 0 && <span className="absolute top-1 right-1 bg-text-main/20 text-text-main border border-border-color text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">{activeUsers.length}</span>}
-             </button>
-             <button
-               onClick={() => setActiveTab('orders')}
-               className={clsx("flex flex-col items-center justify-center min-w-[72px] py-2 px-2 rounded-full transition-all duration-200", activeTab === 'orders' ? "bg-text-main/10 text-text-main font-bold" : "text-text-muted hover:text-text-main hover:bg-text-main/5")}
-             >
-               <ShoppingCart className={clsx("w-5 h-5 mb-1", activeTab === 'orders' && "scale-110 transition-transform")} />
-               <span className="text-[10px] sm:text-[11px] font-medium tracking-wide">{t.tabs.orders}</span>
-             </button>
-             <button
-               onClick={() => setActiveTab('products')}
-               className={clsx("flex flex-col items-center justify-center min-w-[72px] py-2 px-2 rounded-full transition-all duration-200", activeTab === 'products' ? "bg-text-main/10 text-text-main font-bold" : "text-text-muted hover:text-text-main hover:bg-text-main/5")}
-             >
-               <Store className={clsx("w-5 h-5 mb-1", activeTab === 'products' && "scale-110 transition-transform")} />
-               <span className="text-[10px] sm:text-[11px] font-medium tracking-wide">{t.tabs.products}</span>
-             </button>
-             <div className="w-px h-6 bg-border-color/50 mx-0.5"></div>
-             <button
-               onClick={() => setActiveTab('settings')}
-               className={clsx("flex flex-col items-center justify-center min-w-[72px] py-2 px-2 rounded-full transition-all duration-200", activeTab === 'settings' ? "bg-text-main/10 text-text-main font-bold" : "text-text-muted hover:text-text-main hover:bg-text-main/5")}
-             >
-               <Settings className={clsx("w-5 h-5 mb-1", activeTab === 'settings' && "scale-110 transition-transform")} />
-               <span className="text-[10px] sm:text-[11px] font-medium tracking-wide">{t.tabs.settings}</span>
-             </button>
-           </div>
-           
-           <button 
-             onClick={() => setIsNavVisible(!isNavVisible)}
-             className="w-10 h-10 rounded-full flex items-center justify-center bg-surface/40 backdrop-blur-2xl border border-border-color shadow-lg text-text-muted hover:text-text-main transition-colors hover:bg-surface/80"
-           >
-             <Menu className="w-5 h-5" />
-           </button>
-        </div>
+      <div className="flex-1 flex flex-col overflow-hidden relative w-full">
         {/* Top Header */}
         <header className="px-4 md:px-8 py-4 md:py-6 flex items-center justify-between flex-shrink-0 z-30">
              
-              {/* Search */}
-              <div className="flex items-center gap-2 px-1 mr-4">
-                <img src="https://lh3.googleusercontent.com/d/1bV4yXsTNYUMjZ7Qe5dYuXf5R6B_xNfop" alt="Relible Commerce" referrerPolicy="no-referrer" className="w-8 h-8 object-contain" />
-                <span className="font-bold tracking-widest uppercase text-[15px] text-text-main hidden sm:inline-block">Relible Commerce</span>
-              </div>
-              <div className={clsx("relative w-[360px] hidden md:block", activeTab !== 'products' && "invisible")}>
+             {/* Mobile Menu Button */}
+             <button 
+               className="md:hidden p-2 text-text-muted hover:text-text-main transition-colors mr-2"
+               onClick={() => setIsMobileMenuOpen(true)}
+             >
+                <Menu className="w-5 h-5" />
+             </button>
+
+             {/* Search */}
+             <div className={clsx("relative w-[360px] hidden md:block", activeTab !== 'products' && "invisible")}>
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
                 <input 
                   type="text" 
@@ -553,20 +506,20 @@ export default function AdminDashboard() {
                   <button onClick={() => setShowUpgradeModal(true)} className="px-4 py-2 rounded-xl bg-yellow-500 hover:bg-yellow-400 text-black text-[13px] font-bold shadow-[0_4px_14px_0_rgba(234,179,8,0.39)] whitespace-nowrap transition-colors">Купить Pro</button>
                 )}
                 
-                <button onClick={logout} className="flex items-center gap-2.5 hover:bg-surface-alt/50 p-1.5 pr-3 rounded-2xl transition-colors ml-2 border border-transparent hover:border-border-color">
+                <div className="flex items-center gap-2.5 cursor-pointer ml-2">
                    <div className="h-8 w-8 bg-surface-alt rounded-full flex items-center justify-center font-bold text-text-main border border-border-color shadow-sm text-[12px]">
                       {appUser?.name?.[0]?.toUpperCase() || 'A'}
                    </div>
-                   <div className="hidden md:flex flex-col text-left">
+                   <div className="hidden md:flex flex-col">
                       <span className="text-[13px] font-semibold text-text-main leading-tight">{appUser?.name || 'Administrator'}</span>
                       <span className="text-[10px] text-text-muted leading-tight mt-0.5 font-mono">{appUser?.accountId ? `ID: ${appUser.accountId}` : 'Administrator'}</span>
                    </div>
-                   <LogOut className="w-4 h-4 text-brand-danger ml-1" />
-                </button>
+                   <ChevronDown className="w-3.5 h-3.5 text-text-muted hidden md:block ml-1" />
+                </div>
              </div>
         </header>
 
-        <main className="flex-1 overflow-y-auto px-4 md:px-8 pb-8 no-scrollbar">
+        <main className="flex-1 overflow-y-auto px-4 md:px-8 pb-8 no-scrollbar" onClick={() => setIsMobileMenuOpen(false)}>
           
           {/* Invites Tab */}
           {activeTab === 'invites' && (

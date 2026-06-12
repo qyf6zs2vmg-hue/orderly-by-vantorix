@@ -14,10 +14,6 @@ export interface AppUser {
   isAnonymous?: boolean;
   plan_type?: 'free' | 'pro';
   pro_expires_at?: any;
-  telegramId?: string;
-  telegramUsername?: string;
-  firstName?: string;
-  lastName?: string;
 }
 
 interface BusinessData {

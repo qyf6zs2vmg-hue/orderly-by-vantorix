@@ -3,9 +3,10 @@ import { collection, onSnapshot, query, where, addDoc, updateDoc, doc } from 'fi
 import { db } from '../lib/firebase';
 import { useAuth } from '../lib/AuthContext';
 import { ThemeToggle } from '../components/ThemeToggle';
-import { LogOut, Store, ShoppingBag, Archive, Box, Plus, Minus, CreditCard, PackageCheck, ShoppingCart, Settings, Bell, Mail, ChevronDown, Menu, Search, Loader2, CheckCircle, Shield, Globe, User, FileText, Palette, MapPin } from 'lucide-react';
+import { LogOut, Store, ShoppingBag, Archive, Box, Plus, Minus, CreditCard, PackageCheck, ShoppingCart, Settings, Bell, Mail, ChevronDown, Menu, Search, Loader2, CheckCircle, Shield, Globe, User, FileText, Palette, MapPin, X } from 'lucide-react';
 import clsx from 'clsx';
 import { motion, AnimatePresence } from 'motion/react';
+import LocationPickerMap from '../components/LocationPickerMap';
 import PrivacyPolicyContent from '../components/PrivacyPolicyContent';
 import { SecuritySettings } from '../components/SecuritySettings';
 import { PostRegistrationSecurityDialog } from '../components/PostRegistrationSecurityDialog';
@@ -47,35 +48,31 @@ export default function ClientDashboard() {
   const [showAllOrders, setShowAllOrders] = useState(false);
   const [products, setProducts] = useState<any[]>([]);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isMobileCartOpen, setIsMobileCartOpen] = useState(false);
   const [checkoutState, setCheckoutState] = useState<'idle' | 'processing' | 'success'>('idle');
 
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
-  const [clientDetails, setClientDetails] = useState({ name: '', phone: '', locationStr: '' });
+  const [clientDetails, setClientDetails] = useState<{name: string; phone: string; locationStr: string; latitude: number | null; longitude: number | null}>({ name: '', phone: '', locationStr: '', latitude: null, longitude: null });
   
   useEffect(() => {
     if (appUser) {
         setClientDetails({
             name: appUser.name || '',
             phone: appUser.phone || '',
-            locationStr: appUser.locationStr || '' // We will save this to user
+            locationStr: appUser.locationStr || '',
+            latitude: appUser.latitude || null,
+            longitude: appUser.longitude || null
         });
     }
   }, [appUser]);
 
-  const requestGeolocation = () => {
-      if (navigator.geolocation) {
-          navigator.geolocation.getCurrentPosition(
-              (pos) => {
-                  setClientDetails(prev => ({ ...prev, locationStr: `${pos.coords.latitude}, ${pos.coords.longitude}` }));
-              },
-              (err) => {
-                  console.error(err);
-                  alert('Не удалось получить геопозицию. Укажите адрес вручную.');
-              }
-          );
-      } else {
-          alert('Геолокация не поддерживается вашим устройством.');
-      }
+  const handleLocationSelected = (lat: number, lng: number, address: string) => {
+    setClientDetails(prev => ({
+       ...prev,
+       latitude: lat,
+       longitude: lng,
+       locationStr: address,
+    }));
   };
 
   useEffect(() => {
@@ -164,10 +161,12 @@ export default function ClientDashboard() {
 
     try {
       // Update user with these details if they don't have them
-      if (!appUser.phone || !appUser.locationStr) {
+      if (!appUser.phone || !appUser.locationStr || !appUser.latitude) {
           const updateData: any = {
              phone: clientDetails.phone,
-             locationStr: clientDetails.locationStr
+             locationStr: clientDetails.locationStr,
+             latitude: clientDetails.latitude,
+             longitude: clientDetails.longitude,
           };
           if (!appUser.isAnonymous && clientDetails.name) {
               updateData.name = clientDetails.name;
@@ -177,11 +176,12 @@ export default function ClientDashboard() {
 
       await addDoc(collection(db, 'orders'), {
         businessId: appUser.businessId,
-        clientId: appUser?.telegramId || appUser?.uid, // Tie order to telegram ID, fallback to UID
-        clientTelegramId: appUser?.telegramId || '',
+        clientId: appUser?.uid,
         clientName: clientDetails.name || appUser?.name || 'Anonymous',
         clientPhone: clientDetails.phone || appUser?.phone || '',
         clientLocation: clientDetails.locationStr,
+        latitude: clientDetails.latitude,
+        longitude: clientDetails.longitude,
         items: orderItems,
         total: cartTotal,
         status: 'active',
@@ -337,7 +337,7 @@ export default function ClientDashboard() {
                    <div className="h-9 w-9 bg-surface-alt rounded-xl flex items-center justify-center font-bold text-text-main border border-border-color shadow-sm relative overflow-hidden">
                       {appUser?.name?.[0]?.toUpperCase() || 'C'}
                    </div>
-                   <div className="hidden md:flex flex-col">
+                   <div className="flex flex-col">
                      <span className="text-[13px] font-bold text-text-main leading-tight group-hover:text-text-muted transition-colors">{appUser?.name || 'Client'}</span>
                      <span className="text-[10px] text-text-muted leading-tight mt-0.5 font-bold uppercase tracking-wider font-mono">{appUser?.accountId ? `ID: ${appUser.accountId}` : t.common.clientAccount}</span>
                    </div>
@@ -364,7 +364,7 @@ export default function ClientDashboard() {
                    className="w-full bg-surface border border-border-color rounded-[10px] py-2.5 pl-10 pr-4 text-[13px] text-text-main shadow-sm focus:border-text-muted focus:ring-1 focus:ring-text-muted outline-none transition-all placeholder:text-text-muted card-premium" 
                  />
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pb-24 xl:pb-0">
                 {products.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase())).map(product => {
                   const cartItem = cart.find(i => i.product.id === product.id);
                   const quantity = cartItem ? cartItem.quantity : 0;
@@ -442,12 +442,49 @@ export default function ClientDashboard() {
               </div>
             </div>
 
-            {/* Cart Sidebar */}
-            <div className="w-full xl:w-96 bg-surface rounded-[16px] shadow-[0_4px_12px_rgba(16,24,40,0.03)] border border-border-color p-6 flex flex-col h-fit xl:sticky xl:top-6">
-              <h2 className="text-[16px] font-bold text-text-main mb-6 flex items-center pb-4 border-b border-border-color">
-                <ShoppingCart className="w-[18px] h-[18px] mr-2 text-text-muted opacity-80" />
-                Ваша корзина
-              </h2>
+            {/* Mobile Floating Cart Button */}
+            {cart.length > 0 && !isMobileCartOpen && (
+              <div className="xl:hidden fixed bottom-6 left-0 right-0 px-4 z-40 animate-in slide-in-from-bottom-5">
+                  <button 
+                    onClick={() => setIsMobileCartOpen(true)}
+                    className="w-full bg-text-main text-bg-base py-4 rounded-2xl shadow-xl flex items-center justify-between px-6 font-bold active:scale-[0.98] transition-transform"
+                  >
+                    <div className="flex items-center gap-3">
+                       <ShoppingCart className="w-5 h-5 opacity-80" />
+                       <span className="text-[15px]">В корзину ({cart.length})</span>
+                    </div>
+                    <span className="text-[16px]">${cartTotal.toLocaleString()}</span>
+                  </button>
+              </div>
+            )}
+
+            {/* Cart Sidebar / Mobile Drawer */}
+            {isMobileCartOpen && (
+              <div className="xl:hidden fixed inset-0 z-40 bg-bg-base/80 backdrop-blur-sm" onClick={() => setIsMobileCartOpen(false)}></div>
+            )}
+            <div className={clsx(
+                "bg-surface shadow-[0_4px_12px_rgba(16,24,40,0.03)] border-border-color flex-col h-fit shrink-0 transition-transform duration-300",
+                "xl:flex xl:w-96 xl:rounded-[16px] xl:border xl:p-6 xl:sticky xl:top-6 xl:z-0 xl:translate-y-0",
+                !isMobileCartOpen ? "hidden xl:flex" : "fixed bottom-0 left-0 right-0 z-50 rounded-t-[32px] border-t p-6 max-h-[85vh] overflow-hidden flex shadow-2xl animate-in slide-in-from-bottom-full"
+            )}>
+              {/* Close Button on Mobile */}
+              {isMobileCartOpen && (
+                <div className="xl:hidden flex justify-center mb-4">
+                  <div className="w-12 h-1.5 bg-border-color rounded-full"></div>
+                </div>
+              )}
+
+              <div className="flex items-center justify-between mb-6 pb-4 border-b border-border-color">
+                <h2 className="text-[16px] font-bold text-text-main flex items-center">
+                  <ShoppingCart className="w-[18px] h-[18px] mr-2 text-text-muted opacity-80" />
+                  Ваша корзина
+                </h2>
+                {isMobileCartOpen && (
+                  <button onClick={() => setIsMobileCartOpen(false)} className="xl:hidden p-2 text-text-muted hover:text-text-main">
+                    <X className="w-5 h-5" />
+                  </button>
+                )}
+              </div>
               
               {cart.length === 0 ? (
                 <div className="text-text-muted text-center py-10 flex flex-col items-center gap-3">
@@ -455,8 +492,8 @@ export default function ClientDashboard() {
                   <span className="text-[13px] font-medium">Корзина пуста</span>
                 </div>
               ) : (
-                <div className="flex flex-col flex-1 h-full max-h-fit">
-                  <div className="space-y-4 mb-6 custom-scrollbar shrink overflow-y-auto max-h-[45vh] pr-2">
+                <div className="flex flex-col flex-1 h-full max-h-fit min-h-0">
+                  <div className="space-y-4 mb-6 custom-scrollbar shrink overflow-y-auto pr-2" style={{ maxHeight: isMobileCartOpen ? 'inherit' : '45vh' }}>
                     {cart.map(item => (
                       <div key={item.product.id} className="flex items-center justify-between">
                         <div className="flex-1 pr-2">
@@ -496,7 +533,10 @@ export default function ClientDashboard() {
                   </div>
 
                   <button 
-                    onClick={handleCheckout}
+                    onClick={() => {
+                        if (isMobileCartOpen) setIsMobileCartOpen(false);
+                        handleCheckout();
+                    }}
                     className="w-full bg-gradient-to-r from-brand-primary via-brand-secondary to-brand-accent hover:opacity-90 text-white font-medium py-3 px-4 rounded-[10px] transition-all flex justify-center items-center shadow-lg shadow-brand-primary/20 text-[13px] shrink-0"
                   >
                     <CreditCard className="w-4 h-4 mr-2" />
@@ -709,25 +749,20 @@ export default function ClientDashboard() {
                    placeholder="+998 90 123 45 67"
                  />
               </div>
-              <div>
-                 <label className="text-[12px] font-bold text-text-main uppercase tracking-wider mb-1 block">Адрес или Геолокация</label>
-                 <div className="relative">
+              <div className="flex flex-col gap-2">
+                 <label className="text-[12px] font-bold text-text-main uppercase tracking-wider mb-1 block">Адрес доставки (точка на карте)</label>
+                 <div className="w-full">
+                   <div className="mb-2">
+                     <LocationPickerMap onLocationSelected={handleLocationSelected} />
+                   </div>
                    <input 
                      type="text" 
                      required
                      value={clientDetails.locationStr}
                      onChange={e => setClientDetails(p => ({...p, locationStr: e.target.value}))}
-                     className="w-full bg-surface border border-border-color rounded-xl pl-4 pr-12 py-3 text-[13px] text-text-main focus:border-text-muted outline-none placeholder:text-text-muted/50"
-                     placeholder="Введите адрес..."
+                     className="w-full bg-surface border border-border-color rounded-xl pl-4 pr-4 py-3 text-[13px] text-text-main focus:border-text-muted outline-none placeholder:text-text-muted/50"
+                     placeholder="Уточните адрес..."
                    />
-                   <button 
-                     type="button" 
-                     onClick={requestGeolocation}
-                     className="absolute right-2 top-1/2 -translate-y-1/2 p-2 hover:bg-surface-alt rounded-lg transition-colors text-text-main"
-                     title="Определить по GPS"
-                   >
-                     <MapPin className="w-5 h-5 text-text-muted" />
-                   </button>
                  </div>
               </div>
               <div className="pt-4 flex gap-3">

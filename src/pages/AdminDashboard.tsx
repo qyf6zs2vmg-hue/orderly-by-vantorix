@@ -5,6 +5,7 @@ import { useAuth } from '../lib/AuthContext';
 import { ThemeToggle } from '../components/ThemeToggle';
 import { LogOut, Key, Users, Copy, RefreshCcw, ShoppingCart, Settings, Bell, Mail, ChevronDown, Search, Plus, Store, Box, Menu, Shield, BarChart3, Globe, User, FileText, Palette, ClipboardList, Check, X, Loader2 } from 'lucide-react';
 import clsx from 'clsx';
+import OrderLocationMap from '../components/OrderLocationMap';
 import PrivacyPolicyContent from '../components/PrivacyPolicyContent';
 import { SecuritySettings } from '../components/SecuritySettings';
 import { PostRegistrationSecurityDialog } from '../components/PostRegistrationSecurityDialog';
@@ -510,7 +511,7 @@ export default function AdminDashboard() {
                    <div className="h-8 w-8 bg-surface-alt rounded-full flex items-center justify-center font-bold text-text-main border border-border-color shadow-sm text-[12px]">
                       {appUser?.name?.[0]?.toUpperCase() || 'A'}
                    </div>
-                   <div className="hidden md:flex flex-col">
+                   <div className="flex flex-col">
                       <span className="text-[13px] font-semibold text-text-main leading-tight">{appUser?.name || 'Administrator'}</span>
                       <span className="text-[10px] text-text-muted leading-tight mt-0.5 font-mono">{appUser?.accountId ? `ID: ${appUser.accountId}` : 'Administrator'}</span>
                    </div>
@@ -724,14 +725,7 @@ export default function AdminDashboard() {
                         pendingUsers.map(user => (
                           <tr key={user.id} className="hover:bg-surface-alt/30 transition-colors">
                             <td className="px-8 py-5">
-                              <div className="font-bold tracking-tight flex items-center gap-2">
-                                {user.name}
-                                {user.telegramId && (
-                                   <a href={`tg://user?id=${user.telegramId}`} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:text-blue-400 text-[11px] font-normal transition-colors px-2 py-0.5 rounded-full bg-blue-500/10 border border-blue-500/20">
-                                      Telegram
-                                   </a>
-                                )}
-                              </div>
+                              <div className="font-bold tracking-tight">{user.name}</div>
                             </td>
                             <td className="px-8 py-5 text-text-muted font-medium">{user.email}</td>
                             <td className="px-8 py-5 text-text-muted font-medium">{user.phone || '—'}</td>
@@ -786,14 +780,7 @@ export default function AdminDashboard() {
                     {activeUsers.map(user => (
                       <tr key={user.id} className="hover:bg-surface-alt/30 transition-all">
                         <td className="px-8 py-5 text-text-main">
-                          <div className="font-bold tracking-tight flex items-center gap-2">
-                             {user.name}
-                             {user.telegramId && (
-                                <a href={`tg://user?id=${user.telegramId}`} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:text-blue-400 text-[11px] font-normal transition-colors px-2 py-0.5 rounded-full bg-blue-500/10 border border-blue-500/20">
-                                   Telegram
-                                </a>
-                             )}
-                          </div>
+                          <div className="font-bold tracking-tight">{user.name}</div>
                         </td>
                         <td className="px-8 py-5 text-text-muted font-medium">{user.email}</td>
                         <td className="px-8 py-5 text-text-muted font-medium">{user.phone || '—'}</td>
@@ -840,46 +827,56 @@ export default function AdminDashboard() {
                   {showAllOrders ? 'Показать только сегодняшние' : 'Открыть все заказы'}
                 </button>
               </div>
-              <div className="bg-surface border border-border-color rounded-[32px] shadow-accent card-premium backdrop-blur-sm relative">
-                <div className="overflow-x-auto w-full custom-scrollbar rounded-[32px]">
-                <table className="w-full text-left text-[13px] min-w-[700px]">
-                  <thead className="bg-surface-alt border-b border-border-color">
-                    <tr>
-                      <th className="px-6 py-4 font-medium text-text-muted uppercase text-[11px] tracking-wider">ID / Дата</th>
-                      <th className="px-6 py-4 font-medium text-text-muted uppercase text-[11px] tracking-wider">Клиент</th>
-                      <th className="px-6 py-4 font-medium text-text-muted uppercase text-[11px] tracking-wider">Товары</th>
-                      <th className="px-6 py-4 font-medium text-text-muted text-right uppercase text-[11px] tracking-wider">Сумма</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border-color text-text-main">
-                    {(showAllOrders ? orders : orders.filter(order => new Date(order.createdAt) >= new Date(new Date().setHours(0,0,0,0)))).sort((a,b) => b.createdAt - a.createdAt).map(order => (
-                      <tr key={order.id} className="hover:bg-surface-alt/50 transition-colors">
-                        <td className="px-6 py-4">
-                          <div className="font-mono text-[11px] text-text-muted bg-surface-alt border border-border-color inline-block px-1.5 py-0.5 rounded mb-1.5 tracking-wider">{order.id.slice(0, 8).toUpperCase()}</div>
-                          <div className="text-text-main text-[13px]">{new Date(order.createdAt).toLocaleDateString('ru-RU')}</div>
-                        </td>
-                        <td className="px-6 py-4 font-semibold text-text-main">
-                          <div className="flex items-center gap-2">
-                            {order.clientName}
-                            {order.clientTelegramId && (
-                              <a href={`tg://user?id=${order.clientTelegramId}`} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:text-blue-400 text-[11px] font-normal transition-colors px-2 py-0.5 rounded-full bg-blue-500/10 border border-blue-500/20">
-                                Открыть профиль
-                              </a>
-                            )}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 text-text-muted text-[13px] max-w-[200px]">
-                          {order.items.map((it:any) => <div key={it.id} className="mb-0.5 truncate">{it.quantity}x {it.name}</div>)}
-                        </td>
-                        <td className="px-6 py-4 font-bold text-text-main text-right text-[14px]">${order.total.toLocaleString()}</td>
-                      </tr>
-                    ))}
-                    {(showAllOrders ? orders : orders.filter(order => new Date(order.createdAt) >= new Date(new Date().setHours(0,0,0,0)))).length === 0 && (
-                      <tr><td colSpan={4} className="px-6 py-12 text-center text-text-muted text-[13px]">{showAllOrders ? 'У вас пока нет заказов.' : 'Сегодня еще нет заказов.'}</td></tr>
-                    )}
-                  </tbody>
-                </table>
-                </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {(showAllOrders ? orders : orders.filter(order => new Date(order.createdAt) >= new Date(new Date().setHours(0,0,0,0)))).sort((a,b) => b.createdAt - a.createdAt).map(order => (
+                  <div key={order.id} className="bg-surface border border-border-color rounded-[24px] shadow-sm p-6 flex flex-col hover:border-text-muted/30 transition-colors">
+                    <div className="flex justify-between items-start mb-4">
+                       <div>
+                         <div className="font-mono text-[11px] text-text-muted bg-surface-alt border border-border-color inline-block px-2 py-1 rounded mb-2 tracking-wider">
+                           {order.id.slice(0, 8).toUpperCase()}
+                         </div>
+                         <h3 className="text-[16px] font-bold text-text-main line-clamp-1">{order.clientName}</h3>
+                         {order.clientPhone && (
+                           <div className="text-[13px] text-text-muted mt-1 font-medium">
+                              {order.clientPhone}
+                           </div>
+                         )}
+                       </div>
+                       <div className="text-right">
+                         <div className="text-[18px] font-bold text-text-main">${order.total.toLocaleString()}</div>
+                         <div className="text-[12px] text-text-muted mt-1">{new Date(order.createdAt).toLocaleDateString('ru-RU')}</div>
+                       </div>
+                    </div>
+                    
+                    <div className="bg-surface-alt/50 p-4 rounded-xl border border-border-color mb-4 flex-1">
+                      <div className="text-[12px] font-bold text-text-muted uppercase tracking-wider mb-2">Заказ</div>
+                      <div className="space-y-1">
+                        {order.items.map((it:any) => (
+                           <div key={it.id} className="text-[13px] text-text-main flex justify-between">
+                             <span>{it.quantity}x {it.name}</span>
+                             <span className="text-text-muted">${(it.quantity * it.price).toLocaleString()}</span>
+                           </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="mt-auto">
+                      <div className="text-[12px] font-bold text-text-muted uppercase tracking-wider mb-2">Адрес доставки</div>
+                      {(order.latitude && order.longitude) ? (
+                        <OrderLocationMap lat={order.latitude} lng={order.longitude} address={order.clientLocation} />
+                      ) : (
+                        <div className="text-[13px] text-text-main bg-surface-alt p-3 rounded-xl border border-border-color">
+                          {order.clientLocation || 'Адрес не указан'}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+                {(showAllOrders ? orders : orders.filter(order => new Date(order.createdAt) >= new Date(new Date().setHours(0,0,0,0)))).length === 0 && (
+                  <div className="col-span-1 md:col-span-2 text-center text-text-muted text-[13px] py-12 bg-surface rounded-[24px] border border-border-color">
+                    {showAllOrders ? 'У вас пока нет заказов.' : 'Сегодня еще нет заказов.'}
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -934,9 +931,21 @@ export default function AdminDashboard() {
 
                   {/* List added products */}
                   <div className="mt-4 overflow-x-auto min-w-full">
-                    <h3 className="text-[18px] font-bold text-text-main tracking-tight mb-4">Ваши товары</h3>
+                    <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-4">
+                      <h3 className="text-[18px] font-bold text-text-main tracking-tight">Ваши товары</h3>
+                      <div className="relative w-full md:hidden">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+                        <input 
+                          type="text" 
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                          placeholder={t.common.search || "Поиск товаров..."} 
+                          className="w-full bg-surface-alt/50 border border-border-color rounded-[14px] py-2 pl-10 pr-4 text-[13px] text-text-main shadow-sm focus:border-text-muted focus:ring-1 focus:ring-text-muted outline-none transition-all placeholder:text-text-muted font-medium" 
+                        />
+                      </div>
+                    </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {products.slice(0, appUser?.plan_type === 'pro' ? products.length : 20).map(product => (
+                      {products.filter(p => !searchQuery || p.name.toLowerCase().includes(searchQuery.toLowerCase())).slice(0, appUser?.plan_type === 'pro' ? products.length : 20).map(product => (
                         <div key={product.id} className="bg-surface p-6 rounded-[32px] border border-border-color flex flex-col gap-4 shadow-sm group">
                           {editingProduct?.id === product.id ? (
                             <form onSubmit={handleEditProductSubmit} className="flex flex-col gap-3">

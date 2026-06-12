@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { createUserWithEmailAndPassword, signInAnonymously, signOut } from 'firebase/auth';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification, signOut, signInAnonymously } from 'firebase/auth';
 import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { auth, db } from '../lib/firebase';
 import { useNavigate, useSearchParams, useParams, Navigate, Link } from 'react-router-dom';
-import { User as UserIcon, ChevronRight } from 'lucide-react';
+import { Lock, Mail, User as UserIcon, EyeOff, Building2, Globe, ChevronRight, Phone } from 'lucide-react';
 import { useAuth } from '../lib/AuthContext';
+import PrivacyPolicyContent from '../components/PrivacyPolicyContent';
+import { TermsOfUseContent } from '../components/TermsOfUseContent';
 import { SplashScreen } from '../components/SplashScreen';
+import { SecurityConfirmationModal } from '../components/SecurityConfirmationModal';
 import { LanguageToggle } from '../components/LanguageToggle';
 import { translations, Language } from '../constants/translations';
-import { TelegramLoginWidget } from '../components/TelegramLoginWidget';
-import { authenticateWithTelegram } from '../lib/telegramAuth';
 
 export default function Join() {
   const [searchParams] = useSearchParams();
@@ -22,8 +23,17 @@ export default function Join() {
   const [loadingInvite, setLoadingInvite] = useState(true);
   const [inviteError, setInviteError] = useState('');
 
+  const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [agreePrivacy, setAgreePrivacy] = useState(false);
+  const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState(false);
+  const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
+  const [isSecurityModalOpen, setIsSecurityModalOpen] = useState(false);
+  const [isLogin, setIsLogin] = useState(false);
   
   const navigate = useNavigate();
   const { user, appUser } = useAuth();
@@ -110,6 +120,8 @@ export default function Join() {
 
           if (data.blocked) {
             setInviteError(lang === 'RU' ? 'Этот инвайт-код заблокирован' : 'Ushbu taklif kodi bloklangan');
+          } else if (data.used) {
+            setIsLogin(true);
           }
           setLoadingInvite(false);
         }
@@ -122,6 +134,21 @@ export default function Join() {
 
     checkInvite();
   }, [code, lang]);
+
+  const handleJoinSubmit = (e: React.FormEvent) => {
+    if (e && e.preventDefault) e.preventDefault();
+    if (!inviteData) return;
+    if (!isLogin && !agreePrivacy) {
+      setError(lang === 'RU' ? 'Вы должны согласиться с Политикой конфиденциальности' : 'Maxfiylik siyosatiga rozilik berishingiz kerak');
+      return;
+    }
+    
+    if (!isLogin) {
+      setIsSecurityModalOpen(true);
+    } else {
+      processSubmit();
+    }
+  };
 
   const handleAnonymousJoin = async () => {
     setError('');
@@ -167,27 +194,24 @@ export default function Join() {
     }
   };
 
-  const processTelegramSubmit = async (tgUser: any) => {
+  const processSubmit = async () => {
+    setIsSecurityModalOpen(false);
     setError('');
     setLoading(true);
 
     try {
-      const fbUser = await authenticateWithTelegram(tgUser, 'client', {
-         businessId: inviteData.businessId,
-         inviteCode: code || '',
-         status: inviteData.accessMode === 'public' ? 'active' : 'pending'
-      });
-      
-      const uid = fbUser.uid;
-      const userDoc = await getDoc(doc(db, 'users', uid));
+      if (isLogin) {
+        // Handle Login
+        const userCred = await signInWithEmailAndPassword(auth, email, password);
+        const uid = userCred.user.uid;
+        const userDoc = await getDoc(doc(db, 'users', uid));
         
-      if (userDoc.exists()) {
+        if (userDoc.exists()) {
           const ud = userDoc.data();
           if (ud.role === 'client') {
             if (ud.businessId !== inviteData.businessId) {
                 if (inviteData.used) {
                    setError(lang === 'RU' ? 'Вы не можете присоединиться к этому бизнесу. Инвайт код уже использован.' : 'Ushbu biznesga qoshila olmaysiz. Taklif kodi ishlatilgan.');
-                   setLoading(false);
                    return;
                 }
                 
@@ -196,18 +220,54 @@ export default function Join() {
                     inviteCode: code,
                     status: inviteData.accessMode === 'public' ? 'active' : (ud.status === 'blocked' ? 'blocked' : 'pending') 
                 });
-            }
-            if (!inviteData.isPublicLink && inviteData.id) {
-                await updateDoc(doc(db, 'invites', inviteData.id), { used: true });
+                if (!inviteData.isPublicLink) {
+                    await updateDoc(doc(db, 'invites', inviteData.id), { used: true });
+                }
             }
             navigate('/client');
           } else {
              navigate('/admin');
           }
+        }
+      } else {
+        // Handle Register
+        const userCred = await createUserWithEmailAndPassword(auth, email, password);
+        const uid = userCred.user.uid;
+
+          await setDoc(doc(db, 'users', uid), {
+            uid: uid,
+            name: name,
+            phone: phone,
+            email: email,
+            role: 'client',
+            status: inviteData.accessMode === 'public' ? 'active' : 'pending',
+            inviteCode: code,
+            businessId: inviteData.businessId,
+            securityAcknowledged: true,
+            onboardingComplete: false,
+            accountId: Math.floor(100000 + Math.random() * 900000).toString(),
+            plan_type: 'free',
+            pro_expires_at: null
+          });
+
+        if (!inviteData.isPublicLink) {
+          await updateDoc(doc(db, 'invites', inviteData.id), {
+            used: true
+          });
+        }
+
+        // Skip email verification and don't sign out. The AuthContext will pick up the user,
+        // and the useEffect above will redirect them to /client, which in turn will show PendingApproval.
       }
     } catch (err: any) {
       console.error(err);
-      setError(err.message || (lang === 'RU' ? 'Ошибка' : 'Xatolik'));
+      if (err.code === 'auth/invalid-credential') {
+        setError(lang === 'RU' ? 'Неверный email или пароль' : 'Email yoki parol noto\'g\'ri');
+      } else if (err.code === 'auth/email-already-in-use') {
+        setError(lang === 'RU' ? 'Этот email уже зарегистрирован. Войдите в аккаунт.' : 'Ushbu email allaqachon ro\'yxatdan o\'tgan. Hisobga kiring.');
+      } else {
+        setError(err.message || (lang === 'RU' ? 'Ошибка' : 'Xatolik'));
+      }
     } finally {
       setLoading(false);
     }
@@ -222,6 +282,51 @@ export default function Join() {
       <div className="min-h-screen bg-bg-base flex flex-col items-center justify-center p-6 text-center font-sans">
         <div className="bg-brand-danger/10 text-brand-danger p-6 rounded-[16px] max-w-[420px] w-full font-medium shadow-sm border border-brand-danger/20">
           {inviteError}
+        </div>
+      </div>
+    );
+  }
+
+  if (isTermsModalOpen) {
+    return (
+      <div className="min-h-screen bg-bg-base flex flex-col p-6 font-sans relative overflow-x-hidden">
+        <div className="max-w-3xl mx-auto w-full pt-10 pb-20 relative z-10">
+          <button 
+            onClick={() => setIsTermsModalOpen(false)} 
+            className="mb-6 flex items-center text-text-muted hover:text-text-main transition-colors text-[13px] font-medium"
+          >
+             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1.5 w-4 h-4"><path d="m15 18-6-6 6-6"/></svg>
+             Назад к регистрации
+          </button>
+          <div className="bg-surface rounded-[24px] p-8 sm:p-10 shadow-[0_4px_12px_rgba(16,24,40,0.06)] border border-border-color">
+             <div className="text-text-muted leading-relaxed text-[13px]">
+               <TermsOfUseContent lang={lang} />
+             </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (isPrivacyModalOpen) {
+    return (
+      <div className="min-h-screen bg-bg-base flex flex-col p-6 font-sans relative overflow-x-hidden">
+        <div className="max-w-3xl mx-auto w-full pt-10 pb-20 relative z-10">
+          <button 
+            onClick={() => setIsPrivacyModalOpen(false)} 
+            className="mb-6 flex items-center text-text-muted hover:text-text-main transition-colors text-[13px] font-medium"
+          >
+             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1.5 w-4 h-4"><path d="m15 18-6-6 6-6"/></svg>
+             Назад к регистрации
+          </button>
+          <div className="bg-surface rounded-[24px] p-8 sm:p-10 shadow-[0_4px_12px_rgba(16,24,40,0.06)] border border-border-color">
+             <h1 className="text-[22px] font-bold text-text-main tracking-tight mb-8">
+               {lang === 'RU' ? 'Политика конфиденциальности Relible Commerce' : 'Relible Commerce maxfiylik siyosati'}
+             </h1>
+             <div className="text-text-muted leading-relaxed text-[13px]">
+               <PrivacyPolicyContent lang={lang} />
+             </div>
+          </div>
         </div>
       </div>
     );
@@ -282,38 +387,163 @@ export default function Join() {
             </p>
           </div>
 
-          <div className="w-full flex justify-center">
+          <div className="w-full">
               {error && (
                 <div className="bg-brand-danger/10 border border-brand-danger/20 text-brand-danger p-3 rounded-[10px] text-[13px] font-medium mb-6 text-center">
                   {error}
                 </div>
               )}
               
-              {loading ? (
-                <div className="flex justify-center p-4 w-full">
-                  <svg className="animate-spin h-8 w-8 text-text-main" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                </div>
-              ) : inviteData?.accessMode === 'public' || inviteData?.isPublicLink ? (
+              {inviteData?.accessMode === 'public' || inviteData?.isPublicLink ? (
                 <button
                   onClick={handleAnonymousJoin}
                   disabled={loading}
-                  className="w-full bg-text-main hover:bg-text-main/90 text-bg-base font-bold h-12 rounded-xl text-[14px] transition-all shadow-sm active:scale-[0.98] flex items-center justify-center gap-2 group"
+                  className="w-full bg-text-main hover:bg-text-main/90 text-bg-base font-bold h-12 rounded-xl text-[14px] transition-all shadow-sm active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 group"
                 >
-                  {lang === 'RU' ? 'Перейти в каталог' : 'Katalogga o\'tish'}
-                  <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                  {loading ? (
+                    <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                  ) : (
+                    <>
+                      {lang === 'RU' ? 'Перейти в каталог' : 'Katalogga o\'tish'}
+                      <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                    </>
+                  )}
                 </button>
               ) : (
-                <TelegramLoginWidget 
-                  botName="relible_auth_bot" 
-                  onAuth={processTelegramSubmit} 
-                />
+                <>
+                  {!inviteData?.used && (
+                <div className="flex bg-surface-alt rounded-[12px] p-1.5 mb-8 border border-border-color">
+                   <button
+                     onClick={() => { setIsLogin(false); setError(''); }}
+                     className={`flex-1 py-2 text-[13px] font-bold rounded-lg transition-all ${!isLogin ? 'bg-surface shadow-sm text-text-main' : 'text-text-muted hover:text-text-main'}`}
+                   >
+                     {lang === 'RU' ? 'Регистрация' : 'Ro\'yxatdan o\'tish'}
+                   </button>
+                   <button
+                     onClick={() => { setIsLogin(true); setError(''); }}
+                     className={`flex-1 py-2 text-[13px] font-bold rounded-lg transition-all ${isLogin ? 'bg-surface shadow-sm text-text-main' : 'text-text-muted hover:text-text-main'}`}
+                   >
+                     {lang === 'RU' ? 'Вход' : 'Kirish'}
+                   </button>
+                </div>
               )}
+
+              <form onSubmit={handleJoinSubmit} className="space-y-4">
+                {!isLogin && (
+                  <>
+                    <div className="space-y-1.5">
+                      <label className="text-[13px] font-bold text-text-main ml-1">{lang === 'RU' ? 'Ваше имя' : 'Ismingiz'}</label>
+                      <div className="relative">
+                        <UserIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+                        <input
+                          type="text"
+                          required={!isLogin}
+                          value={name}
+                          onChange={(e) => setName(e.target.value)}
+                          className="w-full pl-11 pr-4 py-3 rounded-xl bg-surface border border-border-color text-text-main focus:border-text-muted focus:ring-4 focus:ring-text-muted/10 outline-none transition-all placeholder:text-text-muted text-[13px] shadow-sm"
+                          placeholder={lang === 'RU' ? "Иван Иванов" : "Ism Familiya"}
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[13px] font-bold text-text-main ml-1">{lang === 'RU' ? 'Номер телефона' : 'Telefon raqamingiz'}</label>
+                      <div className="relative">
+                        <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+                        <input
+                          type="tel"
+                          required={!isLogin}
+                          value={phone}
+                          onChange={(e) => setPhone(e.target.value)}
+                          className="w-full pl-11 pr-4 py-3 rounded-xl bg-surface border border-border-color text-text-main focus:border-text-muted focus:ring-4 focus:ring-text-muted/10 outline-none transition-all placeholder:text-text-muted text-[13px] shadow-sm"
+                          placeholder="+998 90 123 45 67"
+                        />
+                      </div>
+                    </div>
+                  </>
+                )}
+                
+                <div className="space-y-1.5">
+                  <label className="text-[13px] font-bold text-text-main ml-1">Email</label>
+                  <div className="relative">
+                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+                    <input
+                      type="email"
+                      required
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="w-full pl-11 pr-4 py-3 rounded-xl bg-surface border border-border-color text-text-main focus:border-text-muted focus:ring-4 focus:ring-text-muted/10 outline-none transition-all placeholder:text-text-muted text-[13px] shadow-sm"
+                      placeholder="example@relible.com"
+                    />
+                  </div>
+                </div>
+                
+                <div className="space-y-1.5">
+                  <label className="text-[13px] font-bold text-text-main ml-1">{lang === 'RU' ? 'Пароль' : 'Parol'}</label>
+                  <div className="relative">
+                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+                    <input
+                      type="password"
+                      required
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="w-full pl-11 pr-4 py-3 rounded-xl bg-surface border border-border-color text-text-main focus:border-text-muted focus:ring-4 focus:ring-text-muted/10 outline-none transition-all placeholder:text-text-muted text-[13px] shadow-sm"
+                      placeholder={lang === 'RU' ? "Минимум 6 символов" : "Kamida 6 belgi"}
+                      minLength={6}
+                    />
+                  </div>
+                </div>
+
+                {!isLogin && (
+                   <div className="pt-2 px-1">
+                      <label className="flex items-start gap-4 group cursor-pointer">
+                        <div className={`mt-0.5 w-5 h-5 flex items-center justify-center rounded-lg border transition-all ${agreePrivacy ? 'bg-text-main border-text-main shadow-[0_0_10px_rgba(255,255,255,0.2)]' : 'bg-surface-alt border-border-color group-hover:border-text-muted'}`}>
+                          {agreePrivacy && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" className="text-white"><polyline points="20 6 9 17 4 12"/></svg>}
+                        </div>
+                        <input 
+                          type="checkbox" 
+                          className="hidden" 
+                          checked={agreePrivacy}
+                          onChange={(e) => setAgreePrivacy(e.target.checked)}
+                        />
+                        <span className="text-[12px] text-text-muted leading-relaxed group-hover:text-text-main transition-colors select-none">
+                          {lang === 'RU' ? 'Я согласен с ' : 'Men '}<button type="button" onClick={(e) => { e.stopPropagation(); setIsPrivacyModalOpen(true); }} className="text-text-main hover:underline font-bold">{lang === 'RU' ? 'Политикой конфиденциальности' : 'Maxfiylik siyosatiga'}</button> {lang === 'RU' ? 'и' : 'va'} <button type="button" onClick={(e) => { e.stopPropagation(); setIsTermsModalOpen(true); }} className="text-text-main hover:underline font-bold">{lang === 'RU' ? 'Условиями использования' : 'Foydalanish shartlariga roziman'}</button>
+                        </span>
+                      </label>
+                   </div>
+                )}
+                
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full bg-text-main hover:bg-text-main/90 text-bg-base font-bold h-12 rounded-xl text-[14px] mt-6 transition-all shadow-sm active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 group"
+                >
+                  {loading ? (
+                    <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                  ) : (
+                    <>
+                      {isLogin ? (lang === 'RU' ? 'Войти' : 'Kirish') : (lang === 'RU' ? 'Создать аккаунт' : 'Hisob yaratish')}
+                      <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                    </>
+                  )}
+                </button>
+              </form>
+            </>
+          )}
           </div>
         </div>
       </div>
+      <SecurityConfirmationModal 
+        isOpen={isSecurityModalOpen} 
+        onConfirm={processSubmit} 
+        lang={lang}
+        onLanguageChange={setLang}
+      />
     </div>
   );
 }

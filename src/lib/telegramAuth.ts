@@ -3,6 +3,21 @@ import { doc, setDoc, collection, writeBatch } from 'firebase/firestore';
 import { auth, db } from './firebase';
 
 export async function authenticateWithTelegram(tgUser: any, role: 'owner' | 'client', extraData: any = {}) {
+    // ---- 1. Verify Telegram Auth Data via Backend API ----
+    const verifyRes = await fetch('/api/auth/telegram', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(tgUser)
+    });
+    const verifyData = await verifyRes.json();
+    if (!verifyRes.ok || !verifyData.success) {
+        throw new Error(verifyData.error || 'Telegram authorization failed on backend.');
+    }
+    
+    // Store JWT token locally
+    localStorage.setItem('telegram_jwt', verifyData.token);
+    
+    // ---- 2. Initialize Firebase Session based on verified Telegram Data ----
     const email = `tg_${tgUser.id}@telegram.mock`;
     const password = `TgPass_${tgUser.id}_secure99`;
 

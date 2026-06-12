@@ -5,8 +5,6 @@ import { auth, db } from '../lib/firebase';
 import { useNavigate, useSearchParams, useParams, Navigate, Link } from 'react-router-dom';
 import { User as UserIcon, ChevronRight } from 'lucide-react';
 import { useAuth } from '../lib/AuthContext';
-import PrivacyPolicyContent from '../components/PrivacyPolicyContent';
-import { TermsOfUseContent } from '../components/TermsOfUseContent';
 import { SplashScreen } from '../components/SplashScreen';
 import { LanguageToggle } from '../components/LanguageToggle';
 import { translations, Language } from '../constants/translations';
@@ -112,8 +110,6 @@ export default function Join() {
 
           if (data.blocked) {
             setInviteError(lang === 'RU' ? 'Этот инвайт-код заблокирован' : 'Ushbu taklif kodi bloklangan');
-          } else if (data.used) {
-            setIsLogin(true);
           }
           setLoadingInvite(false);
         }
@@ -231,51 +227,6 @@ export default function Join() {
     );
   }
 
-  if (isTermsModalOpen) {
-    return (
-      <div className="min-h-screen bg-bg-base flex flex-col p-6 font-sans relative overflow-x-hidden">
-        <div className="max-w-3xl mx-auto w-full pt-10 pb-20 relative z-10">
-          <button 
-            onClick={() => setIsTermsModalOpen(false)} 
-            className="mb-6 flex items-center text-text-muted hover:text-text-main transition-colors text-[13px] font-medium"
-          >
-             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1.5 w-4 h-4"><path d="m15 18-6-6 6-6"/></svg>
-             Назад к регистрации
-          </button>
-          <div className="bg-surface rounded-[24px] p-8 sm:p-10 shadow-[0_4px_12px_rgba(16,24,40,0.06)] border border-border-color">
-             <div className="text-text-muted leading-relaxed text-[13px]">
-               <TermsOfUseContent lang={lang} />
-             </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (isPrivacyModalOpen) {
-    return (
-      <div className="min-h-screen bg-bg-base flex flex-col p-6 font-sans relative overflow-x-hidden">
-        <div className="max-w-3xl mx-auto w-full pt-10 pb-20 relative z-10">
-          <button 
-            onClick={() => setIsPrivacyModalOpen(false)} 
-            className="mb-6 flex items-center text-text-muted hover:text-text-main transition-colors text-[13px] font-medium"
-          >
-             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1.5 w-4 h-4"><path d="m15 18-6-6 6-6"/></svg>
-             Назад к регистрации
-          </button>
-          <div className="bg-surface rounded-[24px] p-8 sm:p-10 shadow-[0_4px_12px_rgba(16,24,40,0.06)] border border-border-color">
-             <h1 className="text-[22px] font-bold text-text-main tracking-tight mb-8">
-               {lang === 'RU' ? 'Политика конфиденциальности Relible Commerce' : 'Relible Commerce maxfiylik siyosati'}
-             </h1>
-             <div className="text-text-muted leading-relaxed text-[13px]">
-               <PrivacyPolicyContent lang={lang} />
-             </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   if (user && appUser && inviteData) {
     return (
       <div className="min-h-[100dvh] md:min-h-screen bg-bg-base flex flex-col items-center justify-center p-4 md:p-6 font-sans relative overflow-hidden">
@@ -363,12 +314,6 @@ export default function Join() {
           </div>
         </div>
       </div>
-      <SecurityConfirmationModal 
-        isOpen={isSecurityModalOpen} 
-        onConfirm={processSubmit} 
-        lang={lang}
-        onLanguageChange={setLang}
-      />
     </div>
   );
 }

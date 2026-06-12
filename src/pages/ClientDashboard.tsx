@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { collection, onSnapshot, query, where, addDoc, updateDoc, doc } from 'firebase/firestore';
+import { collection, onSnapshot, query, where, addDoc, updateDoc, doc, deleteDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { useAuth } from '../lib/AuthContext';
 import { ThemeToggle } from '../components/ThemeToggle';
@@ -115,6 +115,10 @@ export default function ClientDashboard() {
   };
 
   const updateQuantity = (product: any, value: string) => {
+    if (value === '') {
+      setCart(prev => prev.filter(i => i.product.id !== product.id));
+      return;
+    }
     const qty = parseInt(value);
     if (isNaN(qty) || qty < 0) return;
     
@@ -135,6 +139,16 @@ export default function ClientDashboard() {
 
       return [...prev, { product, quantity: finalQty }];
     });
+  };
+
+  const handleDeleteOrder = async (orderId: string) => {
+    if (confirm('Вы уверены, что хотите скрыть/удалить этот заказ?')) {
+      try {
+        await deleteDoc(doc(db, 'orders', orderId));
+      } catch (err) {
+        console.error(err);
+      }
+    }
   };
 
   const cartTotal = cart.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
@@ -398,13 +412,13 @@ export default function ClientDashboard() {
                   const quantity = cartItem ? cartItem.quantity : 0;
                   
                   return (
-                    <div key={product.id} className="bg-surface p-6 rounded-[32px] border border-border-color flex flex-col gap-4 shadow-sm group">
+                    <div key={product.id} className="bg-surface p-4 rounded-[20px] border border-border-color hover:border-brand-accent/30 hover:shadow-[0_8px_30px_rgb(37,99,235,0.06)] flex flex-col gap-4 shadow-sm group transition-all duration-300">
                       {product.imageUrl ? (
-                        <div className="w-full h-48 bg-surface-alt rounded-2xl overflow-hidden border border-border-color shrink-0">
+                        <div className="w-full h-32 bg-surface-alt rounded-2xl overflow-hidden border border-border-color shrink-0">
                           <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
                         </div>
                       ) : (
-                        <div className="w-full h-48 bg-surface-alt rounded-2xl flex items-center justify-center border border-border-color text-text-muted shrink-0">
+                        <div className="w-full h-32 bg-surface-alt rounded-2xl flex items-center justify-center border border-border-color text-text-muted shrink-0">
                           <Box className="w-12 h-12 opacity-30" />
                         </div>
                       )}
@@ -423,36 +437,41 @@ export default function ClientDashboard() {
                         </div>
                         
                         {product.stock > 0 ? (
-                          <div className="flex items-center gap-1 bg-surface-alt/80 border border-border-color/50 rounded-xl p-1 shadow-inner max-w-[120px]">
-                              <button 
-                                onClick={(e) => { e.stopPropagation(); removeFromCart(product.id); }}
-                                className={clsx(
-                                  "p-2 rounded-lg transition-all",
-                                  quantity > 0 ? "text-text-main hover:bg-surface hover:text-brand-danger shadow-sm" : "text-text-muted cursor-not-allowed opacity-30"
-                                )}
-                                disabled={quantity === 0}
-                              >
-                                <Minus className="w-4 h-4" />
-                              </button>
-                              <input 
-                                type="number"
-                                value={quantity || ''}
-                                onChange={(e) => updateQuantity(product, e.target.value)}
-                                onClick={(e) => e.stopPropagation()}
-                                placeholder="0"
-                                className="text-[14px] font-bold w-8 text-center text-text-main bg-transparent border-none focus:ring-0 px-0.5"
-                              />
-                              <button 
-                                onClick={(e) => { e.stopPropagation(); addToCart(product); }}
-                                className={clsx(
-                                  "p-2 rounded-lg transition-all",
-                                  quantity >= product.stock ? "text-text-muted cursor-not-allowed opacity-30" : "text-text-main hover:bg-surface hover:text-text-muted shadow-sm"
-                                )}
-                                disabled={quantity >= product.stock}
-                              >
-                                <Plus className="w-4 h-4" />
-                              </button>
-                          </div>
+                          quantity > 0 ? (
+                            <div className="flex items-center gap-1 bg-surface-alt/80 border border-border-color/50 rounded-xl p-1 shadow-inner h-[40px]">
+                                <button 
+                                  onClick={(e) => { e.stopPropagation(); removeFromCart(product.id); }}
+                                  className="p-1.5 rounded-lg text-text-main hover:bg-surface hover:text-brand-danger shadow-sm transition-all"
+                                >
+                                  <Minus className="w-4 h-4" />
+                                </button>
+                                <input 
+                                  type="number"
+                                  value={quantity || ''}
+                                  onChange={(e) => updateQuantity(product, e.target.value)}
+                                  onClick={(e) => e.stopPropagation()}
+                                  placeholder="0"
+                                  className="text-[14px] font-bold w-10 text-center text-text-main bg-transparent border-none focus:ring-0 px-0.5 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                />
+                                <button 
+                                  onClick={(e) => { e.stopPropagation(); addToCart(product); }}
+                                  className={clsx(
+                                    "p-1.5 rounded-lg transition-all",
+                                    quantity >= product.stock ? "text-text-muted cursor-not-allowed opacity-30" : "text-text-main hover:bg-surface hover:text-brand-accent shadow-sm"
+                                  )}
+                                  disabled={quantity >= product.stock}
+                                >
+                                  <Plus className="w-4 h-4" />
+                                </button>
+                            </div>
+                          ) : (
+                            <button 
+                              onClick={(e) => { e.stopPropagation(); addToCart(product); }}
+                              className="bg-brand-accent hover:bg-brand-accent/90 text-white px-5 py-2 rounded-xl text-[13px] font-bold transition-all shadow-md active:scale-95 h-[40px]"
+                            >
+                              В корзину
+                            </button>
+                          )
                         ) : (
                           <div className="bg-brand-danger/10 text-brand-danger border border-brand-danger/20 px-4 py-2 rounded-xl text-[12px] font-bold shrink-0">
                             Нет в наличии
@@ -584,8 +603,8 @@ export default function ClientDashboard() {
                 <p className="text-[13px] text-text-muted mt-1">{showAllOrders ? 'Все ваши покупки' : 'Покупки за сегодня'}</p>
               </div>
                <button
-                  onClick={() => setShowAllOrders(!showAllOrders)}
-                  className="bg-surface-alt border border-border-color text-text-main px-4 py-2 rounded-xl text-[12px] font-bold hover:bg-surface transition-all shadow-sm"
+                  onClick={() => setShowAllOrders(p => !p)}
+                  className="bg-brand-accent/10 border border-brand-accent/20 text-brand-accent px-4 py-2 rounded-xl text-[12px] font-bold hover:bg-brand-accent hover:text-white transition-all shadow-sm active:scale-95"
                 >
                   {showAllOrders ? 'Показать только сегодняшние' : 'Открыть все заказы'}
                </button>
@@ -611,8 +630,17 @@ export default function ClientDashboard() {
                   <div className="flex flex-col items-end gap-3">
                     <div className="text-[12px] font-black uppercase tracking-widest text-text-muted opacity-40">Total Amount</div>
                     <div className="font-black text-text-main text-[24px] tracking-tighter group-hover:text-text-muted transition-colors">${order.total.toLocaleString()}</div>
-                    <div className="inline-flex items-center px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-surface-alt text-text-main border border-border-color shadow-sm mt-1">
-                       Delivered
+                    <div className="flex gap-2 items-center mt-1">
+                      <div className="inline-flex items-center px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-surface-alt text-text-main border border-border-color shadow-sm">
+                         Delivered
+                      </div>
+                      <button 
+                        onClick={() => handleDeleteOrder(order.id)}
+                        className="p-1.5 text-text-muted hover:text-brand-danger bg-surface-alt hover:bg-brand-danger/10 rounded-full transition-all border border-border-color hover:border-brand-danger/20"
+                        title="Скрыть заказ"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
                     </div>
                   </div>
                 </div>

@@ -189,6 +189,16 @@ export default function AdminDashboard() {
     await updateDoc(doc(db, 'users', userId), { status: 'active' });
   };
 
+  const handleDeleteOrder = async (orderId: string) => {
+    if (confirm('Вы уверены, что хотите удалить или скрыть этот заказ? Документ будет удален из базы данных.')) {
+      try {
+        await deleteDoc(doc(db, 'orders', orderId));
+      } catch (err) {
+        console.error(err);
+      }
+    }
+  };
+
   const handleSaveEdit = async () => {
     if (!editingClient) return;
     await updateDoc(doc(db, 'users', editingClient.id), {
@@ -842,9 +852,17 @@ export default function AdminDashboard() {
                            </div>
                          )}
                        </div>
-                       <div className="text-right">
-                         <div className="text-[18px] font-bold text-text-main">${order.total.toLocaleString()}</div>
-                         <div className="text-[12px] text-text-muted mt-1">{new Date(order.createdAt).toLocaleDateString('ru-RU')}</div>
+                       <div className="flex flex-col items-end gap-2">
+                         <div className="text-right">
+                           <div className="text-[18px] font-bold text-text-main">${order.total.toLocaleString()}</div>
+                           <div className="text-[12px] text-text-muted mt-1">{new Date(order.createdAt).toLocaleDateString('ru-RU')}</div>
+                         </div>
+                         <button
+                           onClick={() => handleDeleteOrder(order.id)}
+                           className="text-text-muted hover:text-brand-danger bg-surface-alt hover:bg-brand-danger/10 px-3 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wider transition-all border border-transparent hover:border-brand-danger/20"
+                         >
+                           удалить
+                         </button>
                        </div>
                     </div>
                     
@@ -946,7 +964,7 @@ export default function AdminDashboard() {
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                       {products.filter(p => !searchQuery || p.name.toLowerCase().includes(searchQuery.toLowerCase())).slice(0, appUser?.plan_type === 'pro' ? products.length : 20).map(product => (
-                        <div key={product.id} className="bg-surface p-6 rounded-[32px] border border-border-color flex flex-col gap-4 shadow-sm group">
+                        <div key={product.id} className="bg-surface p-4 rounded-[20px] border border-border-color hover:border-brand-accent/30 hover:shadow-[0_8px_30px_rgb(37,99,235,0.06)] transition-all duration-300 flex flex-col gap-4 shadow-sm group">
                           {editingProduct?.id === product.id ? (
                             <form onSubmit={handleEditProductSubmit} className="flex flex-col gap-3">
                               <input type="text" required value={editingProduct.name} onChange={e => setEditingProduct({...editingProduct, name: e.target.value})} className="w-full bg-surface-alt border border-border-color rounded-[10px] py-1.5 px-3 text-[13px] text-text-main focus:border-text-muted outline-none transition-all" placeholder="Название товара" />
@@ -964,11 +982,11 @@ export default function AdminDashboard() {
                           ) : (
                             <>
                               {product.imageUrl && appUser?.plan_type === 'pro' ? (
-                                <div className="w-full h-40 bg-surface-alt rounded-2xl overflow-hidden border border-border-color mb-2 shrink-0 relative">
+                                <div className="w-full h-32 bg-surface-alt rounded-2xl overflow-hidden border border-border-color mb-2 shrink-0 relative">
                                   <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
                                 </div>
                               ) : (
-                                <div className="w-full h-40 bg-surface-alt rounded-2xl flex items-center justify-center border border-border-color mb-2 text-text-muted shrink-0 relative">
+                                <div className="w-full h-32 bg-surface-alt rounded-2xl flex items-center justify-center border border-border-color mb-2 text-text-muted shrink-0 relative">
                                   <Box className="w-10 h-10 opacity-30" />
                                 </div>
                               )}
@@ -979,7 +997,30 @@ export default function AdminDashboard() {
                               <div className="mt-auto flex items-center justify-between pt-4 border-t border-border-color/50">
                                 <div className="text-text-main font-black text-xl tracking-tighter">${product.price.toLocaleString()}</div>
                                 <div className="flex items-center gap-2">
-                                  <div className="bg-surface-alt px-3 py-1 rounded-full text-[11px] font-black uppercase text-text-muted tracking-widest">{product.stock} шт.</div>
+                                  <div className="flex items-center gap-1 bg-surface border border-border-color rounded-lg p-0.5 shadow-sm">
+                                      <button 
+                                        onClick={async (e) => { e.stopPropagation(); await updateDoc(doc(db, 'products', product.id), { stock: Math.max(0, product.stock - 1) }); }}
+                                        className="p-1 rounded text-text-muted hover:text-brand-danger hover:bg-surface-alt transition-colors"
+                                      >
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M5 12h14"/></svg>
+                                      </button>
+                                      <input 
+                                        type="number"
+                                        value={product.stock}
+                                        onClick={e => e.stopPropagation()}
+                                        onChange={async (e) => {
+                                          const v = parseInt(e.target.value) || 0;
+                                          await updateDoc(doc(db, 'products', product.id), { stock: v });
+                                        }}
+                                        className="text-[12px] font-bold w-10 text-center text-text-main bg-transparent border-none focus:ring-0 p-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                      />
+                                      <button 
+                                        onClick={async (e) => { e.stopPropagation(); await updateDoc(doc(db, 'products', product.id), { stock: product.stock + 1 }); }}
+                                        className="p-1 rounded text-text-muted hover:text-brand-primary hover:bg-surface-alt transition-colors"
+                                      >
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 5v14M5 12h14"/></svg>
+                                      </button>
+                                   </div>
                                   <button onClick={() => setEditingProduct({...product})} className="w-8 h-8 rounded-full bg-surface-alt hover:bg-surface border border-border-color flex items-center justify-center transition-colors text-text-muted hover:text-text-main" title="Редактировать">
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
                                   </button>

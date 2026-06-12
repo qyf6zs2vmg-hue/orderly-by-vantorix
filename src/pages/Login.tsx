@@ -1,72 +1,54 @@
 import React, { useState } from 'react';
-import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore';
-import { auth, db } from '../lib/firebase';
-import { Link, useNavigate, Navigate } from 'react-router-dom';
-import { Lock, Mail, EyeOff } from 'lucide-react';
+import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '../lib/AuthContext';
 import { motion } from 'motion/react';
+import { TelegramLoginWidget } from '../components/TelegramLoginWidget';
+import { authenticateWithTelegram } from '../lib/telegramAuth';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '../lib/firebase';
 
 export default function Login() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { user, appUser } = useAuth();
   
   if (user && appUser) {
-    return <Navigate to="/" replace />;
+    if (appUser.role === 'owner' || appUser.role === 'admin') {
+      return <Navigate to="/admin" replace />;
+    }
+    return <Navigate to="/client" replace />;
   }
 
-  const handleLogin = async (e: React.FormEvent | React.MouseEvent) => {
-    if (e && e.preventDefault) e.preventDefault();
+  const handleTelegramAuth = async (tgUser: any) => {
     setError('');
-
-    // Developer bypass
-    if (email === 'developerpn1021@gmail.com' && password === '1235813213455') {
-       localStorage.setItem('isDevPanelAuth', 'true');
-       navigate('/dev');
-       return;
-    }
-
     setLoading(true);
-    
+
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
+      // By default, accessing /login directly assumes creation of an owner account if not exists
+      const fbUser = await authenticateWithTelegram(tgUser, 'owner');
       
-      const docRef = doc(db, 'users', user.uid);
+      const docRef = doc(db, 'users', fbUser.uid);
       const docSnap = await getDoc(docRef);
 
       if (!docSnap.exists()) {
-        alert("Данные пользователя не найдены");
+        setError("Данные пользователя не найдены");
+        setLoading(false);
         return;
       }
 
       const userData = docSnap.data();
-
-      // Check email verification ONLY for clients
-      if (userData.role === 'client') {
-        await user.reload();
-        if (!user.emailVerified) {
-          await signOut(auth);
-          setError('Пожалуйста, подтвердите ваш email перед входом в систему');
-          setLoading(false);
-          return;
-        }
-      }
 
       if (userData.role === 'owner' || userData.role === 'admin') {
         navigate('/admin');
       } else if (userData.role === 'client') {
         navigate('/client');
       } else {
-        alert("Неизвестная роль: " + userData.role);
+        setError("Неизвестная роль: " + userData.role);
       }
     } catch (err: any) {
-      console.error("LOGIN ERROR:", err);
-      setError(err.message || 'Неверный логин или пароль');
+      console.error("TELEGRAM LOGIN ERROR:", err);
+      setError(err.message || 'Ошибка авторизации через Telegram');
     } finally {
       setLoading(false);
     }
@@ -74,7 +56,6 @@ export default function Login() {
 
   return (
     <div className="min-h-[100dvh] md:min-h-screen bg-bg-base flex flex-col items-center justify-center p-4 md:p-6 font-sans relative overflow-hidden">
-      {/* Dynamic Background */}
       <div className="absolute inset-0 z-0 pointer-events-none">
         <div className="absolute top-[10%] right-[10%] w-[30rem] h-[30rem] bg-text-main/5 rounded-full blur-[100px]" />
         <div className="absolute bottom-[10%] left-[10%] w-[30rem] h-[30rem] bg-brand-accent/5 rounded-full blur-[100px]" />
@@ -95,7 +76,7 @@ export default function Login() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.4 }}
-            className="w-full"
+            className="w-full flex-col items-center"
           >
               {error && (
                 <div className="bg-brand-danger/10 border border-brand-danger/20 text-brand-danger p-3 rounded-[12px] text-[13px] font-medium mb-6 text-center animate-shake">
@@ -103,72 +84,19 @@ export default function Login() {
                 </div>
               )}
               
-              <form onSubmit={handleLogin} className="space-y-5">
-                <motion.div 
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.5 }}
-                  className="space-y-1.5"
-                >
-                  <label className="text-[12px] font-bold text-text-main uppercase tracking-wider ml-1">Email</label>
-                  <div className="relative group">
-                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-text-main transition-colors" />
-                    <input
-                      type="email"
-                      required
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="w-full pl-11 pr-4 py-3 rounded-[12px] bg-bg-base/50 border border-border-color/50 text-text-main focus:bg-surface focus:border-text-muted focus:ring-4 focus:ring-text-muted/10 outline-none transition-all placeholder:text-text-muted/60 text-[14px] shadow-sm"
-                      placeholder="Введите ваш email"
-                    />
-                  </div>
-                </motion.div>
-                
-                <motion.div 
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.6 }}
-                  className="space-y-1.5"
-                >
-                  <div className="flex justify-between items-center px-1">
-                     <label className="text-[12px] font-bold text-text-main uppercase tracking-wider">Пароль</label>
-                     <a href="#" className="text-[11px] font-bold text-text-main hover:text-text-muted transition-colors uppercase tracking-tight">Забыли пароль?</a>
-                  </div>
-                  <div className="relative group">
-                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-text-main transition-colors" />
-                    <input
-                      type="password"
-                      required
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="w-full pl-11 pr-11 py-3 rounded-[12px] bg-bg-base/50 border border-border-color/50 text-text-main focus:bg-surface focus:border-text-muted focus:ring-4 focus:ring-text-muted/10 outline-none transition-all placeholder:text-text-muted/60 text-[14px] shadow-sm"
-                      placeholder="Введите пароль"
-                    />
-                     <button type="button" className="absolute right-4 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-main transition-colors">
-                        <EyeOff className="w-4 h-4" />
-                     </button>
-                  </div>
-                </motion.div>
-                
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  type="submit"
-                  disabled={loading}
-                  className="w-full btn-primary text-white py-3.5 px-6 rounded-[14px] font-bold hover:shadow-xl card-premium-hover transition-all disabled:opacity-70 flex justify-center items-center text-[15px] tracking-wide uppercase mt-6"
-                >
-                  {loading ? 'Вход...' : 'Войти в систему'}
-                </motion.button>
-              </form>
-              
-                  <div className="mt-8 flex flex-col items-center gap-3">
-                <div className="text-[13px] text-text-muted">
-                  Нет бизнеса?{' '}
-                  <Link to="/register" className="font-bold text-text-main hover:text-text-muted transition-colors underline underline-offset-4">
-                    Создать компанию
-                  </Link>
+              {loading ? (
+                <div className="flex justify-center p-4">
+                  <svg className="animate-spin h-8 w-8 text-text-main" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
                 </div>
-              </div>
+              ) : (
+                <TelegramLoginWidget 
+                  botName="relible_auth_bot" 
+                  onAuth={handleTelegramAuth} 
+                />
+              )}
           </motion.div>
         </div>
       </motion.div>

@@ -177,7 +177,8 @@ export default function ClientDashboard() {
 
       await addDoc(collection(db, 'orders'), {
         businessId: appUser.businessId,
-        clientId: appUser?.uid,
+        clientId: appUser?.telegramId || appUser?.uid, // Tie order to telegram ID, fallback to UID
+        clientTelegramId: appUser?.telegramId || '',
         clientName: clientDetails.name || appUser?.name || 'Anonymous',
         clientPhone: clientDetails.phone || appUser?.phone || '',
         clientLocation: clientDetails.locationStr,

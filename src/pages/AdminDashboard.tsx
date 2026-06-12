@@ -724,7 +724,14 @@ export default function AdminDashboard() {
                         pendingUsers.map(user => (
                           <tr key={user.id} className="hover:bg-surface-alt/30 transition-colors">
                             <td className="px-8 py-5">
-                              <div className="font-bold tracking-tight">{user.name}</div>
+                              <div className="font-bold tracking-tight flex items-center gap-2">
+                                {user.name}
+                                {user.telegramId && (
+                                   <a href={`tg://user?id=${user.telegramId}`} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:text-blue-400 text-[11px] font-normal transition-colors px-2 py-0.5 rounded-full bg-blue-500/10 border border-blue-500/20">
+                                      Telegram
+                                   </a>
+                                )}
+                              </div>
                             </td>
                             <td className="px-8 py-5 text-text-muted font-medium">{user.email}</td>
                             <td className="px-8 py-5 text-text-muted font-medium">{user.phone || '—'}</td>
@@ -779,7 +786,14 @@ export default function AdminDashboard() {
                     {activeUsers.map(user => (
                       <tr key={user.id} className="hover:bg-surface-alt/30 transition-all">
                         <td className="px-8 py-5 text-text-main">
-                          <div className="font-bold tracking-tight">{user.name}</div>
+                          <div className="font-bold tracking-tight flex items-center gap-2">
+                             {user.name}
+                             {user.telegramId && (
+                                <a href={`tg://user?id=${user.telegramId}`} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:text-blue-400 text-[11px] font-normal transition-colors px-2 py-0.5 rounded-full bg-blue-500/10 border border-blue-500/20">
+                                   Telegram
+                                </a>
+                             )}
+                          </div>
                         </td>
                         <td className="px-8 py-5 text-text-muted font-medium">{user.email}</td>
                         <td className="px-8 py-5 text-text-muted font-medium">{user.phone || '—'}</td>
@@ -844,7 +858,16 @@ export default function AdminDashboard() {
                           <div className="font-mono text-[11px] text-text-muted bg-surface-alt border border-border-color inline-block px-1.5 py-0.5 rounded mb-1.5 tracking-wider">{order.id.slice(0, 8).toUpperCase()}</div>
                           <div className="text-text-main text-[13px]">{new Date(order.createdAt).toLocaleDateString('ru-RU')}</div>
                         </td>
-                        <td className="px-6 py-4 font-semibold text-text-main">{order.clientName}</td>
+                        <td className="px-6 py-4 font-semibold text-text-main">
+                          <div className="flex items-center gap-2">
+                            {order.clientName}
+                            {order.clientTelegramId && (
+                              <a href={`tg://user?id=${order.clientTelegramId}`} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:text-blue-400 text-[11px] font-normal transition-colors px-2 py-0.5 rounded-full bg-blue-500/10 border border-blue-500/20">
+                                Открыть профиль
+                              </a>
+                            )}
+                          </div>
+                        </td>
                         <td className="px-6 py-4 text-text-muted text-[13px] max-w-[200px]">
                           {order.items.map((it:any) => <div key={it.id} className="mb-0.5 truncate">{it.quantity}x {it.name}</div>)}
                         </td>

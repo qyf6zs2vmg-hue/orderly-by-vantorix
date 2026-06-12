@@ -107,10 +107,14 @@ export default function AdminDashboard() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
   // Products Management
+  const CLOTHING_SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL'];
+  const SHOE_SIZES = ['35', '36', '37', '38', '39', '40', '41', '42', '43', '44', '45', '46'];
+  const COLORS = ['Белый', 'Чёрный', 'Синий', 'Красный', 'Зелёный', 'Жёлтый', 'Серый', 'Коричневый', 'Оранжевый', 'Фиолетовый', 'Розовый'];
+
   const [showAddProduct, setShowAddProduct] = useState(false);
   const [editingProduct, setEditingProduct] = useState<any | null>(null);
   const [integrations, setIntegrations] = useState({bitrixApi: '', oneCApi: ''});
-  const [newProduct, setNewProduct] = useState({ name: '', description: '', price: 0, stock: 0, imageBase64: '' });
+  const [newProduct, setNewProduct] = useState<{name: string, description: string, price: number, stock: number, imageBase64: string, sizes: string[], colors: string[]}>({ name: '', description: '', price: 0, stock: 0, imageBase64: '', sizes: [], colors: [] });
 
   useEffect(() => {
     if (!appUser?.businessId) return;
@@ -238,9 +242,11 @@ export default function AdminDashboard() {
         price: Number(newProduct.price),
         stock: Number(newProduct.stock),
         imageUrl: newProduct.imageBase64,
+        sizes: newProduct.sizes,
+        colors: newProduct.colors,
         createdAt: Date.now()
       });
-      setNewProduct({ name: '', description: '', price: 0, stock: 0, imageBase64: '' });
+      setNewProduct({ name: '', description: '', price: 0, stock: 0, imageBase64: '', sizes: [], colors: [] });
       setShowAddProduct(false);
     } catch (err) {
       console.error(err);
@@ -256,7 +262,9 @@ export default function AdminDashboard() {
         description: editingProduct.description,
         price: Number(editingProduct.price),
         stock: Number(editingProduct.stock),
-        imageUrl: editingProduct.imageBase64 || editingProduct.imageUrl
+        imageUrl: editingProduct.imageBase64 || editingProduct.imageUrl,
+        sizes: editingProduct.sizes || [],
+        colors: editingProduct.colors || []
       });
       setEditingProduct(null);
     } catch (err) {
@@ -870,8 +878,15 @@ export default function AdminDashboard() {
                       <div className="text-[12px] font-bold text-text-muted uppercase tracking-wider mb-2">Заказ</div>
                       <div className="space-y-1">
                         {order.items.map((it:any) => (
-                           <div key={it.id} className="text-[13px] text-text-main flex justify-between">
-                             <span>{it.quantity}x {it.name}</span>
+                           <div key={`${it.id}-${it.size}-${it.color}`} className="text-[13px] text-text-main flex justify-between">
+                             <span>
+                               {it.quantity}x {it.name}
+                               {(it.size || it.color) && (
+                                 <span className="text-[11px] text-text-muted ml-2 bg-surface px-1.5 rounded">
+                                   [{[it.size, it.color].filter(Boolean).join(', ')}]
+                                 </span>
+                               )}
+                             </span>
                              <span className="text-text-muted">${(it.quantity * it.price).toLocaleString()}</span>
                            </div>
                         ))}
@@ -973,6 +988,47 @@ export default function AdminDashboard() {
                                 <input type="number" required min="0" value={editingProduct.price} onChange={e => setEditingProduct({...editingProduct, price: Number(e.target.value)})} className="w-full bg-surface-alt border border-border-color rounded-[10px] py-1.5 px-3 text-[13px] text-text-main" placeholder="Цена ($)" title="Цена" />
                                 <input type="number" required min="0" value={editingProduct.stock} onChange={e => setEditingProduct({...editingProduct, stock: Number(e.target.value)})} className="w-full bg-surface-alt border border-border-color rounded-[10px] py-1.5 px-3 text-[13px] text-text-main" placeholder="Остаток" title="Остаток" />
                               </div>
+                              <div className="flex flex-col gap-2 border-y border-border-color py-2">
+                                <label className="text-[10px] font-bold text-text-muted uppercase tracking-wider">Одежда</label>
+                                <div className="flex flex-wrap gap-1">
+                                  {CLOTHING_SIZES.map(s => (
+                                    <button
+                                      type="button"
+                                      key={s}
+                                      onClick={() => setEditingProduct((prev: any) => ({...prev, sizes: prev.sizes?.includes(s) ? prev.sizes.filter((x:string) => x !== s) : [...(prev.sizes||[]), s]}))}
+                                      className={`px-2 py-1 rounded-md text-[10px] font-bold uppercase transition-all border ${editingProduct.sizes?.includes(s) ? 'bg-brand-primary text-white border-brand-primary' : 'bg-surface-alt text-text-muted border-border-color hover:border-text-muted'}`}
+                                    >
+                                      {s}
+                                    </button>
+                                  ))}
+                                </div>
+                                <label className="text-[10px] font-bold text-text-muted uppercase tracking-wider mt-1">Обувь</label>
+                                <div className="flex flex-wrap gap-1">
+                                  {SHOE_SIZES.map(s => (
+                                    <button
+                                      type="button"
+                                      key={s}
+                                      onClick={() => setEditingProduct((prev: any) => ({...prev, sizes: prev.sizes?.includes(s) ? prev.sizes.filter((x:string) => x !== s) : [...(prev.sizes||[]), s]}))}
+                                      className={`px-2 py-1 rounded-md text-[10px] font-bold uppercase transition-all border ${editingProduct.sizes?.includes(s) ? 'bg-brand-primary text-white border-brand-primary' : 'bg-surface-alt text-text-muted border-border-color hover:border-text-muted'}`}
+                                    >
+                                      {s}
+                                    </button>
+                                  ))}
+                                </div>
+                                <label className="text-[10px] font-bold text-text-muted uppercase tracking-wider mt-1">Цвета</label>
+                                <div className="flex flex-wrap gap-1">
+                                  {COLORS.map(c => (
+                                    <button
+                                      type="button"
+                                      key={c}
+                                      onClick={() => setEditingProduct((prev: any) => ({...prev, colors: prev.colors?.includes(c) ? prev.colors.filter((x:string) => x !== c) : [...(prev.colors||[]), c]}))}
+                                      className={`px-2 py-1 rounded-md text-[10px] font-bold transition-all border ${editingProduct.colors?.includes(c) ? 'bg-brand-primary text-white border-brand-primary' : 'bg-surface-alt text-text-muted border-border-color hover:border-text-muted'}`}
+                                    >
+                                      {c}
+                                    </button>
+                                  ))}
+                                </div>
+                              </div>
                               <input type="file" accept="image/*" onChange={handleEditImageUpload} className="block w-full text-[11px] text-text-muted file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border file:border-border-color file:text-[11px] file:bg-surface-alt file:text-text-main hover:file:bg-surface cursor-pointer" />
                               <div className="flex gap-2 justify-end mt-2">
                                 <button type="button" onClick={() => setEditingProduct(null)} className="px-3 py-1.5 rounded-[8px] bg-surface-alt text-text-muted text-[12px] font-bold">Отмена</button>
@@ -1063,6 +1119,57 @@ export default function AdminDashboard() {
                       <label className="text-[12px] font-bold text-text-muted uppercase tracking-wider">Краткое описание товара</label>
                       <textarea required value={newProduct.description} onChange={e => setNewProduct({...newProduct, description: e.target.value})} rows={3} className="w-full bg-surface-alt border border-border-color rounded-[10px] py-2.5 px-4 text-[13px] text-text-main focus:border-text-muted outline-none transition-all placeholder:text-text-muted/50 resize-none" placeholder="Основная информация..." />
                     </div>
+
+                    <div className="flex flex-col gap-4 border-t border-border-color pt-4">
+                      <div className="flex flex-col gap-2">
+                        <label className="text-[12px] font-bold text-text-muted uppercase tracking-wider">Размеры одежды (Опционально)</label>
+                        <div className="flex flex-wrap gap-2">
+                          {CLOTHING_SIZES.map(s => (
+                            <button
+                              type="button"
+                              key={s}
+                              onClick={() => setNewProduct(prev => ({...prev, sizes: prev.sizes.includes(s) ? prev.sizes.filter(x => x !== s) : [...prev.sizes, s]}))}
+                              className={`px-3 py-1.5 rounded-lg text-[12px] font-bold uppercase transition-all border ${newProduct.sizes.includes(s) ? 'bg-brand-primary text-white border-brand-primary' : 'bg-surface-alt text-text-muted border-border-color hover:border-text-muted'}`}
+                            >
+                              {s}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      
+                      <div className="flex flex-col gap-2">
+                        <label className="text-[12px] font-bold text-text-muted uppercase tracking-wider">Размеры обуви (Опционально)</label>
+                        <div className="flex flex-wrap gap-2">
+                          {SHOE_SIZES.map(s => (
+                            <button
+                              type="button"
+                              key={s}
+                              onClick={() => setNewProduct(prev => ({...prev, sizes: prev.sizes.includes(s) ? prev.sizes.filter(x => x !== s) : [...prev.sizes, s]}))}
+                              className={`px-3 py-1.5 rounded-lg text-[12px] font-bold uppercase transition-all border ${newProduct.sizes.includes(s) ? 'bg-brand-primary text-white border-brand-primary' : 'bg-surface-alt text-text-muted border-border-color hover:border-text-muted'}`}
+                            >
+                              {s}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col gap-2">
+                        <label className="text-[12px] font-bold text-text-muted uppercase tracking-wider">Цвета (Опционально)</label>
+                        <div className="flex flex-wrap gap-2">
+                          {COLORS.map(c => (
+                            <button
+                              type="button"
+                              key={c}
+                              onClick={() => setNewProduct(prev => ({...prev, colors: prev.colors.includes(c) ? prev.colors.filter(x => x !== c) : [...prev.colors, c]}))}
+                              className={`px-3 py-1.5 rounded-lg text-[12px] font-bold transition-all border ${newProduct.colors.includes(c) ? 'bg-brand-primary text-white border-brand-primary' : 'bg-surface-alt text-text-muted border-border-color hover:border-text-muted'}`}
+                            >
+                              {c}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
                     <div className="flex flex-col gap-2">
                       <label className="text-[12px] font-bold text-text-muted uppercase tracking-wider">Изображение товара</label>
                       <div className="flex items-center gap-4 mt-1">

@@ -3,7 +3,9 @@ import { MapContainer, TileLayer, Marker } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 
+// @ts-ignore
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
+// @ts-ignore
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
 
 const DefaultIcon = L.icon({

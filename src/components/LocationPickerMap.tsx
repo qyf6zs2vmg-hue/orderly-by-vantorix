@@ -5,7 +5,9 @@ import L from 'leaflet';
 import { LocateFixed } from 'lucide-react';
 
 // Fix for default marker icon in react-leaflet
+// @ts-ignore
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
+// @ts-ignore
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
 
 const DefaultIcon = L.icon({

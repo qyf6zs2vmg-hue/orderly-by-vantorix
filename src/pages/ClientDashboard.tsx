@@ -43,7 +43,8 @@ export default function ClientDashboard() {
     }
   };
   
-  const [cart, setCart] = useState<{product: any, quantity: number}[]>([]);
+  const [cart, setCart] = useState<{product: any, quantity: number, size?: string, color?: string}[]>([]);
+  const [selectedOptions, setSelectedOptions] = useState<Record<string, {size?: string, color?: string}>>({});
   const [myOrders, setMyOrders] = useState<any[]>([]);
   const [showAllOrders, setShowAllOrders] = useState(false);
   const [products, setProducts] = useState<any[]>([]);
@@ -93,30 +94,30 @@ export default function ClientDashboard() {
     };
   }, [appUser]);
 
-  const addToCart = (product: any) => {
+  const addToCart = (product: any, size?: string, color?: string) => {
     setCart(prev => {
-      const existing = prev.find(i => i.product.id === product.id);
+      const existing = prev.find(i => i.product.id === product.id && i.size === size && i.color === color);
       if (existing) {
         if (existing.quantity >= product.stock) return prev;
-        return prev.map(i => i.product.id === product.id ? {...i, quantity: i.quantity + 1} : i);
+        return prev.map(i => (i.product.id === product.id && i.size === size && i.color === color) ? {...i, quantity: i.quantity + 1} : i);
       }
-      return [...prev, { product, quantity: 1 }];
+      return [...prev, { product, quantity: 1, size, color }];
     });
   };
 
-  const removeFromCart = (productId: string) => {
+  const removeFromCart = (product: any, size?: string, color?: string) => {
     setCart(prev => {
-      const existing = prev.find(i => i.product.id === productId);
+      const existing = prev.find(i => i.product.id === product.id && i.size === size && i.color === color);
       if (existing && existing.quantity > 1) {
-        return prev.map(i => i.product.id === productId ? {...i, quantity: i.quantity - 1} : i);
+        return prev.map(i => (i.product.id === product.id && i.size === size && i.color === color) ? {...i, quantity: i.quantity - 1} : i);
       }
-      return prev.filter(i => i.product.id !== productId);
+      return prev.filter(i => !(i.product.id === product.id && i.size === size && i.color === color));
     });
   };
 
-  const updateQuantity = (product: any, value: string) => {
+  const updateQuantity = (product: any, value: string, size?: string, color?: string) => {
     if (value === '') {
-      setCart(prev => prev.filter(i => i.product.id !== product.id));
+      setCart(prev => prev.filter(i => !(i.product.id === product.id && i.size === size && i.color === color)));
       return;
     }
     const qty = parseInt(value);
@@ -125,10 +126,10 @@ export default function ClientDashboard() {
     const finalQty = Math.min(qty, product.stock);
 
     setCart(prev => {
-      const existingIndex = prev.findIndex(i => i.product.id === product.id);
+      const existingIndex = prev.findIndex(i => i.product.id === product.id && i.size === size && i.color === color);
       
       if (finalQty === 0) {
-        return prev.filter(i => i.product.id !== product.id);
+        return prev.filter(i => !(i.product.id === product.id && i.size === size && i.color === color));
       }
 
       if (existingIndex > -1) {
@@ -137,7 +138,7 @@ export default function ClientDashboard() {
         return newCart;
       }
 
-      return [...prev, { product, quantity: finalQty }];
+      return [...prev, { product, quantity: finalQty, size, color }];
     });
   };
 
@@ -170,7 +171,9 @@ export default function ClientDashboard() {
       id: i.product.id,
       name: i.product.name,
       price: i.product.price,
-      quantity: i.quantity
+      quantity: i.quantity,
+      size: i.size || null,
+      color: i.color || null
     }));
 
     try {
@@ -407,8 +410,12 @@ export default function ClientDashboard() {
                  />
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pb-24 xl:pb-0">
-                {products.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase())).map(product => {
-                  const cartItem = cart.find(i => i.product.id === product.id);
+                {products.filter(p => !searchQuery || p.name.toLowerCase().includes(searchQuery.toLowerCase())).map(product => {
+                  const sOpts = selectedOptions[product.id] || {};
+                  const currentSize = sOpts.size || (product.sizes?.length ? product.sizes[0] : undefined);
+                  const currentColor = sOpts.color || (product.colors?.length ? product.colors[0] : undefined);
+
+                  const cartItem = cart.find(i => i.product.id === product.id && i.size === currentSize && i.color === currentColor);
                   const quantity = cartItem ? cartItem.quantity : 0;
                   
                   return (
@@ -423,9 +430,40 @@ export default function ClientDashboard() {
                         </div>
                       )}
                       
-                      <div className="flex-1 mt-2">
+                      <div className="flex-1 mt-2 flex flex-col">
                         <h3 className="text-text-main font-bold text-[18px] leading-tight mb-2">{product.name}</h3>
-                        <p className="text-[13px] text-text-muted font-medium line-clamp-3 leading-relaxed">{product.description || 'Нет описания'}</p>
+                        <p className="text-[13px] text-text-muted font-medium line-clamp-3 leading-relaxed mb-3 flex-1">{product.description || 'Нет описания'}</p>
+
+                        {(product.sizes?.length > 0 || product.colors?.length > 0) && (
+                          <div className="flex flex-col gap-2 mb-2">
+                            {product.sizes?.length > 0 && (
+                              <div className="flex gap-1.5 flex-wrap">
+                                {product.sizes.map((s:string) => (
+                                  <button
+                                    key={s}
+                                    onClick={() => setSelectedOptions(prev => ({...prev, [product.id]: {...prev[product.id], size: s}}))}
+                                    className={`px-2 py-1 text-[11px] font-bold rounded-lg border transition-all ${currentSize === s ? 'bg-brand-primary text-white border-brand-primary shadow-sm' : 'bg-surface-alt text-text-muted border-border-color hover:border-text-muted'}`}
+                                  >
+                                    {s}
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+                            {product.colors?.length > 0 && (
+                              <div className="flex gap-1.5 flex-wrap">
+                                {product.colors.map((c:string) => (
+                                  <button
+                                    key={c}
+                                    onClick={() => setSelectedOptions(prev => ({...prev, [product.id]: {...prev[product.id], color: c}}))}
+                                    className={`px-2 py-1 text-[11px] font-bold rounded-lg border transition-all ${currentColor === c ? 'bg-brand-primary text-white border-brand-primary shadow-sm' : 'bg-surface-alt text-text-muted border-border-color hover:border-text-muted'}`}
+                                  >
+                                    {c}
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        )}
                       </div>
                       
                       <div className="flex items-center justify-between pt-4 border-t border-border-color/50 mt-auto">
@@ -440,7 +478,7 @@ export default function ClientDashboard() {
                           quantity > 0 ? (
                             <div className="flex items-center gap-1 bg-surface-alt/80 border border-border-color/50 rounded-xl p-1 shadow-inner h-[40px]">
                                 <button 
-                                  onClick={(e) => { e.stopPropagation(); removeFromCart(product.id); }}
+                                  onClick={(e) => { e.stopPropagation(); removeFromCart(product, currentSize, currentColor); }}
                                   className="p-1.5 rounded-lg text-text-main hover:bg-surface hover:text-brand-danger shadow-sm transition-all"
                                 >
                                   <Minus className="w-4 h-4" />
@@ -448,13 +486,13 @@ export default function ClientDashboard() {
                                 <input 
                                   type="number"
                                   value={quantity || ''}
-                                  onChange={(e) => updateQuantity(product, e.target.value)}
+                                  onChange={(e) => updateQuantity(product, e.target.value, currentSize, currentColor)}
                                   onClick={(e) => e.stopPropagation()}
                                   placeholder="0"
                                   className="text-[14px] font-bold w-10 text-center text-text-main bg-transparent border-none focus:ring-0 px-0.5 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                 />
                                 <button 
-                                  onClick={(e) => { e.stopPropagation(); addToCart(product); }}
+                                  onClick={(e) => { e.stopPropagation(); addToCart(product, currentSize, currentColor); }}
                                   className={clsx(
                                     "p-1.5 rounded-lg transition-all",
                                     quantity >= product.stock ? "text-text-muted cursor-not-allowed opacity-30" : "text-text-main hover:bg-surface hover:text-brand-accent shadow-sm"
@@ -466,7 +504,7 @@ export default function ClientDashboard() {
                             </div>
                           ) : (
                             <button 
-                              onClick={(e) => { e.stopPropagation(); addToCart(product); }}
+                              onClick={(e) => { e.stopPropagation(); addToCart(product, currentSize, currentColor); }}
                               className="bg-brand-accent hover:bg-brand-accent/90 text-white px-5 py-2 rounded-xl text-[13px] font-bold transition-all shadow-md active:scale-95 h-[40px]"
                             >
                               В корзину
@@ -542,23 +580,32 @@ export default function ClientDashboard() {
                 <div className="flex flex-col flex-1 h-full max-h-fit min-h-0">
                   <div className="space-y-4 mb-6 custom-scrollbar shrink overflow-y-auto pr-2" style={{ maxHeight: isMobileCartOpen ? 'inherit' : '45vh' }}>
                     {cart.map(item => (
-                      <div key={item.product.id} className="flex items-center justify-between">
+                      <div key={`${item.product.id}-${item.size}-${item.color}`} className="flex items-center justify-between">
                         <div className="flex-1 pr-2">
                           <div className="text-[13px] font-semibold text-text-main truncate max-w-[170px] leading-tight">{item.product.name}</div>
-                          <div className="text-[11px] text-text-muted mt-1">${item.product.price} / шт</div>
+                          <div className="flex items-center text-[11px] text-text-muted mt-1 gap-2">
+                            <span>${item.product.price} / шт</span>
+                            {(item.size || item.color) && (
+                              <span className="flex items-center gap-1 opacity-80 bg-surface-alt px-1.5 py-0.5 rounded border border-border-color/50">
+                                {item.size && <span>{item.size}</span>}
+                                {item.size && item.color && <span className="text-border-color">|</span>}
+                                {item.color && <span>{item.color}</span>}
+                              </span>
+                            )}
+                          </div>
                         </div>
                         <div className="flex items-center gap-1 bg-surface-alt border border-border-color rounded-[6px] p-0.5 shrink-0 shadow-sm">
-                          <button onClick={() => removeFromCart(item.product.id)} className="p-1 text-text-muted hover:text-text-main hover:bg-surface rounded transition-colors">
+                          <button onClick={() => removeFromCart(item.product, item.size, item.color)} className="p-1 text-text-muted hover:text-text-main hover:bg-surface rounded transition-colors">
                             <Minus className="w-3 h-3" />
                           </button>
                           <input 
                             type="number"
                             value={item.quantity || ''}
-                            onChange={(e) => updateQuantity(item.product, e.target.value)}
+                            onChange={(e) => updateQuantity(item.product, e.target.value, item.size, item.color)}
                             className="text-[12px] font-bold w-6 text-center text-text-main bg-transparent border-none focus:ring-0 p-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                           />
                           <button 
-                            onClick={() => addToCart(item.product)}
+                            onClick={() => addToCart(item.product, item.size, item.color)}
                             className={clsx(
                               "p-1 transition-colors rounded",
                               item.quantity >= item.product.stock ? "text-text-muted cursor-not-allowed opacity-50" : "text-text-muted hover:text-text-main hover:bg-surface"
@@ -621,8 +668,13 @@ export default function ClientDashboard() {
                     </div>
                     <div className="text-[14px] text-text-main mb-4 font-bold flex flex-wrap gap-2">
                       {order.items.map((i:any, idx:number) => (
-                        <span key={idx} className="bg-surface text-text-main px-3 py-1 rounded-lg border border-border-color shadow-sm">
+                        <span key={idx} className="bg-surface text-text-main px-3 py-1 rounded-lg border border-border-color shadow-sm flex items-center gap-1">
                            {i.quantity} × {i.name}
+                           {(i.size || i.color) && (
+                             <span className="text-[10px] opacity-70 bg-surface-alt px-1 rounded ml-1">
+                               [{[i.size, i.color].filter(Boolean).join(', ')}]
+                             </span>
+                           )}
                         </span>
                       ))}
                     </div>

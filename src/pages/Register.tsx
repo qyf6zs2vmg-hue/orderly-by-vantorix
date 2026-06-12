@@ -14,7 +14,6 @@ import { motion } from 'motion/react';
 
 export default function Register() {
   const [businessName, setBusinessName] = useState('');
-  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [accessMode, setAccessMode] = useState<'private' | 'public' | ''>('');
@@ -65,7 +64,7 @@ export default function Register() {
       });
 
       batch.set(userRef, {
-        name: name,
+        name: 'Administrator',
         email: email,
         role: 'owner',
         status: 'active',
@@ -245,7 +244,6 @@ export default function Register() {
               <form onSubmit={registerOwner} className="space-y-3">
                 {[
                   { id: 'business', label: t.auth.companyName, icon: Building2, value: businessName, setter: setBusinessName, placeholder: t.auth.companyPlaceholder },
-                  { id: 'name', label: t.auth.contactPerson, icon: UserIcon, value: name, setter: setName, placeholder: t.auth.contactPlaceholder },
                   { id: 'email', label: 'Email', icon: Mail, type: 'email', value: email, setter: setEmail, placeholder: 'work@company.com' },
                   { id: 'password', label: t.auth.password, icon: Lock, type: 'password', value: password, setter: setPassword, placeholder: t.auth.passwordPlaceholder }
                 ].map((field, idx) => (

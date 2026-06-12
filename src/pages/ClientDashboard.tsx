@@ -19,8 +19,8 @@ import { translations, Language } from '../constants/translations';
 
 export default function ClientDashboard() {
   const { logout, appUser, business } = useAuth();
-  const [activeTab, setActiveTab] = useState<'shop' | 'orders' | 'settings'>('shop');
-  const [settingsTab, setSettingsTab] = useState<'general' | 'privacy' | 'appearance' | 'security'>('general');
+  const [activeTab, setActiveTab] = useState<'shop' | 'orders' | 'profile' | 'settings'>('shop');
+  const [settingsTab, setSettingsTab] = useState<'privacy' | 'appearance' | 'security'>('privacy');
   const [lang, setLang] = useState<Language>('RU');
   const t = translations[lang];
   const [searchQuery, setSearchQuery] = useState('');
@@ -168,7 +168,7 @@ export default function ClientDashboard() {
              latitude: clientDetails.latitude,
              longitude: clientDetails.longitude,
           };
-          if (!appUser.isAnonymous && clientDetails.name) {
+          if (clientDetails.name) {
               updateData.name = clientDetails.name;
           }
           await updateDoc(doc(db, 'users', appUser.uid), updateData);
@@ -214,11 +214,31 @@ export default function ClientDashboard() {
     }
   };
 
+  const handleUpdateProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!appUser?.uid) return;
+    try {
+      setCheckoutState('processing');
+      await updateDoc(doc(db, 'users', appUser.uid), {
+        name: clientDetails.name,
+        phone: clientDetails.phone,
+        locationStr: clientDetails.locationStr,
+        latitude: clientDetails.latitude,
+        longitude: clientDetails.longitude,
+      });
+      setCheckoutState('success');
+      setTimeout(() => setCheckoutState('idle'), 2000);
+    } catch (err) {
+      console.error(err);
+      setCheckoutState('idle');
+    }
+  };
+
   const handleCheckout = async () => {
     if (cart.length === 0) return;
     if (!appUser?.businessId) return;
 
-    if (!appUser.phone || !appUser.locationStr) {
+    if (!appUser.name || !appUser.phone || !appUser.locationStr) {
        setIsDetailsModalOpen(true);
        return;
     }
@@ -296,6 +316,14 @@ export default function ClientDashboard() {
                 {myOrders.length}
               </span>
             )}
+          </button>
+
+          <button
+            onClick={() => setActiveTab('profile')}
+            className={clsx("flex items-center px-4 py-3 rounded-xl text-[13px] font-bold transition-all duration-200 border-2", activeTab === 'profile' ? "bg-surface-alt border-border-color text-text-main shadow-sm" : "text-text-muted hover:text-text-main hover:bg-surface-alt border-transparent")}
+          >
+            <User className={clsx("w-4 h-4 mr-3 transition-transform", activeTab === 'profile' ? "text-text-main scale-110" : "text-text-muted")} />
+            {lang === 'RU' ? 'Мои данные' : 'Mening ma\'lumotlarim'}
           </button>
 
           <button
@@ -600,6 +628,71 @@ export default function ClientDashboard() {
         )}
 
         {/* Settings Tab */}
+        {activeTab === 'profile' && (
+            <div className="max-w-3xl w-full mx-auto animate-in fade-in duration-300">
+               <div className="mb-6">
+                 <h1 className="text-[24px] font-bold text-text-main tracking-tight">{lang === 'RU' ? 'Мои данные' : 'Mening ma\'lumotlarim'}</h1>
+                 <p className="text-[13px] text-text-muted mt-1">{lang === 'RU' ? 'Управление вашими контактными данными и адресом доставки' : 'Sizning aloqa ma\'lumotlaringiz va yetkazib berish manzilingiz'}</p>
+               </div>
+               <div className="bg-surface rounded-[32px] p-8 shadow-[0_4px_12px_rgba(16,24,40,0.06)] border border-border-color animate-in fade-in slide-in-from-bottom-2 duration-300">
+                 <form onSubmit={handleUpdateProfile} className="space-y-5">
+                    <div>
+                       <label className="text-[12px] font-bold text-text-main uppercase tracking-wider mb-2 block">{lang === 'RU' ? 'Ваше имя' : 'Ismingiz'}</label>
+                       <input 
+                         type="text" 
+                         required
+                         value={clientDetails.name}
+                         onChange={e => setClientDetails(p => ({...p, name: e.target.value}))}
+                         className="w-full bg-surface-alt/50 border border-border-color rounded-xl px-4 py-3 text-[13px] text-text-main focus:bg-surface focus:border-text-muted outline-none transition-all"
+                         placeholder="Имя Фамилия"
+                       />
+                    </div>
+                    
+                    <div>
+                       <label className="text-[12px] font-bold text-text-main uppercase tracking-wider mb-2 block">{lang === 'RU' ? 'Номер телефона' : 'Telefon raqami'}</label>
+                       <input 
+                         type="tel" 
+                         required
+                         value={clientDetails.phone}
+                         onChange={e => setClientDetails(p => ({...p, phone: e.target.value}))}
+                         className="w-full bg-surface-alt/50 border border-border-color rounded-xl px-4 py-3 text-[13px] text-text-main focus:bg-surface focus:border-text-muted outline-none transition-all"
+                         placeholder="+998 90 123 45 67"
+                       />
+                    </div>
+
+                    <div className="flex flex-col gap-2">
+                       <label className="text-[12px] font-bold text-text-main uppercase tracking-wider mb-1 block">{lang === 'RU' ? 'Адрес доставки' : 'Yetkazib berish manzili'}</label>
+                       <div className="w-full">
+                         <div className="mb-3">
+                           <LocationPickerMap onLocationSelected={handleLocationSelected} />
+                         </div>
+                         <input 
+                           type="text" 
+                           required
+                           value={clientDetails.locationStr}
+                           onChange={e => setClientDetails(p => ({...p, locationStr: e.target.value}))}
+                           className="w-full bg-surface-alt/50 border border-border-color rounded-xl px-4 py-3 text-[13px] text-text-main focus:bg-surface focus:border-text-muted outline-none transition-all"
+                           placeholder="Уточните адрес (квартира, этаж, подъезд)..."
+                         />
+                       </div>
+                    </div>
+                    
+                    <div className="pt-4 flex justify-end">
+                      <button 
+                        type="submit" 
+                        disabled={checkoutState === 'processing' || checkoutState === 'success'}
+                        className="bg-text-main text-bg-base px-8 py-3.5 rounded-xl text-[13px] font-bold hover:bg-text-main/90 transition-all shadow-sm disabled:opacity-50 flex items-center justify-center gap-2 max-w-[240px] w-full"
+                      >
+                        {checkoutState === 'processing' && <Loader2 className="w-4 h-4 animate-spin text-bg-base" />}
+                        {checkoutState === 'success' ? (lang === 'RU' ? 'Сохранено!' : 'Saqlandi!') : (lang === 'RU' ? 'Сохранить изменения' : 'O\'zgarishlarni saqlash')}
+                      </button>
+                    </div>
+                 </form>
+               </div>
+            </div>
+        )}
+
+        {/* Settings Tab */}
         {activeTab === 'settings' && (
             <div className="max-w-5xl w-full mx-auto animate-in fade-in duration-300">
                <div className="mb-6">
@@ -610,13 +703,6 @@ export default function ClientDashboard() {
                <div className="flex flex-col md:flex-row gap-8 items-start">
                  {/* Settings Sidebar */}
                  <div className="w-full md:w-64 flex flex-col gap-1 shrink-0 bg-surface rounded-[16px] p-2 border border-border-color shadow-sm">
-                    <button 
-                      onClick={() => setSettingsTab('general')}
-                      className={clsx("flex items-center gap-2.5 px-4 py-2.5 rounded-[12px] text-[13px] font-medium transition-all group", settingsTab === 'general' ? "bg-surface text-text-main font-bold shadow-sm border border-border-color" : "text-text-muted hover:text-text-main hover:bg-surface-alt/50 border border-transparent")}
-                    >
-                      <User className={clsx("w-3.5 h-3.5 transition-transform", settingsTab === 'general' ? "scale-110" : "group-hover:scale-110")} />
-                      {lang === 'RU' ? 'Профиль' : 'Profil'}
-                    </button>
                     <button 
                       onClick={() => setSettingsTab('privacy')}
                       className={clsx("flex items-center gap-2.5 px-4 py-2.5 rounded-[12px] text-[13px] font-medium transition-all group", settingsTab === 'privacy' ? "bg-surface text-text-main font-bold shadow-sm border border-border-color" : "text-text-muted hover:text-text-main hover:bg-surface-alt/50 border border-transparent")}
@@ -642,12 +728,6 @@ export default function ClientDashboard() {
                  
                  {/* Settings Content */}
                  <div className="flex-1 min-w-0 w-full">
-                    {settingsTab === 'general' && (
-                       <div className="bg-surface rounded-[24px] p-8 shadow-[0_4px_12px_rgba(16,24,40,0.06)] border border-border-color">
-                         <h3 className="text-[18px] font-bold text-text-main tracking-tight mb-6">Базовые параметры</h3>
-                         <p className="text-text-muted text-[13px]">Здесь появятся основные настройки компании.</p>
-                       </div>
-                    )}
                     {settingsTab === 'privacy' && (
                        <div className="bg-surface rounded-[24px] p-8 shadow-[0_4px_12px_rgba(16,24,40,0.06)] border border-border-color card-premium animate-in fade-in slide-in-from-bottom-2 duration-300">
                          <div className="text-text-muted leading-relaxed text-[13px]">
@@ -722,10 +802,9 @@ export default function ClientDashboard() {
           <div className="absolute inset-0 bg-bg-base/80 backdrop-blur-sm" onClick={() => setIsDetailsModalOpen(false)}></div>
           <div className="relative bg-surface border border-border-color rounded-[32px] p-6 max-w-md w-full shadow-accent card-premium">
             <h2 className="text-[20px] font-bold text-text-main mb-2">Данные для доставки</h2>
-            <p className="text-[13px] text-text-muted mb-6">Введите {appUser?.isAnonymous ? 'телефон и адрес' : 'ваше имя, телефон и адрес'} (или геолокацию) для оформления заказа. Эти данные сохранятся для будущих покупок.</p>
+            <p className="text-[13px] text-text-muted mb-6">Введите ваше имя, телефон и адрес (или геолокацию) для оформления заказа. Эти данные сохранятся для будущих покупок.</p>
             
             <form onSubmit={submitOrderWithDetails} className="space-y-4">
-              {!appUser?.isAnonymous && (
               <div>
                  <label className="text-[12px] font-bold text-text-main uppercase tracking-wider mb-1 block">Имя</label>
                  <input 
@@ -737,7 +816,6 @@ export default function ClientDashboard() {
                    placeholder="Иван Иванов"
                  />
               </div>
-              )}
               <div>
                  <label className="text-[12px] font-bold text-text-main uppercase tracking-wider mb-1 block">Телефон</label>
                  <input 

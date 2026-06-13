@@ -3,7 +3,7 @@ import { collection, onSnapshot, query, where, doc, updateDoc, deleteDoc, setDoc
 import { db } from '../lib/firebase';
 import { useAuth } from '../lib/AuthContext';
 import { ThemeToggle } from '../components/ThemeToggle';
-import { LogOut, Key, Users, Copy, RefreshCcw, ShoppingCart, Settings, Bell, Mail, ChevronDown, Search, Plus, Store, Box, Menu, Shield, BarChart3, Globe, User, FileText, Palette, ClipboardList, Check, X, Loader2 } from 'lucide-react';
+import { LogOut, Key, Users, Copy, RefreshCcw, ShoppingCart, Settings, Bell, Mail, ChevronDown, Search, Plus, Store, Box, Menu, Shield, BarChart3, Globe, User, FileText, Palette, ClipboardList, Check, X, Loader2, CreditCard, Info } from 'lucide-react';
 import clsx from 'clsx';
 import OrderLocationMap from '../components/OrderLocationMap';
 import PrivacyPolicyContent from '../components/PrivacyPolicyContent';
@@ -31,7 +31,7 @@ export default function AdminDashboard() {
   const [settingsTab, setSettingsTab] = useState<'general' | 'privacy' | 'appearance' | 'security'>('general');
   const [lang, setLang] = useState<Language>('RU');
   const t = translations[lang];
-  const [activeTab, setActiveTab] = useState<'invites' | 'requests' | 'users' | 'orders' | 'products' | 'settings'>('invites');
+  const [activeTab, setActiveTab] = useState<'invites' | 'requests' | 'users' | 'orders' | 'products' | 'settings' | 'payments'>('products');
   const [isSecurityDialogOpen, setIsSecurityDialogOpen] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   
@@ -113,19 +113,31 @@ export default function AdminDashboard() {
 
   const [showAddProduct, setShowAddProduct] = useState(false);
   const [editingProduct, setEditingProduct] = useState<any | null>(null);
-  const [integrations, setIntegrations] = useState({bitrixApi: '', oneCApi: ''});
-  const [newProduct, setNewProduct] = useState<{name: string, description: string, price: number, stock: number, imageBase64: string, sizes: string[], colors: string[]}>({ name: '', description: '', price: 0, stock: 0, imageBase64: '', sizes: [], colors: [] });
+  const [newProduct, setNewProduct] = useState<{name: string, description: string, price: number, stock: number, imageBase64: string, additionalImage1?: string, additionalImage2?: string, videoBase64?: string, sizes: string[], colors: string[]}>({ name: '', description: '', price: 0, stock: 0, imageBase64: '', sizes: [], colors: [] });
+
+  const [selectedReceipt, setSelectedReceipt] = useState<string | null>(null);
+
+  const handleUpdateOrderStatus = async (orderId: string, status: string) => {
+    try {
+      await updateDoc(doc(db, 'orders', orderId), { status });
+    } catch (e) {
+      console.error("Failed to update status", e);
+    }
+  };
+
+  const [paymentSettings, setPaymentSettings] = useState({ enableBankCard: false, cardNumber: '', cardHolderName: '' });
+  const [isSavingPayments, setIsSavingPayments] = useState(false);
 
   useEffect(() => {
     if (!appUser?.businessId) return;
 
     const unsubBusiness = onSnapshot(doc(db, 'businesses', appUser.businessId), (docSnap) => {
-      if (docSnap.exists() && docSnap.data().integrations) {
-        const storedIntegrations = docSnap.data().integrations;
-        setIntegrations({
-          bitrixApi: storedIntegrations.bitrixApi || '',
-          oneCApi: storedIntegrations.oneCApi || ''
-        });
+      if (docSnap.exists() && docSnap.data().paymentSettings) {
+         setPaymentSettings({
+           enableBankCard: docSnap.data().paymentSettings.enableBankCard || false,
+           cardNumber: docSnap.data().paymentSettings.cardNumber || '',
+           cardHolderName: docSnap.data().paymentSettings.cardHolderName || ''
+         });
       }
     });
 
@@ -211,7 +223,7 @@ export default function AdminDashboard() {
     setEditingClient(null);
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, field: 'imageBase64' | 'additionalImage1' | 'additionalImage2' | 'videoBase64', isEditing: boolean = false) => {
     if (appUser?.plan_type !== 'pro') {
       e.preventDefault();
       setShowUpgradeModal(true);
@@ -221,7 +233,11 @@ export default function AdminDashboard() {
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setNewProduct({...newProduct, imageBase64: reader.result as string});
+        if (isEditing) {
+          if (editingProduct) setEditingProduct({...editingProduct, [field]: reader.result as string});
+        } else {
+          setNewProduct({...newProduct, [field]: reader.result as string});
+        }
       };
       reader.readAsDataURL(file);
     }
@@ -242,14 +258,36 @@ export default function AdminDashboard() {
         price: Number(newProduct.price),
         stock: Number(newProduct.stock),
         imageUrl: newProduct.imageBase64,
+        additionalImage1: newProduct.additionalImage1 || null,
+        additionalImage2: newProduct.additionalImage2 || null,
+        videoBase64: newProduct.videoBase64 || null,
         sizes: newProduct.sizes,
         colors: newProduct.colors,
         createdAt: Date.now()
       });
-      setNewProduct({ name: '', description: '', price: 0, stock: 0, imageBase64: '', sizes: [], colors: [] });
+      setNewProduct({ name: '', description: '', price: 0, stock: 0, imageBase64: '', additionalImage1: '', additionalImage2: '', videoBase64: '', sizes: [], colors: [] });
       setShowAddProduct(false);
     } catch (err) {
       console.error(err);
+    }
+  };
+
+  const [savePaymentSuccess, setSavePaymentSuccess] = useState(false);
+
+  const handleSavePaymentSettings = async () => {
+    if (!appUser?.businessId) return;
+    setIsSavingPayments(true);
+    setSavePaymentSuccess(false);
+    try {
+       await updateDoc(doc(db, 'businesses', appUser.businessId), {
+         paymentSettings
+       });
+       setSavePaymentSuccess(true);
+       setTimeout(() => setSavePaymentSuccess(false), 3000);
+    } catch (e) {
+       console.error(e);
+    } finally {
+       setIsSavingPayments(false);
     }
   };
 
@@ -263,6 +301,9 @@ export default function AdminDashboard() {
         price: Number(editingProduct.price),
         stock: Number(editingProduct.stock),
         imageUrl: editingProduct.imageBase64 || editingProduct.imageUrl,
+        additionalImage1: editingProduct.additionalImage1 || null,
+        additionalImage2: editingProduct.additionalImage2 || null,
+        videoBase64: editingProduct.videoBase64 || null,
         sizes: editingProduct.sizes || [],
         colors: editingProduct.colors || []
       });
@@ -281,114 +322,7 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleEditImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (appUser?.plan_type !== 'pro') {
-      e.preventDefault();
-      setShowUpgradeModal(true);
-      return;
-    }
-    const file = e.target.files?.[0];
-    if (file && editingProduct) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setEditingProduct({ ...editingProduct, imageBase64: reader.result as string });
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const [isSyncing, setIsSyncing] = useState(false);
-
-  const handleSaveIntegrations = async () => {
-    if (!appUser?.businessId) return;
-    setIsSyncing(true);
-
-    try {
-      await updateDoc(doc(db, 'businesses', appUser.businessId), { integrations });
-      
-      let syncedCount = 0;
-
-      // Bitrix Sync
-      if (integrations.bitrixApi) {
-        try {
-          const cleanUrl = integrations.bitrixApi.endsWith('/') ? integrations.bitrixApi : integrations.bitrixApi + '/';
-          const method = cleanUrl.includes('crm.product.list') ? '' : 'crm.product.list.json';
-          const res = await fetch(cleanUrl + method);
-          const data = await res.json();
-          if (data && data.result) {
-            for (const item of data.result) {
-              await addDoc(collection(db, 'products'), {
-                businessId: appUser.businessId,
-                name: item.NAME || 'Без названия',
-                description: item.DESCRIPTION || 'Товар из Bitrix',
-                price: Number(item.PRICE) || 0,
-                stock: Number(item.QUANTITY) || 10,
-                imageUrl: '',
-                createdAt: Date.now()
-              });
-              syncedCount++;
-            }
-          }
-        } catch (e) {
-          // Fallback mock if CORS or invalid URL
-          const mockBitrix = [
-            { name: "Услуга B2B (Bitrix)", desc: "Импортировано из Bitrix CRM", price: 15000, stock: 999 },
-            { name: "Товар B2C (Bitrix)", desc: "Импортировано из Bitrix CRM", price: 4500, stock: 50 }
-          ];
-          for(const item of mockBitrix) {
-            await addDoc(collection(db, 'products'), {
-              businessId: appUser.businessId, ...item, imageUrl: '', createdAt: Date.now()
-            });
-            syncedCount++;
-          }
-        }
-      }
-
-      // 1C Sync
-      if (integrations.oneCApi) {
-        try {
-          const res = await fetch(integrations.oneCApi);
-          const data = await res.json();
-          if (Array.isArray(data)) {
-            for (const item of data) {
-              await addDoc(collection(db, 'products'), {
-                businessId: appUser.businessId,
-                name: item.name || 'Без названия',
-                description: item.description || 'Товар из 1C',
-                price: Number(item.price) || 0,
-                stock: Number(item.stock) || 0,
-                imageUrl: item.imageUrl || '',
-                createdAt: Date.now()
-              });
-              syncedCount++;
-            }
-          }
-        } catch (e) {
-          // Fallback mock
-          const mock1C = [
-            { name: "Ноутбук Pro (1C)", desc: "Синхронизация номенклатуры 1C", price: 120000, stock: 15 },
-            { name: "Смартфон X (1C)", desc: "Синхронизация номенклатуры 1C", price: 85000, stock: 42 }
-          ];
-          for(const item of mock1C) {
-            await addDoc(collection(db, 'products'), {
-              businessId: appUser.businessId, ...item, imageUrl: '', createdAt: Date.now()
-            });
-            syncedCount++;
-          }
-        }
-      }
-
-      setIsSyncing(false);
-      alert(lang === 'RU' 
-        ? `Интеграции успешно сохранены. Синхронизировано товаров: ${syncedCount}` 
-        : `Integratsiya muvaffaqiyatli saqlandi. Sinxronlashtirildi: ${syncedCount}`
-      );
-    } catch (error) {
-      console.error(error);
-      setIsSyncing(false);
-      alert(lang === 'RU' ? 'Ошибка при сохранении' : 'Saqlashda xatolik');
-    }
-  };
+  // Removed handleEditImageUpload logic in favor of unified handleImageUpload
 
   return (
     <div className="h-screen overflow-hidden bg-bg-base flex flex-row font-sans text-text-main">
@@ -426,12 +360,21 @@ export default function AdminDashboard() {
         {/* Nav Links */}
         <nav className="flex flex-col gap-1.5 flex-1 px-1">
           <button
+            onClick={() => setActiveTab('products')}
+            className={clsx("flex items-center px-4 py-3 rounded-xl text-[13px] font-bold transition-all duration-200 border-2", activeTab === 'products' ? "bg-surface text-text-main border-border-color shadow-sm" : "text-text-muted hover:text-text-main hover:bg-surface-alt border-transparent")}
+          >
+            <Store className={clsx("w-4 h-4 mr-3 transition-transform", activeTab === 'products' ? "text-text-main scale-110" : "text-text-muted")} />
+            {t.tabs.products}
+          </button>
+          
+          <button
             onClick={() => setActiveTab('invites')}
             className={clsx("flex items-center px-4 py-3 rounded-xl text-[13px] font-bold transition-all duration-200 border-2", activeTab === 'invites' ? "bg-surface text-text-main border-border-color shadow-sm" : "text-text-muted hover:text-text-main hover:bg-surface-alt border-transparent")}
           >
             <Key className={clsx("w-4 h-4 mr-3 transition-transform", activeTab === 'invites' ? "text-text-main scale-110" : "text-text-muted")} />
             {t.tabs.invites}
           </button>
+
           {business?.accessMode !== 'public' && (
             <button
               onClick={() => setActiveTab('requests')}
@@ -444,6 +387,23 @@ export default function AdminDashboard() {
               {pendingUsers.length > 0 && <span className="bg-brand-primary text-white text-[10px] font-bold px-2 py-0.5 rounded-full">{pendingUsers.length}</span>}
             </button>
           )}
+
+          <button
+            onClick={() => setActiveTab('orders')}
+            className={clsx("flex items-center px-4 py-3 rounded-xl text-[13px] font-bold transition-all duration-200 border-2", activeTab === 'orders' ? "bg-surface text-text-main border-border-color shadow-sm" : "text-text-muted hover:text-text-main hover:bg-surface-alt border-transparent")}
+          >
+            <ShoppingCart className={clsx("w-4 h-4 mr-3 transition-transform", activeTab === 'orders' ? "text-text-main scale-110" : "text-text-muted")} />
+            {t.tabs.orders}
+          </button>
+
+          <button
+            onClick={() => setActiveTab('payments')}
+            className={clsx("flex items-center px-4 py-3 rounded-xl text-[13px] font-bold transition-all duration-200 border-2", activeTab === 'payments' ? "bg-surface text-text-main border-border-color shadow-sm" : "text-text-muted hover:text-text-main hover:bg-surface-alt border-transparent")}
+          >
+            <CreditCard className={clsx("w-4 h-4 mr-3 transition-transform", activeTab === 'payments' ? "text-text-main scale-110" : "text-text-muted")} />
+            {t.tabs.payments || (lang === 'RU' ? 'Способы оплаты' : 'To\'lov usullari')}
+          </button>
+
           <button
             onClick={() => setActiveTab('users')}
             className={clsx("flex items-center justify-between px-4 py-3 rounded-xl text-[13px] font-bold transition-all duration-200 border-2", activeTab === 'users' ? "bg-surface-alt text-text-main border-border-color shadow-sm" : "text-text-muted hover:text-text-main hover:bg-surface-alt border-transparent")}
@@ -456,20 +416,7 @@ export default function AdminDashboard() {
               <span className="bg-surface-alt text-text-main text-[10px] px-2 py-0.5 rounded-full font-bold ml-auto border border-border-color shadow-sm">{activeUsers.length}</span>
             )}
           </button>
-          <button
-            onClick={() => setActiveTab('orders')}
-            className={clsx("flex items-center px-4 py-3 rounded-xl text-[13px] font-bold transition-all duration-200 border-2", activeTab === 'orders' ? "bg-surface text-text-main border-border-color shadow-sm" : "text-text-muted hover:text-text-main hover:bg-surface-alt border-transparent")}
-          >
-            <ShoppingCart className={clsx("w-4 h-4 mr-3 transition-transform", activeTab === 'orders' ? "text-text-main scale-110" : "text-text-muted")} />
-            {t.tabs.orders}
-          </button>
-          <button
-            onClick={() => setActiveTab('products')}
-            className={clsx("flex items-center px-4 py-3 rounded-xl text-[13px] font-bold transition-all duration-200 border-2", activeTab === 'products' ? "bg-surface text-text-main border-border-color shadow-sm" : "text-text-muted hover:text-text-main hover:bg-surface-alt border-transparent")}
-          >
-            <Store className={clsx("w-4 h-4 mr-3 transition-transform", activeTab === 'products' ? "text-text-main scale-110" : "text-text-muted")} />
-            {t.tabs.products}
-          </button>
+
           <button
             onClick={() => setActiveTab('settings')}
             className={clsx("flex items-center px-4 py-3 rounded-xl text-[13px] font-bold transition-all duration-200 border-2", activeTab === 'settings' ? "bg-surface text-text-main border-border-color shadow-sm" : "text-text-muted hover:text-text-main hover:bg-surface-alt border-transparent")}
@@ -862,7 +809,7 @@ export default function AdminDashboard() {
                        </div>
                        <div className="flex flex-col items-end gap-2">
                          <div className="text-right">
-                           <div className="text-[18px] font-bold text-text-main">${order.total.toLocaleString()}</div>
+                           <div className="text-[18px] font-bold text-text-main">{order.total.toLocaleString()} UZS</div>
                            <div className="text-[12px] text-text-muted mt-1">{new Date(order.createdAt).toLocaleDateString('ru-RU')}</div>
                          </div>
                          <button
@@ -875,7 +822,14 @@ export default function AdminDashboard() {
                     </div>
                     
                     <div className="bg-surface-alt/50 p-4 rounded-xl border border-border-color mb-4 flex-1">
-                      <div className="text-[12px] font-bold text-text-muted uppercase tracking-wider mb-2">Заказ</div>
+                      <div className="flex justify-between items-center mb-2">
+                        <div className="text-[12px] font-bold text-text-muted uppercase tracking-wider">Заказ</div>
+                        {order.paymentMethod && (
+                          <div className={clsx("text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider border", order.paymentMethod === 'Bank Card' ? "bg-brand-primary/10 text-brand-primary border-brand-primary/20" : "bg-surface text-text-muted border-border-color")}>
+                             {order.paymentMethod}
+                          </div>
+                        )}
+                      </div>
                       <div className="space-y-1">
                         {order.items.map((it:any) => (
                            <div key={`${it.id}-${it.size}-${it.color}`} className="text-[13px] text-text-main flex justify-between">
@@ -887,11 +841,58 @@ export default function AdminDashboard() {
                                  </span>
                                )}
                              </span>
-                             <span className="text-text-muted">${(it.quantity * it.price).toLocaleString()}</span>
+                             <span className="text-text-muted">{(it.quantity * it.price).toLocaleString()} UZS</span>
                            </div>
                         ))}
                       </div>
                     </div>
+
+                    {order.paymentMethod === 'Bank Card' && (
+                      <div className="bg-surface-alt p-4 rounded-xl border border-border-color mb-4">
+                        <div className="flex justify-between items-center mb-3">
+                           <div className="text-[12px] font-bold text-text-muted uppercase tracking-wider">Статус оплаты</div>
+                           <div className={clsx(
+                             "text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider",
+                             order.status === 'receipt_uploaded' ? "bg-[#F59E0B]/10 text-[#F59E0B]" :
+                             order.status === 'rejected' ? "bg-brand-danger/10 text-brand-danger" :
+                             "bg-brand-success/10 text-brand-success"
+                           )}>
+                             {order.status === 'receipt_uploaded' ? 'Чек загружен' : order.status === 'rejected' ? 'Отклонено' : 'Подтверждено'}
+                           </div>
+                        </div>
+
+                        {order.receiptImageBase64 && (
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="text-[13px] font-bold text-text-main flex items-center gap-2">
+                               <FileText className="w-4 h-4 text-text-muted" /> Чек добавлен
+                            </div>
+                            <button
+                               onClick={() => setSelectedReceipt(order.receiptImageBase64!)}
+                               className="text-[11px] font-bold text-brand-primary hover:underline uppercase tracking-wider"
+                            >
+                               Смотреть
+                            </button>
+                          </div>
+                        )}
+
+                        {order.status === 'receipt_uploaded' && (
+                          <div className="flex gap-2">
+                             <button
+                               onClick={() => handleUpdateOrderStatus(order.id, 'payment_confirmed')}
+                               className="flex-1 bg-brand-success/10 text-brand-success hover:bg-brand-success/20 border border-brand-success/20 px-3 py-2 rounded-lg text-[12px] font-bold transition-colors"
+                             >
+                               Принять
+                             </button>
+                             <button
+                               onClick={() => handleUpdateOrderStatus(order.id, 'rejected')}
+                               className="flex-1 bg-brand-danger/10 text-brand-danger hover:bg-brand-danger/20 border border-brand-danger/20 px-3 py-2 rounded-lg text-[12px] font-bold transition-colors"
+                             >
+                               Отклонить
+                             </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
 
                     <div className="mt-auto">
                       <div className="text-[12px] font-bold text-text-muted uppercase tracking-wider mb-2">Адрес доставки</div>
@@ -919,8 +920,8 @@ export default function AdminDashboard() {
             <div className="max-w-6xl flex flex-col gap-8 relative z-10 w-full mx-auto animate-in fade-in duration-300">
               <div className="flex flex-col md:flex-row justify-between md:items-end mb-6 gap-4">
                 <div>
-                  <h1 className="text-[24px] font-bold text-text-main tracking-tight">Добавить товар / Интеграции</h1>
-                  <p className="text-[13px] text-text-muted mt-1">Импорт товаров через API и ручное добавление</p>
+                  <h1 className="text-[24px] font-bold text-text-main tracking-tight">Добавить товар</h1>
+                  <p className="text-[13px] text-text-muted mt-1">Управление ассортиментом магазина</p>
                 </div>
                 <button onClick={() => setShowAddProduct(!showAddProduct)} className="bg-brand-primary text-white border border-transparent shadow-sm px-4 py-2 rounded-[10px] text-[13px] font-bold hover:bg-brand-primary-hover transition-all">
                   {showAddProduct ? 'Отмена' : 'Добавить вручную'}
@@ -929,39 +930,6 @@ export default function AdminDashboard() {
 
               {!showAddProduct ? (
                 <>
-                  {/* Integrations Section */}
-                  <div className="bg-surface border border-border-color rounded-[32px] overflow-hidden shadow-accent card-premium p-8">
-                    <h2 className="text-[18px] font-bold text-text-main tracking-tight mb-6">Интеграции</h2>
-                    <div className="grid md:grid-cols-2 gap-6">
-                      <div className="flex flex-col gap-2">
-                        <label className="text-[12px] font-bold text-text-muted uppercase tracking-wider">Bitrix API Key</label>
-                        <input
-                          type="text"
-                          value={integrations.bitrixApi}
-                          onChange={(e) => setIntegrations({...integrations, bitrixApi: e.target.value})}
-                          className="w-full bg-surface-alt border border-border-color rounded-[10px] py-2.5 px-4 text-[13px] text-text-main focus:border-text-muted outline-none transition-all placeholder:text-text-muted/50"
-                          placeholder="Введите API ключ Bitrix..."
-                        />
-                      </div>
-                      <div className="flex flex-col gap-2">
-                        <label className="text-[12px] font-bold text-text-muted uppercase tracking-wider">1C API Key</label>
-                        <input
-                          type="text"
-                          value={integrations.oneCApi}
-                          onChange={(e) => setIntegrations({...integrations, oneCApi: e.target.value})}
-                          className="w-full bg-surface-alt border border-border-color rounded-[10px] py-2.5 px-4 text-[13px] text-text-main focus:border-text-muted outline-none transition-all placeholder:text-text-muted/50"
-                          placeholder="Введите API ключ 1C..."
-                        />
-                      </div>
-                    </div>
-                    <div className="mt-6 flex justify-end">
-                      <button onClick={handleSaveIntegrations} disabled={isSyncing} className="bg-surface-alt border border-border-color text-text-main px-6 py-2.5 rounded-xl text-[13px] font-bold hover:bg-surface hover:border-text-muted transition-all shadow-sm disabled:opacity-50 flex items-center justify-center gap-2">
-                        {isSyncing ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-                        {lang === 'RU' ? 'Сохранить и синхронизировать' : 'Saqlash va sinxronlash'}
-                      </button>
-                    </div>
-                  </div>
-
                   {/* List added products */}
                   <div className="mt-4 overflow-x-auto min-w-full">
                     <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-4">
@@ -985,7 +953,7 @@ export default function AdminDashboard() {
                               <input type="text" required value={editingProduct.name} onChange={e => setEditingProduct({...editingProduct, name: e.target.value})} className="w-full bg-surface-alt border border-border-color rounded-[10px] py-1.5 px-3 text-[13px] text-text-main focus:border-text-muted outline-none transition-all" placeholder="Название товара" />
                               <textarea required value={editingProduct.description} onChange={e => setEditingProduct({...editingProduct, description: e.target.value})} rows={2} className="w-full bg-surface-alt border border-border-color rounded-[10px] py-1.5 px-3 text-[13px] text-text-main focus:border-text-muted outline-none transition-all resize-none" placeholder="Описание" />
                               <div className="grid grid-cols-2 gap-2">
-                                <input type="number" required min="0" value={editingProduct.price} onChange={e => setEditingProduct({...editingProduct, price: Number(e.target.value)})} className="w-full bg-surface-alt border border-border-color rounded-[10px] py-1.5 px-3 text-[13px] text-text-main" placeholder="Цена ($)" title="Цена" />
+                                <input type="number" required min="0" value={editingProduct.price} onChange={e => setEditingProduct({...editingProduct, price: Number(e.target.value)})} className="w-full bg-surface-alt border border-border-color rounded-[10px] py-1.5 px-3 text-[13px] text-text-main" placeholder="Цена (UZS)" title="Цена" />
                                 <input type="number" required min="0" value={editingProduct.stock} onChange={e => setEditingProduct({...editingProduct, stock: Number(e.target.value)})} className="w-full bg-surface-alt border border-border-color rounded-[10px] py-1.5 px-3 text-[13px] text-text-main" placeholder="Остаток" title="Остаток" />
                               </div>
                               <div className="flex flex-col gap-2 border-y border-border-color py-2">
@@ -1029,7 +997,13 @@ export default function AdminDashboard() {
                                   ))}
                                 </div>
                               </div>
-                              <input type="file" accept="image/*" onChange={handleEditImageUpload} className="block w-full text-[11px] text-text-muted file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border file:border-border-color file:text-[11px] file:bg-surface-alt file:text-text-main hover:file:bg-surface cursor-pointer" />
+                              <div className="flex flex-col gap-2 border-y border-border-color py-2 mt-2">
+                                <label className="text-[10px] font-bold text-text-muted uppercase tracking-wider">Медиа (Главное, Фото 2, Фото 3, Видео):</label>
+                                <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, 'imageBase64', true)} className="block w-full text-[11px] text-text-muted file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border file:border-border-color file:text-[11px] file:bg-surface-alt hover:file:bg-surface cursor-pointer" title="Главное фото" />
+                                <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, 'additionalImage1', true)} className="block w-full text-[11px] text-text-muted file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border file:border-border-color file:text-[11px] file:bg-surface-alt hover:file:bg-surface cursor-pointer" title="Доп. фото 1" />
+                                <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, 'additionalImage2', true)} className="block w-full text-[11px] text-text-muted file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border file:border-border-color file:text-[11px] file:bg-surface-alt hover:file:bg-surface cursor-pointer" title="Доп. фото 2" />
+                                <input type="file" accept="video/*" onChange={(e) => handleImageUpload(e, 'videoBase64', true)} className="block w-full text-[11px] text-text-muted file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border file:border-border-color file:text-[11px] file:bg-surface-alt hover:file:bg-surface cursor-pointer" title="Видео" />
+                              </div>
                               <div className="flex gap-2 justify-end mt-2">
                                 <button type="button" onClick={() => setEditingProduct(null)} className="px-3 py-1.5 rounded-[8px] bg-surface-alt text-text-muted text-[12px] font-bold">Отмена</button>
                                 <button type="submit" className="px-3 py-1.5 rounded-[8px] bg-brand-primary text-white text-[12px] font-bold">Сохранить</button>
@@ -1050,8 +1024,26 @@ export default function AdminDashboard() {
                                 <h3 className="text-text-main font-bold text-[16px] leading-tight mb-2">{product.name}</h3>
                                 <p className="text-[12px] text-text-muted font-medium line-clamp-3 leading-relaxed">{product.description || 'Нет описания'}</p>
                               </div>
-                              <div className="mt-auto flex items-center justify-between pt-4 border-t border-border-color/50">
-                                <div className="text-text-main font-black text-xl tracking-tighter">${product.price.toLocaleString()}</div>
+                              <div className="mt-auto flex flex-col gap-2 pt-4 border-t border-border-color/50">
+                                <div className="flex gap-2">
+                                  {product.additionalImage1 && (
+                                    <div className="w-10 h-10 rounded border border-border-color overflow-hidden bg-surface-alt">
+                                      <img src={product.additionalImage1} className="w-full h-full object-cover" />
+                                    </div>
+                                  )}
+                                  {product.additionalImage2 && (
+                                    <div className="w-10 h-10 rounded border border-border-color overflow-hidden bg-surface-alt">
+                                      <img src={product.additionalImage2} className="w-full h-full object-cover" />
+                                    </div>
+                                  )}
+                                  {product.videoBase64 && (
+                                    <div className="w-10 h-10 rounded border border-border-color overflow-hidden bg-surface-alt flex items-center justify-center text-[8px] bg-black text-white">
+                                      ВИДЕО
+                                    </div>
+                                  )}
+                                </div>
+                                <div className="flex items-center justify-between">
+                                  <div className="text-text-main font-black text-xl tracking-tighter">{product.price.toLocaleString()} UZS</div>
                                 <div className="flex items-center gap-2">
                                   <div className="flex items-center gap-1 bg-surface border border-border-color rounded-lg p-0.5 shadow-sm">
                                       <button 
@@ -1084,6 +1076,7 @@ export default function AdminDashboard() {
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
                                   </button>
                                 </div>
+                               </div>
                               </div>
                             </>
                           )}
@@ -1107,7 +1100,7 @@ export default function AdminDashboard() {
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="flex flex-col gap-2">
-                        <label className="text-[12px] font-bold text-text-muted uppercase tracking-wider">Цена ($)</label>
+                        <label className="text-[12px] font-bold text-text-muted uppercase tracking-wider">Цена (UZS)</label>
                         <input type="number" required min="0" value={newProduct.price || ''} onChange={e => setNewProduct({...newProduct, price: Number(e.target.value)})} className="w-full bg-surface-alt border border-border-color rounded-[10px] py-2.5 px-4 text-[13px] text-text-main focus:border-text-muted outline-none transition-all" placeholder="0.00" />
                       </div>
                       <div className="flex flex-col gap-2">
@@ -1171,15 +1164,49 @@ export default function AdminDashboard() {
                     </div>
 
                     <div className="flex flex-col gap-2">
-                      <label className="text-[12px] font-bold text-text-muted uppercase tracking-wider">Изображение товара</label>
-                      <div className="flex items-center gap-4 mt-1">
-                        {newProduct.imageBase64 && (
-                          <div className="w-16 h-16 rounded-xl overflow-hidden border border-border-color shadow-sm shrink-0">
-                            <img src={newProduct.imageBase64} alt="Preview" className="w-full h-full object-cover" />
-                          </div>
-                        )}
-                        <input type="file" accept="image/*" onChange={handleImageUpload} className="block w-full text-[12px] text-text-muted file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border file:border-border-color file:text-[12px] file:font-bold file:bg-surface-alt file:text-text-main hover:file:bg-surface file:transition-colors file:cursor-pointer cursor-pointer" />
-                      </div>
+                       <label className="text-[12px] font-bold text-text-muted uppercase tracking-wider">Медиа (Главное фото, 2 доп. фото, 1 видео)</label>
+                       
+                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-1">
+                         <div className="flex flex-col gap-1">
+                           <span className="text-[10px] text-text-muted">Главное</span>
+                           {newProduct.imageBase64 && (
+                             <div className="w-full aspect-square rounded-xl overflow-hidden border border-border-color shadow-sm mb-1">
+                               <img src={newProduct.imageBase64} alt="Preview 1" className="w-full h-full object-cover" />
+                             </div>
+                           )}
+                           <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, 'imageBase64')} className="block w-full text-[10px] text-text-muted file:mr-2 file:py-1.5 file:px-2 file:rounded-xl file:border file:border-border-color file:font-bold file:bg-surface-alt hover:file:bg-surface cursor-pointer" />
+                         </div>
+
+                         <div className="flex flex-col gap-1">
+                           <span className="text-[10px] text-text-muted">Фото 2</span>
+                           {newProduct.additionalImage1 && (
+                             <div className="w-full aspect-square rounded-xl overflow-hidden border border-border-color shadow-sm mb-1">
+                               <img src={newProduct.additionalImage1} alt="Preview 2" className="w-full h-full object-cover" />
+                             </div>
+                           )}
+                           <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, 'additionalImage1')} className="block w-full text-[10px] text-text-muted file:mr-2 file:py-1.5 file:px-2 file:rounded-xl file:border file:border-border-color file:font-bold file:bg-surface-alt hover:file:bg-surface cursor-pointer" />
+                         </div>
+
+                         <div className="flex flex-col gap-1">
+                           <span className="text-[10px] text-text-muted">Фото 3</span>
+                           {newProduct.additionalImage2 && (
+                             <div className="w-full aspect-square rounded-xl overflow-hidden border border-border-color shadow-sm mb-1">
+                               <img src={newProduct.additionalImage2} alt="Preview 3" className="w-full h-full object-cover" />
+                             </div>
+                           )}
+                           <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, 'additionalImage2')} className="block w-full text-[10px] text-text-muted file:mr-2 file:py-1.5 file:px-2 file:rounded-xl file:border file:border-border-color file:font-bold file:bg-surface-alt hover:file:bg-surface cursor-pointer" />
+                         </div>
+
+                         <div className="flex flex-col gap-1">
+                           <span className="text-[10px] text-text-muted">Видео</span>
+                           {newProduct.videoBase64 && (
+                             <div className="w-full aspect-square rounded-xl overflow-hidden border border-border-color shadow-sm mb-1 bg-black flex flex-col items-center justify-center text-white">
+                                <span className="text-[10px] uppercase font-bold">Видео</span>
+                             </div>
+                           )}
+                           <input type="file" accept="video/*" onChange={(e) => handleImageUpload(e, 'videoBase64')} className="block w-full text-[10px] text-text-muted file:mr-2 file:py-1.5 file:px-2 file:rounded-xl file:border file:border-border-color file:font-bold file:bg-surface-alt hover:file:bg-surface cursor-pointer" />
+                         </div>
+                       </div>
                     </div>
                     <div className="mt-4 pt-4 border-t border-border-color/50 flex justify-end">
                       <button type="submit" className="bg-brand-primary hover:bg-brand-primary-hover text-white px-6 py-3 rounded-xl text-[13px] font-bold shadow-lg shadow-brand-primary/20 transition-all flex items-center justify-center">
@@ -1189,6 +1216,103 @@ export default function AdminDashboard() {
                   </form>
                 </div>
               )}
+            </div>
+          )}
+
+          {/* Settings Tab */}
+          {activeTab === 'payments' && (
+            <div className="max-w-4xl w-full mx-auto animate-in fade-in duration-300">
+               <div className="mb-6">
+                 <h1 className="text-[24px] font-bold text-text-main tracking-tight">{lang === 'RU' ? 'Способы оплаты' : 'To\'lov usullari'}</h1>
+                 <p className="text-[13px] text-text-muted mt-1">{lang === 'RU' ? 'Настройка вариантов оплаты для клиентов' : 'Mijozlar uchun to\'lov usullarini sozlash'}</p>
+               </div>
+               
+               <div className="bg-surface border border-border-color rounded-[32px] overflow-hidden shadow-accent card-premium p-8">
+                  <div className="flex items-center justify-between mb-8 pb-6 border-b border-border-color/50">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-surface-alt rounded-2xl flex items-center justify-center text-text-main">
+                        <CreditCard className="w-6 h-6" />
+                      </div>
+                      <div>
+                        <h2 className="text-[16px] font-bold text-text-main">{lang === 'RU' ? 'Банковская карта' : 'Bank kartasi'}</h2>
+                        <p className="text-[12px] text-text-muted mt-1">{lang === 'RU' ? 'Прием переводов с подтверждением чеком' : 'Kvitansiya bilan pul o\'tkazmalarini qabul qilish'}</p>
+                      </div>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input 
+                        type="checkbox" 
+                        className="sr-only peer" 
+                        checked={paymentSettings.enableBankCard}
+                        onChange={(e) => setPaymentSettings({...paymentSettings, enableBankCard: e.target.checked})}
+                      />
+                      <div className="w-11 h-6 bg-surface-alt peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-text-main"></div>
+                    </label>
+                  </div>
+
+                  {paymentSettings.enableBankCard && (
+                    <div className="space-y-6 animate-in slide-in-from-top-4 fade-in duration-300">
+                      <div className="grid md:grid-cols-2 gap-6">
+                        <div className="flex flex-col gap-2">
+                          <label className="text-[12px] font-bold text-text-muted uppercase tracking-wider">{lang === 'RU' ? 'Номер карты (Card Number)' : 'Karta raqami'}</label>
+                          <input
+                            type="text"
+                            required
+                            value={paymentSettings.cardNumber}
+                            onChange={(e) => setPaymentSettings({...paymentSettings, cardNumber: e.target.value})}
+                            className="w-full bg-surface-alt border border-border-color rounded-[10px] py-2.5 px-4 text-[13px] text-text-main focus:border-text-muted outline-none transition-all"
+                            placeholder="8600 1234 5678 9012"
+                          />
+                        </div>
+                        <div className="flex flex-col gap-2">
+                          <label className="text-[12px] font-bold text-text-muted uppercase tracking-wider">{lang === 'RU' ? 'Имя владельца (Необязательно)' : 'Karta egasi (Ixtiyoriy)'}</label>
+                          <input
+                            type="text"
+                            value={paymentSettings.cardHolderName}
+                            onChange={(e) => setPaymentSettings({...paymentSettings, cardHolderName: e.target.value})}
+                            className="w-full bg-surface-alt border border-border-color rounded-[10px] py-2.5 px-4 text-[13px] text-text-main focus:border-text-muted outline-none transition-all"
+                            placeholder="Some Name"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="bg-surface-alt p-4 rounded-2xl flex items-start gap-4 border border-border-color/50">
+                        <div className="text-text-muted shrink-0 mt-0.5">
+                           <Info className="w-5 h-5" />
+                        </div>
+                        <p className="text-[13px] text-text-muted leading-relaxed">
+                          {lang === 'RU' 
+                            ? 'Указанная банковская карта будет отображаться клиентам во время оформления заказа. После оплаты клиент должен загрузить чек. Все чеки будут автоматически прикреплены к соответствующим заказам и доступны для проверки в разделе Orders.'
+                            : 'Kiritilgan bank kartasi mijozlarga buyurtma berish jarayonida ko\'rsatiladi. To\'lovdan so\'ng mijoz chekni yuklashi kerak. Barcha cheklar avtomatik ravishda buyurtmalarga biriktiriladi va ularni Orders bo\'limida tekshirish mumkin bo\'ladi.'}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="mt-8 flex justify-end pt-6 border-t border-border-color/50">
+                    <button 
+                      onClick={handleSavePaymentSettings} 
+                      disabled={isSavingPayments || savePaymentSuccess} 
+                      className={clsx(
+                        "px-6 py-2.5 rounded-xl text-[13px] font-bold transition-all shadow-sm flex items-center justify-center gap-2 min-w-[200px]",
+                        savePaymentSuccess 
+                          ? "bg-brand-success text-white"
+                          : "bg-text-main text-bg-base hover:bg-text-main/90 disabled:opacity-50"
+                      )}
+                    >
+                      {isSavingPayments ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : savePaymentSuccess ? (
+                        <Check className="w-4 h-4" />
+                      ) : (
+                        <Check className="w-4 h-4" />
+                      )}
+                      {savePaymentSuccess 
+                        ? (lang === 'RU' ? 'Успешно сохранено' : 'Muvaffaqiyatli saqlandi')
+                        : (lang === 'RU' ? 'Сохранить настройки' : 'Sozlamalarni saqlash')
+                      }
+                    </button>
+                  </div>
+               </div>
             </div>
           )}
 
@@ -1312,6 +1436,25 @@ export default function AdminDashboard() {
           <UpgradeModal isOpen={showUpgradeModal} onClose={() => setShowUpgradeModal(false)} />
         </main>
       </div>
+      {selectedReceipt && (
+        <div className="fixed inset-0 z-[120] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-bg-base/90 backdrop-blur-sm" onClick={() => setSelectedReceipt(null)}></div>
+          <div className="relative bg-surface border border-border-color rounded-[32px] w-full max-w-md shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className="flex justify-between items-center p-6 border-b border-border-color">
+               <h3 className="text-[18px] font-bold text-text-main tracking-tight">Чек оплаты</h3>
+               <button onClick={() => setSelectedReceipt(null)} className="text-text-muted hover:text-text-main transition-colors bg-surface-alt p-2 rounded-full border border-border-color">
+                 <X className="w-5 h-5" />
+               </button>
+            </div>
+            <div className="p-6">
+               <div className="rounded-[20px] overflow-hidden border border-border-color bg-surface-alt">
+                 <img src={selectedReceipt} alt="Receipt" className="w-full h-auto max-h-[60vh] object-contain" />
+               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <PostRegistrationSecurityDialog 
         isOpen={isSecurityDialogOpen} 
         onClose={handleCloseSecurityDialog} 

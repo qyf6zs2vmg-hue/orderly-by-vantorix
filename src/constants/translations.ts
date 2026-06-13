@@ -101,7 +101,8 @@ export const translations = {
       products: 'Товары',
       settings: 'Настройки',
       shop: 'Магазин',
-      security: 'Безопасность'
+      security: 'Безопасность',
+      payments: 'Способы оплаты'
     },
     legal: {
       privacyPolicy: 'Политика конфиденциальности',
@@ -235,7 +236,8 @@ export const translations = {
       products: 'Mahsulotlar',
       settings: 'Sozlamalar',
       shop: 'Do\'kon',
-      security: 'Xavfsizlik'
+      security: 'Xavfsizlik',
+      payments: 'To\'lov usullari'
     },
     legal: {
       privacyPolicy: 'Maxfiylik siyosati',

@@ -18,6 +18,8 @@ import { AccountStatusScreen } from './components/AccountStatusScreen';
 
 import DeveloperPanel from './pages/DeveloperPanel';
 
+import { PWAInstallPrompt } from './components/PWAInstallPrompt';
+
 function ProtectedRoute({ children, requiredRole }: { children: React.ReactNode, requiredRole?: 'owner' | 'client' }) {
   const { user, appUser, loading } = useAuth();
 
@@ -88,6 +90,7 @@ export default function App() {
           <Route path="/dev" element={<DeveloperPanel />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
+        <PWAInstallPrompt />
       </BrowserRouter>
     </AuthProvider>
   );

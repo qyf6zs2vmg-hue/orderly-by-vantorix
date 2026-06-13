@@ -20,6 +20,11 @@ interface BusinessData {
   id: string;
   name: string;
   ownerId?: string;
+  paymentSettings?: {
+    enableBankCard: boolean;
+    cardNumber: string;
+    cardHolderName?: string;
+  };
 }
 
 interface AuthContextType {

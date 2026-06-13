@@ -4,9 +4,9 @@
 @layer base {
   /* Default: Light Theme */
   :root {
-    --bg-primary: #F8FAFC;
+    --bg-primary: #FFFFFF;
     --surface: #FFFFFF;
-    --surface-alt: #F1F5F9;
+    --surface-alt: #F8FAFC;
     --border: #E2E8F0;
     --fg-primary: #0F172A;
     --muted: #475569;

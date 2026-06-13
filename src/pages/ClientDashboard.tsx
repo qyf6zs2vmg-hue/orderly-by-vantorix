@@ -53,7 +53,9 @@ export default function ClientDashboard() {
   const [checkoutState, setCheckoutState] = useState<'idle' | 'processing' | 'success'>('idle');
 
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<any | null>(null);
   const [clientDetails, setClientDetails] = useState<{name: string; phone: string; locationStr: string; latitude: number | null; longitude: number | null}>({ name: '', phone: '', locationStr: '', latitude: null, longitude: null });
+  const [checkoutReceiptImage, setCheckoutReceiptImage] = useState<string | null>(null);
   
   useEffect(() => {
     if (appUser) {
@@ -74,6 +76,22 @@ export default function ClientDashboard() {
        longitude: lng,
        locationStr: address,
     }));
+  };
+
+  const handleReceiptUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 10 * 1024 * 1024) {
+      alert('File size exceeds 10MB limit');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === 'string') {
+        setCheckoutReceiptImage(reader.result);
+      }
+    };
+    reader.readAsDataURL(file);
   };
 
   useEffect(() => {
@@ -164,6 +182,11 @@ export default function ClientDashboard() {
        return;
     }
     
+    if (business?.paymentSettings?.enableBankCard && !checkoutReceiptImage) {
+       alert(lang === 'RU' ? 'Для оформления заказа необходимо загрузить подтверждение оплаты.' : 'Buyurtma uchun to\'lov kvitansiyasini yuklash kerak.');
+       return;
+    }
+
     setIsDetailsModalOpen(false);
     setCheckoutState('processing');
 
@@ -201,7 +224,9 @@ export default function ClientDashboard() {
         longitude: clientDetails.longitude,
         items: orderItems,
         total: cartTotal,
-        status: 'active',
+        paymentMethod: business?.paymentSettings?.enableBankCard ? 'Bank Card' : 'Cash',
+        receiptImageBase64: business?.paymentSettings?.enableBankCard ? checkoutReceiptImage : null,
+        status: business?.paymentSettings?.enableBankCard ? 'receipt_uploaded' : 'active',
         createdAt: Date.now()
       });
 
@@ -269,12 +294,22 @@ export default function ClientDashboard() {
 
   return (
     <>
-      {checkoutState === 'success' && (
+      {(checkoutState === 'success' || (checkoutState === 'processing' && !isDetailsModalOpen && activeTab !== 'profile')) && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm">
            <div className="bg-surface rounded-2xl p-8 max-w-sm w-full mx-4 shadow-xl border border-border-color text-center flex flex-col items-center">
-               <CheckCircle className="w-16 h-16 text-brand-success mb-4" />
-               <h2 className="text-xl font-bold text-text-main mb-2">Ваш заказ успешно оформлен!</h2>
-               <p className="text-text-muted text-[13px]">Спасибо за покупку</p>
+             {checkoutState === 'processing' ? (
+               <>
+                 <Loader2 className="w-16 h-16 text-brand-primary mb-4 animate-spin" />
+                 <h2 className="text-xl font-bold text-text-main mb-2">Обработка заказа...</h2>
+                 <p className="text-text-muted text-[13px]">Подождите пару секунд</p>
+               </>
+             ) : (
+               <>
+                 <CheckCircle className="w-16 h-16 text-brand-success mb-4" />
+                 <h2 className="text-xl font-bold text-text-main mb-2">Ваш заказ успешно оформлен!</h2>
+                 <p className="text-text-muted text-[13px]">Спасибо за покупку</p>
+               </>
+             )}
            </div>
         </div>
       )}
@@ -409,118 +444,47 @@ export default function ClientDashboard() {
                    className="w-full bg-surface border border-border-color rounded-[10px] py-2.5 pl-10 pr-4 text-[13px] text-text-main shadow-sm focus:border-text-muted focus:ring-1 focus:ring-text-muted outline-none transition-all placeholder:text-text-muted card-premium" 
                  />
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pb-24 xl:pb-0">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 pb-24 xl:pb-0">
                 {products.filter(p => !searchQuery || p.name.toLowerCase().includes(searchQuery.toLowerCase())).map(product => {
-                  const sOpts = selectedOptions[product.id] || {};
-                  const currentSize = sOpts.size || (product.sizes?.length ? product.sizes[0] : undefined);
-                  const currentColor = sOpts.color || (product.colors?.length ? product.colors[0] : undefined);
-
-                  const cartItem = cart.find(i => i.product.id === product.id && i.size === currentSize && i.color === currentColor);
-                  const quantity = cartItem ? cartItem.quantity : 0;
-                  
                   return (
-                    <div key={product.id} className="bg-surface p-4 rounded-[20px] border border-border-color hover:border-brand-accent/30 hover:shadow-[0_8px_30px_rgb(37,99,235,0.06)] flex flex-col gap-4 shadow-sm group transition-all duration-300">
+                    <div key={product.id} onClick={() => setSelectedProduct(product)} className="bg-surface p-3 rounded-[16px] border border-border-color hover:border-brand-accent/30 hover:shadow-[0_8px_30px_rgb(37,99,235,0.06)] flex flex-col gap-3 shadow-sm group transition-all duration-300 cursor-pointer">
                       {product.imageUrl ? (
-                        <div className="w-full h-32 bg-surface-alt rounded-2xl overflow-hidden border border-border-color shrink-0">
+                        <div className="w-full aspect-square bg-surface-alt rounded-[12px] overflow-hidden border border-border-color shrink-0 relative">
                           <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
+                          {(product.videoBase64 || product.additionalImage1 || product.sizes?.length > 0 || product.colors?.length > 0) && (
+                            <div className="absolute top-2 right-2 bg-black/50 backdrop-blur text-white text-[10px] px-1.5 py-0.5 rounded font-bold transition-opacity text-center leading-tight">Подробнее</div>
+                          )}
                         </div>
                       ) : (
-                        <div className="w-full h-32 bg-surface-alt rounded-2xl flex items-center justify-center border border-border-color text-text-muted shrink-0">
-                          <Box className="w-12 h-12 opacity-30" />
+                        <div className="w-full aspect-square bg-surface-alt rounded-[12px] flex items-center justify-center border border-border-color text-text-muted shrink-0 text-center">
+                          <span className="text-[10px] uppercase font-bold opacity-30">Нет фото</span>
                         </div>
                       )}
                       
-                      <div className="flex-1 mt-2 flex flex-col">
-                        <h3 className="text-text-main font-bold text-[18px] leading-tight mb-2">{product.name}</h3>
-                        <p className="text-[13px] text-text-muted font-medium line-clamp-3 leading-relaxed mb-3 flex-1">{product.description || 'Нет описания'}</p>
-
-                        {(product.sizes?.length > 0 || product.colors?.length > 0) && (
-                          <div className="flex flex-col gap-2 mb-2">
-                            {product.sizes?.length > 0 && (
-                              <div className="flex gap-1.5 flex-wrap">
-                                {product.sizes.map((s:string) => (
-                                  <button
-                                    key={s}
-                                    onClick={() => setSelectedOptions(prev => ({...prev, [product.id]: {...prev[product.id], size: s}}))}
-                                    className={`px-2 py-1 text-[11px] font-bold rounded-lg border transition-all ${currentSize === s ? 'bg-brand-primary text-white border-brand-primary shadow-sm' : 'bg-surface-alt text-text-muted border-border-color hover:border-text-muted'}`}
-                                  >
-                                    {s}
-                                  </button>
-                                ))}
-                              </div>
-                            )}
-                            {product.colors?.length > 0 && (
-                              <div className="flex gap-1.5 flex-wrap">
-                                {product.colors.map((c:string) => (
-                                  <button
-                                    key={c}
-                                    onClick={() => setSelectedOptions(prev => ({...prev, [product.id]: {...prev[product.id], color: c}}))}
-                                    className={`px-2 py-1 text-[11px] font-bold rounded-lg border transition-all ${currentColor === c ? 'bg-brand-primary text-white border-brand-primary shadow-sm' : 'bg-surface-alt text-text-muted border-border-color hover:border-text-muted'}`}
-                                  >
-                                    {c}
-                                  </button>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                      
-                      <div className="flex items-center justify-between pt-4 border-t border-border-color/50 mt-auto">
-                        <div className="flex flex-col">
-                          <span className="text-[11px] font-black uppercase text-text-muted tracking-widest mb-1">Остаток: {product.stock}</span>
-                          <div className="text-text-main font-black text-xl tracking-tighter">
-                            ${(product.price || 0).toLocaleString()}
-                          </div>
-                        </div>
+                      <div className="flex-1 flex flex-col">
+                        <h3 className="text-text-main font-bold text-[13px] leading-tight mb-1 line-clamp-2">{product.name}</h3>
                         
-                        {product.stock > 0 ? (
-                          quantity > 0 ? (
-                            <div className="flex items-center gap-1 bg-surface-alt/80 border border-border-color/50 rounded-xl p-1 shadow-inner h-[40px]">
-                                <button 
-                                  onClick={(e) => { e.stopPropagation(); removeFromCart(product, currentSize, currentColor); }}
-                                  className="p-1.5 rounded-lg text-text-main hover:bg-surface hover:text-brand-danger shadow-sm transition-all"
-                                >
-                                  <Minus className="w-4 h-4" />
-                                </button>
-                                <input 
-                                  type="number"
-                                  value={quantity || ''}
-                                  onChange={(e) => updateQuantity(product, e.target.value, currentSize, currentColor)}
-                                  onClick={(e) => e.stopPropagation()}
-                                  placeholder="0"
-                                  className="text-[14px] font-bold w-10 text-center text-text-main bg-transparent border-none focus:ring-0 px-0.5 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                                />
-                                <button 
-                                  onClick={(e) => { e.stopPropagation(); addToCart(product, currentSize, currentColor); }}
-                                  className={clsx(
-                                    "p-1.5 rounded-lg transition-all",
-                                    quantity >= product.stock ? "text-text-muted cursor-not-allowed opacity-30" : "text-text-main hover:bg-surface hover:text-brand-accent shadow-sm"
-                                  )}
-                                  disabled={quantity >= product.stock}
-                                >
-                                  <Plus className="w-4 h-4" />
-                                </button>
+                        <div className="mt-auto pt-2 flex flex-col gap-2">
+                          <div className="text-text-main font-black text-[14px] tracking-tight">
+                            {(product.price || 0).toLocaleString()} UZS
+                          </div>
+                          
+                          {product.stock > 0 ? (
+                            <div className="w-full bg-brand-primary text-white hover:bg-brand-primary-hover text-center py-2 rounded-lg text-[12px] font-bold shadow-sm transition-colors">
+                              Выбрать
                             </div>
                           ) : (
-                            <button 
-                              onClick={(e) => { e.stopPropagation(); addToCart(product, currentSize, currentColor); }}
-                              className="bg-brand-accent hover:bg-brand-accent/90 text-white px-5 py-2 rounded-xl text-[13px] font-bold transition-all shadow-md active:scale-95 h-[40px]"
-                            >
-                              В корзину
-                            </button>
-                          )
-                        ) : (
-                          <div className="bg-brand-danger/10 text-brand-danger border border-brand-danger/20 px-4 py-2 rounded-xl text-[12px] font-bold shrink-0">
-                            Нет в наличии
-                          </div>
-                        )}
+                            <div className="w-full bg-brand-danger/10 text-brand-danger border border-brand-danger/20 text-center py-2 rounded-lg text-[12px] font-bold">
+                              Нет в наличии
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
                   );
                 })}
                 {products.length === 0 && (
-                  <div className="w-full sm:col-span-2 py-16 text-center border border-border-color rounded-[32px] bg-surface-alt/30 text-[14px] text-text-muted font-medium">
+                  <div className="w-full sm:col-span-2 md:col-span-3 lg:col-span-4 py-16 text-center border border-border-color rounded-[32px] bg-surface-alt/30 text-[14px] text-text-muted font-medium">
                     Товары не найдены.
                   </div>
                 )}
@@ -538,7 +502,7 @@ export default function ClientDashboard() {
                        <ShoppingCart className="w-5 h-5 opacity-80" />
                        <span className="text-[15px]">В корзину ({cart.length})</span>
                     </div>
-                    <span className="text-[16px]">${cartTotal.toLocaleString()}</span>
+                    <span className="text-[16px]">{cartTotal.toLocaleString()} UZS</span>
                   </button>
               </div>
             )}
@@ -584,7 +548,7 @@ export default function ClientDashboard() {
                         <div className="flex-1 pr-2">
                           <div className="text-[13px] font-semibold text-text-main truncate max-w-[170px] leading-tight">{item.product.name}</div>
                           <div className="flex items-center text-[11px] text-text-muted mt-1 gap-2">
-                            <span>${item.product.price} / шт</span>
+                            <span>{item.product.price.toLocaleString()} UZS / шт</span>
                             {(item.size || item.color) && (
                               <span className="flex items-center gap-1 opacity-80 bg-surface-alt px-1.5 py-0.5 rounded border border-border-color/50">
                                 {item.size && <span>{item.size}</span>}
@@ -622,7 +586,7 @@ export default function ClientDashboard() {
                   <div className="border-t border-border-color pt-4 mb-4 mt-auto">
                     <div className="flex justify-between items-center">
                       <span className="text-[13px] font-medium text-text-muted">Итого:</span>
-                      <span className="text-text-main font-bold text-[20px] tracking-tight">${cartTotal.toLocaleString()}</span>
+                      <span className="text-text-main font-bold text-[20px] tracking-tight">{cartTotal.toLocaleString()} UZS</span>
                     </div>
                   </div>
 
@@ -681,7 +645,7 @@ export default function ClientDashboard() {
                   </div>
                   <div className="flex flex-col items-end gap-3">
                     <div className="text-[12px] font-black uppercase tracking-widest text-text-muted opacity-40">Total Amount</div>
-                    <div className="font-black text-text-main text-[24px] tracking-tighter group-hover:text-text-muted transition-colors">${order.total.toLocaleString()}</div>
+                    <div className="font-black text-text-main text-[24px] tracking-tighter group-hover:text-text-muted transition-colors">{order.total.toLocaleString()} UZS</div>
                     <div className="flex gap-2 items-center mt-1">
                       <div className="inline-flex items-center px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-surface-alt text-text-main border border-border-color shadow-sm">
                          Delivered
@@ -878,13 +842,13 @@ export default function ClientDashboard() {
         </main>
       </div>
       {isDetailsModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 min-h-[100dvh]">
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 min-h-[100dvh]">
           <div className="absolute inset-0 bg-bg-base/80 backdrop-blur-sm" onClick={() => setIsDetailsModalOpen(false)}></div>
-          <div className="relative bg-surface border border-border-color rounded-[32px] p-6 max-w-md w-full shadow-accent card-premium">
-            <h2 className="text-[20px] font-bold text-text-main mb-2">Данные для доставки</h2>
-            <p className="text-[13px] text-text-muted mb-6">Введите ваше имя, телефон и адрес (или геолокацию) для оформления заказа. Эти данные сохранятся для будущих покупок.</p>
+          <div className="relative bg-surface border border-border-color rounded-[32px] p-6 max-w-md w-full shadow-accent card-premium max-h-[90vh] flex flex-col">
+            <h2 className="text-[20px] font-bold text-text-main mb-2 shrink-0">Данные для доставки</h2>
+            <p className="text-[13px] text-text-muted mb-6 shrink-0">Введите ваше имя, телефон и адрес (или геолокацию) для оформления заказа. Эти данные сохранятся для будущих покупок.</p>
             
-            <form onSubmit={submitOrderWithDetails} className="space-y-4">
+            <form onSubmit={submitOrderWithDetails} className="space-y-4 overflow-y-auto custom-scrollbar flex-1 -mr-2 pr-2">
               <div>
                  <label className="text-[12px] font-bold text-text-main uppercase tracking-wider mb-1 block">Имя</label>
                  <input 
@@ -923,7 +887,52 @@ export default function ClientDashboard() {
                    />
                  </div>
               </div>
-              <div className="pt-4 flex gap-3">
+
+              {business?.paymentSettings?.enableBankCard && (
+                 <div className="mt-6 border-t border-border-color/50 pt-4">
+                   <h3 className="text-[16px] font-bold text-text-main mb-2">{lang === 'RU' ? 'Оплата заказа' : 'Buyurtma to\'lovi'}</h3>
+                   <p className="text-[12px] text-text-muted mb-4">{lang === 'RU' ? 'Переведите сумму заказа на указанную карту и загрузите чек для подтверждения оплаты.' : 'Buyurtma summasini ko\'rsatilgan kartaga o\'tkazing va to\'lovni tasdiqlash uchun chekni yuklang.'}</p>
+                   
+                   <div className="bg-surface-alt p-4 rounded-xl border border-border-color text-[13px] mb-4">
+                      <div className="flex justify-between items-center mb-2">
+                         <span className="text-text-muted font-bold tracking-widest uppercase text-[10px]">Card Number</span>
+                         <button 
+                           type="button"
+                           onClick={() => navigator.clipboard.writeText(business.paymentSettings!.cardNumber)}
+                           className="text-brand-primary font-bold text-[11px] uppercase tracking-wider hover:opacity-80 transition-opacity"
+                         >
+                           {lang === 'RU' ? 'Copy Card Number' : 'Nusxalash'}
+                         </button>
+                      </div>
+                      <div className="font-mono text-[16px] text-text-main font-bold mb-3 tracking-widest">{business.paymentSettings.cardNumber}</div>
+                      {business.paymentSettings.cardHolderName && (
+                        <>
+                           <div className="text-text-muted font-bold tracking-widest uppercase text-[10px] mb-1">Card Holder Name</div>
+                           <div className="text-text-main font-bold uppercase">{business.paymentSettings.cardHolderName}</div>
+                        </>
+                      )}
+                   </div>
+
+                   <div>
+                     <label className="text-[12px] font-bold text-text-main uppercase tracking-wider mb-1 block">Payment Receipt (Чек)</label>
+                     <p className="text-[11px] text-text-muted mb-2">{lang === 'RU' ? 'Загрузите скриншот или фотографию чека после оплаты (JPG, PNG, WEBP, до 10 MB).' : 'To\'lovdan sung kvitansiyani yuklang.'}</p>
+                     <input
+                        type="file"
+                        accept="image/png, image/jpeg, image/webp"
+                        required
+                        onChange={handleReceiptUpload}
+                        className="w-full text-[12px] text-text-muted file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-[12px] file:font-bold file:bg-surface-alt file:text-text-main hover:file:bg-border-color cursor-pointer transition-all focus:outline-none"
+                     />
+                     {checkoutReceiptImage && (
+                       <div className="mt-3 relative w-[100px] h-[100px] rounded-xl overflow-hidden border border-border-color shadow-sm">
+                          <img src={checkoutReceiptImage} alt="Receipt" className="w-full h-full object-cover" />
+                       </div>
+                     )}
+                   </div>
+                 </div>
+              )}
+
+              <div className="pt-4 flex gap-3 shrink-0 pb-2">
                  <button 
                    type="button" 
                    onClick={() => setIsDetailsModalOpen(false)}
@@ -949,6 +958,168 @@ export default function ClientDashboard() {
         lang={lang}
         onLanguageChange={setLang}
       />
+
+      {/* Product Details Modal */}
+      {selectedProduct && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-bg-base/90 backdrop-blur-sm" onClick={() => setSelectedProduct(null)}></div>
+          <div className="relative bg-surface border border-border-color rounded-[32px] w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+            <button 
+              onClick={() => setSelectedProduct(null)}
+              className="absolute top-4 right-4 z-10 bg-black/50 text-white rounded-full p-2 hover:bg-black/70 backdrop-blur"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <div className="flex-1 overflow-y-auto custom-scrollbar p-6">
+               <div className="flex flex-col md:flex-row gap-6">
+                 {/* Images/Video Area */}
+                 <div className="w-full md:w-[300px] shrink-0 flex flex-col gap-3">
+                    {/* Main Image */}
+                    {selectedProduct.imageUrl ? (
+                      <div className="w-full aspect-square bg-surface-alt rounded-[20px] overflow-hidden border border-border-color">
+                         <img src={selectedProduct.imageUrl} alt={selectedProduct.name} className="w-full h-full object-cover" />
+                      </div>
+                    ) : (
+                      <div className="w-full aspect-square bg-surface-alt rounded-[20px] flex items-center justify-center border border-border-color">
+                        <Box className="w-12 h-12 opacity-30" />
+                      </div>
+                    )}
+                    
+                    {/* Additional Media */}
+                    {(selectedProduct.additionalImage1 || selectedProduct.additionalImage2 || selectedProduct.videoBase64) && (
+                      <div className="grid grid-cols-3 gap-2">
+                        {selectedProduct.additionalImage1 && (
+                          <div className="aspect-square bg-surface-alt rounded-xl overflow-hidden border border-border-color cursor-pointer hover:border-text-muted transition-colors" onClick={() => window.open(selectedProduct.additionalImage1)}>
+                            <img src={selectedProduct.additionalImage1} className="w-full h-full object-cover" />
+                          </div>
+                        )}
+                        {selectedProduct.additionalImage2 && (
+                          <div className="aspect-square bg-surface-alt rounded-xl overflow-hidden border border-border-color cursor-pointer hover:border-text-muted transition-colors" onClick={() => window.open(selectedProduct.additionalImage2)}>
+                            <img src={selectedProduct.additionalImage2} className="w-full h-full object-cover" />
+                          </div>
+                        )}
+                        {selectedProduct.videoBase64 && (
+                          <div className="aspect-square bg-black rounded-xl overflow-hidden border border-border-color cursor-pointer relative" onClick={() => window.open(selectedProduct.videoBase64)}>
+                            <video src={selectedProduct.videoBase64} className="w-full h-full object-cover opacity-70" muted loop playsInline />
+                            <div className="absolute inset-0 flex items-center justify-center text-white text-[10px] font-bold">ВИДЕО</div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                 </div>
+
+                 {/* Details Area */}
+                 <div className="flex-1 flex flex-col">
+                    <h2 className="text-[20px] md:text-[24px] font-bold text-text-main leading-tight mb-2">{selectedProduct.name}</h2>
+                    <div className="text-[24px] font-black text-brand-primary tracking-tight mb-4">
+                      {(selectedProduct.price || 0).toLocaleString()} UZS
+                    </div>
+                    
+                    <p className="text-[14px] text-text-muted mb-6 leading-relaxed whitespace-pre-wrap">{selectedProduct.description || 'Нет описания'}</p>
+
+                    {(selectedProduct.sizes?.length > 0 || selectedProduct.colors?.length > 0) && (
+                      <div className="flex flex-col gap-4 mb-6 bg-surface-alt/50 p-4 rounded-2xl border border-border-color/50">
+                        {selectedProduct.sizes?.length > 0 && (
+                          <div className="flex flex-col gap-2">
+                            <span className="text-[12px] font-bold text-text-muted uppercase tracking-wider">Размер</span>
+                            <div className="flex gap-2 flex-wrap">
+                              {selectedProduct.sizes.map((s:string) => {
+                                const currentSize = selectedOptions[selectedProduct.id]?.size || selectedProduct.sizes[0];
+                                return (
+                                  <button
+                                    key={s}
+                                    onClick={() => setSelectedOptions(prev => ({...prev, [selectedProduct.id]: {...prev[selectedProduct.id], size: s}}))}
+                                    className={`px-3 py-1.5 text-[13px] font-bold rounded-xl border transition-all ${currentSize === s ? 'bg-brand-primary text-white border-brand-primary shadow-sm' : 'bg-surface text-text-muted border-border-color hover:border-text-muted'}`}
+                                  >
+                                    {s}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
+                        {selectedProduct.colors?.length > 0 && (
+                          <div className="flex flex-col gap-2">
+                            <span className="text-[12px] font-bold text-text-muted uppercase tracking-wider">Цвет</span>
+                            <div className="flex gap-2 flex-wrap">
+                              {selectedProduct.colors.map((c:string) => {
+                                const currentColor = selectedOptions[selectedProduct.id]?.color || selectedProduct.colors[0];
+                                return (
+                                  <button
+                                    key={c}
+                                    onClick={() => setSelectedOptions(prev => ({...prev, [selectedProduct.id]: {...prev[selectedProduct.id], color: c}}))}
+                                    className={`px-3 py-1.5 text-[13px] font-bold rounded-xl border transition-all ${currentColor === c ? 'bg-brand-primary text-white border-brand-primary shadow-sm' : 'bg-surface text-text-muted border-border-color hover:border-text-muted'}`}
+                                  >
+                                    {c}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    <div className="mt-auto border-t border-border-color/50 pt-6">
+                       {selectedProduct.stock > 0 ? (
+                         (()=>{
+                           const currentSize = selectedOptions[selectedProduct.id]?.size || (selectedProduct.sizes?.length ? selectedProduct.sizes[0] : undefined);
+                           const currentColor = selectedOptions[selectedProduct.id]?.color || (selectedProduct.colors?.length ? selectedProduct.colors[0] : undefined);
+                           const cartItem = cart.find(i => i.product.id === selectedProduct.id && i.size === currentSize && i.color === currentColor);
+                           const quantity = cartItem ? cartItem.quantity : 0;
+
+                           if (quantity > 0) {
+                             return (
+                               <div className="flex items-center gap-2 bg-surface-alt/80 border border-border-color/50 rounded-xl p-1.5 shadow-inner w-full h-[50px]">
+                                   <button 
+                                     onClick={(e) => { e.stopPropagation(); removeFromCart(selectedProduct, currentSize, currentColor); }}
+                                     className="p-2.5 rounded-lg text-text-main hover:bg-surface hover:text-brand-danger shadow-sm transition-all"
+                                   >
+                                     <Minus className="w-5 h-5" />
+                                   </button>
+                                   <input 
+                                     type="number"
+                                     value={quantity || ''}
+                                     onChange={(e) => updateQuantity(selectedProduct, e.target.value, currentSize, currentColor)}
+                                     onClick={(e) => e.stopPropagation()}
+                                     placeholder="0"
+                                     className="text-[16px] font-bold flex-1 text-center text-text-main bg-transparent border-none focus:ring-0 px-0.5 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                   />
+                                   <button 
+                                     onClick={(e) => { e.stopPropagation(); addToCart(selectedProduct, currentSize, currentColor); }}
+                                     className={clsx(
+                                       "p-2.5 rounded-lg transition-all",
+                                       quantity >= selectedProduct.stock ? "text-text-muted cursor-not-allowed opacity-30" : "text-text-main hover:bg-surface hover:text-brand-accent shadow-sm"
+                                     )}
+                                     disabled={quantity >= selectedProduct.stock}
+                                   >
+                                     <Plus className="w-5 h-5" />
+                                   </button>
+                               </div>
+                             )
+                           } else {
+                             return (
+                               <button 
+                                 onClick={(e) => { e.stopPropagation(); addToCart(selectedProduct, currentSize, currentColor); }}
+                                 className="w-full bg-brand-primary hover:bg-brand-primary-hover text-white py-3.5 rounded-xl text-[14px] font-bold transition-all shadow-md active:scale-95"
+                               >
+                                 Добавить в корзину
+                               </button>
+                             )
+                           }
+                         })()
+                       ) : (
+                         <div className="w-full bg-brand-danger/10 text-brand-danger border border-brand-danger/20 text-center py-3.5 rounded-xl text-[14px] font-bold">
+                           Нет в наличии
+                         </div>
+                       )}
+                    </div>
+                 </div>
+               </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
     </>
   );

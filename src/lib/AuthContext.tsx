@@ -51,6 +51,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     let unsubscribeDoc: (() => void) | null = null;
+    let unsubscribeBusiness: (() => void) | null = null;
     
     const unsubscribeAuth = onAuthStateChanged(auth, (firebaseUser) => {
       if (firebaseUser) {
@@ -83,29 +84,43 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setAppUser({ uid: firebaseUser.uid, ...userData });
             
             if (userData.businessId) {
-              try {
-                const busDoc = await getDoc(doc(db, 'businesses', userData.businessId));
+              if (unsubscribeBusiness) {
+                unsubscribeBusiness();
+              }
+              unsubscribeBusiness = onSnapshot(doc(db, 'businesses', userData.businessId), (busDoc) => {
                 if (busDoc.exists()) {
                   setBusiness({ id: busDoc.id, ...busDoc.data() } as BusinessData);
                 } else {
                   setBusiness(null);
                 }
-              } catch (err) {
+              }, (err) => {
                 console.error("Error fetching business:", err);
                 setBusiness(null);
-              }
+              });
             } else {
               setBusiness(null);
+              if (unsubscribeBusiness) {
+                unsubscribeBusiness();
+                unsubscribeBusiness = null;
+              }
             }
           } else {
             setAppUser(null);
             setBusiness(null);
+            if (unsubscribeBusiness) {
+              unsubscribeBusiness();
+              unsubscribeBusiness = null;
+            }
           }
           setLoading(false);
         }, (error) => {
           console.error("Error fetching user data:", error);
           setAppUser(null);
           setBusiness(null);
+          if (unsubscribeBusiness) {
+            unsubscribeBusiness();
+            unsubscribeBusiness = null;
+          }
           setLoading(false);
         });
         
@@ -118,12 +133,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           unsubscribeDoc();
           unsubscribeDoc = null;
         }
+        if (unsubscribeBusiness) {
+          unsubscribeBusiness();
+          unsubscribeBusiness = null;
+        }
       }
     });
 
     return () => {
       unsubscribeAuth();
       if (unsubscribeDoc) unsubscribeDoc();
+      if (unsubscribeBusiness) unsubscribeBusiness();
     };
   }, []);
 

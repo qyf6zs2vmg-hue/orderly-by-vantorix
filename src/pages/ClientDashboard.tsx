@@ -280,7 +280,7 @@ export default function ClientDashboard() {
     if (cart.length === 0) return;
     if (!appUser?.businessId) return;
 
-    if (!appUser.name || !appUser.phone || !appUser.locationStr) {
+    if (!appUser.name || !appUser.phone || !appUser.locationStr || !!business?.paymentSettings?.enableBankCard) {
        setIsDetailsModalOpen(true);
        return;
     }

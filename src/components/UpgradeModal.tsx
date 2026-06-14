@@ -100,12 +100,12 @@ export function UpgradeModal({ isOpen, onClose }: UpgradeModalProps) {
                 </ul>
 
                 <a
-                   href="https://t.me/relible_subscriptions_bot"
+                   href="https://t.me/relible_subscriptions"
                    target="_blank"
                    rel="noopener noreferrer"
                    className="w-full block text-center py-4 rounded-2xl font-bold bg-yellow-500 hover:bg-yellow-400 text-black transition-colors shadow-[0_4px_14px_0_rgba(234,179,8,0.39)] text-[15px]"
                 >
-                    Buy Subscription
+                    Купить подписку
                 </a>
             </div>
         </div>

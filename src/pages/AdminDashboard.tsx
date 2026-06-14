@@ -358,72 +358,85 @@ export default function AdminDashboard() {
         </div>
 
         {/* Nav Links */}
-        <nav className="flex flex-col gap-1.5 flex-1 px-1">
-          <button
-            onClick={() => setActiveTab('products')}
-            className={clsx("flex items-center px-4 py-3 rounded-xl text-[13px] font-bold transition-all duration-200 border-2", activeTab === 'products' ? "bg-surface text-text-main border-border-color shadow-sm" : "text-text-muted hover:text-text-main hover:bg-surface-alt border-transparent")}
-          >
-            <Store className={clsx("w-4 h-4 mr-3 transition-transform", activeTab === 'products' ? "text-text-main scale-110" : "text-text-muted")} />
-            {t.tabs.products}
-          </button>
-          
-          <button
-            onClick={() => setActiveTab('invites')}
-            className={clsx("flex items-center px-4 py-3 rounded-xl text-[13px] font-bold transition-all duration-200 border-2", activeTab === 'invites' ? "bg-surface text-text-main border-border-color shadow-sm" : "text-text-muted hover:text-text-main hover:bg-surface-alt border-transparent")}
-          >
-            <Key className={clsx("w-4 h-4 mr-3 transition-transform", activeTab === 'invites' ? "text-text-main scale-110" : "text-text-muted")} />
-            {t.tabs.invites}
-          </button>
-
-          {business?.accessMode !== 'public' && (
+        <nav className="flex flex-col gap-4 flex-1 px-1">
+          {/* Магазин */}
+          <div className="flex flex-col gap-1.5 pb-4 border-b border-border-color/50">
+            <div className="px-4 text-[10px] uppercase font-bold text-text-muted mb-1">{lang === 'RU' ? 'Магазин' : 'Do\'kon'}</div>
             <button
-              onClick={() => setActiveTab('requests')}
-              className={clsx("flex items-center justify-between px-4 py-3 rounded-xl text-[13px] font-bold transition-all duration-200 border-2", activeTab === 'requests' ? "bg-surface-alt text-text-main border-border-color shadow-sm" : "text-text-muted hover:text-text-main hover:bg-surface-alt border-transparent")}
+              onClick={() => setActiveTab('products')}
+              className={clsx("flex items-center px-4 py-3 rounded-xl text-[13px] font-bold transition-all duration-200 border-2", activeTab === 'products' ? "bg-surface text-text-main border-border-color shadow-sm" : "text-text-muted hover:text-text-main hover:bg-surface-alt border-transparent")}
+            >
+              <Store className={clsx("w-4 h-4 mr-3 transition-transform", activeTab === 'products' ? "text-text-main scale-110" : "text-text-muted")} />
+              {t.tabs.products}
+            </button>
+            <button
+              onClick={() => setActiveTab('orders')}
+              className={clsx("flex items-center px-4 py-3 rounded-xl text-[13px] font-bold transition-all duration-200 border-2", activeTab === 'orders' ? "bg-surface text-text-main border-border-color shadow-sm" : "text-text-muted hover:text-text-main hover:bg-surface-alt border-transparent")}
+            >
+              <ShoppingCart className={clsx("w-4 h-4 mr-3 transition-transform", activeTab === 'orders' ? "text-text-main scale-110" : "text-text-muted")} />
+              {t.tabs.orders}
+            </button>
+          </div>
+
+          {/* Доступ */}
+          <div className="flex flex-col gap-1.5 pb-4 border-b border-border-color/50">
+            <div className="px-4 text-[10px] uppercase font-bold text-text-muted mb-1">{lang === 'RU' ? 'Доступ' : 'Kirish'}</div>
+            <button
+              onClick={() => setActiveTab('invites')}
+              className={clsx("flex items-center px-4 py-3 rounded-xl text-[13px] font-bold transition-all duration-200 border-2", activeTab === 'invites' ? "bg-surface text-text-main border-border-color shadow-sm" : "text-text-muted hover:text-text-main hover:bg-surface-alt border-transparent")}
+            >
+              <Key className={clsx("w-4 h-4 mr-3 transition-transform", activeTab === 'invites' ? "text-text-main scale-110" : "text-text-muted")} />
+              {t.tabs.invites}
+            </button>
+
+            {business?.accessMode !== 'public' && (
+              <button
+                onClick={() => setActiveTab('requests')}
+                className={clsx("flex items-center justify-between px-4 py-3 rounded-xl text-[13px] font-bold transition-all duration-200 border-2", activeTab === 'requests' ? "bg-surface-alt text-text-main border-border-color shadow-sm" : "text-text-muted hover:text-text-main hover:bg-surface-alt border-transparent")}
+              >
+                <div className="flex items-center">
+                  <ClipboardList className={clsx("w-4 h-4 mr-3 transition-transform", activeTab === 'requests' ? "text-text-main scale-110" : "text-text-muted")} />
+                  {t.tabs.requests}
+                </div>
+                {pendingUsers.length > 0 && <span className="bg-brand-primary text-white text-[10px] font-bold px-2 py-0.5 rounded-full">{pendingUsers.length}</span>}
+              </button>
+            )}
+          </div>
+
+          {/* Платежи и Клиенты */}
+          <div className="flex flex-col gap-1.5 pb-4 border-b border-border-color/50">
+            <div className="px-4 text-[10px] uppercase font-bold text-text-muted mb-1">{lang === 'RU' ? 'Платежи и Клиенты' : 'To\'lov va Mijozlar'}</div>
+            <button
+              onClick={() => setActiveTab('payments')}
+              className={clsx("flex items-center px-4 py-3 rounded-xl text-[13px] font-bold transition-all duration-200 border-2", activeTab === 'payments' ? "bg-surface text-text-main border-border-color shadow-sm" : "text-text-muted hover:text-text-main hover:bg-surface-alt border-transparent")}
+            >
+              <CreditCard className={clsx("w-4 h-4 mr-3 transition-transform", activeTab === 'payments' ? "text-text-main scale-110" : "text-text-muted")} />
+              {t.tabs.payments || (lang === 'RU' ? 'Способы оплаты' : 'To\'lov usullari')}
+            </button>
+
+            <button
+              onClick={() => setActiveTab('users')}
+              className={clsx("flex items-center justify-between px-4 py-3 rounded-xl text-[13px] font-bold transition-all duration-200 border-2", activeTab === 'users' ? "bg-surface-alt text-text-main border-border-color shadow-sm" : "text-text-muted hover:text-text-main hover:bg-surface-alt border-transparent")}
             >
               <div className="flex items-center">
-                <ClipboardList className={clsx("w-4 h-4 mr-3 transition-transform", activeTab === 'requests' ? "text-text-main scale-110" : "text-text-muted")} />
-                {t.tabs.requests}
+                <Users className={clsx("w-4 h-4 mr-3 transition-transform", activeTab === 'users' ? "text-text-main scale-110" : "text-text-muted")} />
+                {t.tabs.users}
               </div>
-              {pendingUsers.length > 0 && <span className="bg-brand-primary text-white text-[10px] font-bold px-2 py-0.5 rounded-full">{pendingUsers.length}</span>}
+              {activeUsers.length > 0 && (
+                <span className="bg-surface-alt text-text-main text-[10px] px-2 py-0.5 rounded-full font-bold ml-auto border border-border-color shadow-sm">{activeUsers.length}</span>
+              )}
             </button>
-          )}
+          </div>
 
-          <button
-            onClick={() => setActiveTab('orders')}
-            className={clsx("flex items-center px-4 py-3 rounded-xl text-[13px] font-bold transition-all duration-200 border-2", activeTab === 'orders' ? "bg-surface text-text-main border-border-color shadow-sm" : "text-text-muted hover:text-text-main hover:bg-surface-alt border-transparent")}
-          >
-            <ShoppingCart className={clsx("w-4 h-4 mr-3 transition-transform", activeTab === 'orders' ? "text-text-main scale-110" : "text-text-muted")} />
-            {t.tabs.orders}
-          </button>
-
-          <button
-            onClick={() => setActiveTab('payments')}
-            className={clsx("flex items-center px-4 py-3 rounded-xl text-[13px] font-bold transition-all duration-200 border-2", activeTab === 'payments' ? "bg-surface text-text-main border-border-color shadow-sm" : "text-text-muted hover:text-text-main hover:bg-surface-alt border-transparent")}
-          >
-            <CreditCard className={clsx("w-4 h-4 mr-3 transition-transform", activeTab === 'payments' ? "text-text-main scale-110" : "text-text-muted")} />
-            {t.tabs.payments || (lang === 'RU' ? 'Способы оплаты' : 'To\'lov usullari')}
-          </button>
-
-          <button
-            onClick={() => setActiveTab('users')}
-            className={clsx("flex items-center justify-between px-4 py-3 rounded-xl text-[13px] font-bold transition-all duration-200 border-2", activeTab === 'users' ? "bg-surface-alt text-text-main border-border-color shadow-sm" : "text-text-muted hover:text-text-main hover:bg-surface-alt border-transparent")}
-          >
-            <div className="flex items-center">
-              <Users className={clsx("w-4 h-4 mr-3 transition-transform", activeTab === 'users' ? "text-text-main scale-110" : "text-text-muted")} />
-              {t.tabs.users}
-            </div>
-            {activeUsers.length > 0 && (
-              <span className="bg-surface-alt text-text-main text-[10px] px-2 py-0.5 rounded-full font-bold ml-auto border border-border-color shadow-sm">{activeUsers.length}</span>
-            )}
-          </button>
-
-          <button
-            onClick={() => setActiveTab('settings')}
-            className={clsx("flex items-center px-4 py-3 rounded-xl text-[13px] font-bold transition-all duration-200 border-2", activeTab === 'settings' ? "bg-surface text-text-main border-border-color shadow-sm" : "text-text-muted hover:text-text-main hover:bg-surface-alt border-transparent")}
-          >
-            <Settings className={clsx("w-4 h-4 mr-3 transition-transform", activeTab === 'settings' ? "text-text-main scale-110" : "text-text-muted")} />
-            {t.tabs.settings}
-          </button>
+          <div className="flex flex-col gap-1.5 mt-auto">
+            <button
+              onClick={() => setActiveTab('settings')}
+              className={clsx("flex items-center px-4 py-3 rounded-xl text-[13px] font-bold transition-all duration-200 border-2", activeTab === 'settings' ? "bg-surface text-text-main border-border-color shadow-sm" : "text-text-muted hover:text-text-main hover:bg-surface-alt border-transparent")}
+            >
+              <Settings className={clsx("w-4 h-4 mr-3 transition-transform", activeTab === 'settings' ? "text-text-main scale-110" : "text-text-muted")} />
+              {t.tabs.settings}
+            </button>
+          </div>
         </nav>
 
         <div className="flex flex-col items-center justify-center mt-auto gap-4 pt-6 pb-6 md:pb-0 border-t border-border-color/50">
@@ -920,20 +933,18 @@ export default function AdminDashboard() {
             <div className="max-w-6xl flex flex-col gap-8 relative z-10 w-full mx-auto animate-in fade-in duration-300">
               <div className="flex flex-col md:flex-row justify-between md:items-end mb-6 gap-4">
                 <div>
-                  <h1 className="text-[24px] font-bold text-text-main tracking-tight">Добавить товар</h1>
+                  <h1 className="text-[24px] font-bold text-text-main tracking-tight">Товары</h1>
                   <p className="text-[13px] text-text-muted mt-1">Управление ассортиментом магазина</p>
                 </div>
-                <button onClick={() => setShowAddProduct(!showAddProduct)} className="bg-brand-primary text-white border border-transparent shadow-sm px-4 py-2 rounded-[10px] text-[13px] font-bold hover:bg-brand-primary-hover transition-all">
-                  {showAddProduct ? 'Отмена' : 'Добавить вручную'}
+                <button onClick={() => setShowAddProduct(true)} className="bg-brand-primary text-white border border-transparent shadow-sm px-4 py-2 rounded-[10px] text-[13px] font-bold hover:bg-brand-primary-hover transition-all">
+                  Добавить товар
                 </button>
               </div>
 
-              {!showAddProduct ? (
-                <>
-                  {/* List added products */}
-                  <div className="mt-4 overflow-x-auto min-w-full">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-4">
-                      <h3 className="text-[18px] font-bold text-text-main tracking-tight">Ваши товары</h3>
+              {/* List added products */}
+              <div className="mt-4 overflow-x-auto min-w-full">
+                <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-4">
+                  <h3 className="text-[18px] font-bold text-text-main tracking-tight">Ваши товары</h3>
                       <div className="relative w-full md:hidden">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
                         <input 
@@ -1088,134 +1099,7 @@ export default function AdminDashboard() {
                         У вас пока нет добавленных товаров.
                       </div>
                     )}
-                  </div>
-                </>
-              ) : (
-                <div className="bg-surface border border-border-color rounded-[32px] overflow-hidden shadow-accent card-premium p-8 max-w-2xl animate-in fade-in duration-300">
-                  <h2 className="text-[18px] font-bold text-text-main tracking-tight mb-6">Добавление товара</h2>
-                  <form onSubmit={handleAddProduct} className="flex flex-col gap-5">
-                    <div className="flex flex-col gap-2">
-                      <label className="text-[12px] font-bold text-text-muted uppercase tracking-wider">Название товара</label>
-                      <input type="text" required value={newProduct.name} onChange={e => setNewProduct({...newProduct, name: e.target.value})} className="w-full bg-surface-alt border border-border-color rounded-[10px] py-2.5 px-4 text-[13px] text-text-main focus:border-text-muted outline-none transition-all placeholder:text-text-muted/50" placeholder="Например: Серверный шкаф 42U" />
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="flex flex-col gap-2">
-                        <label className="text-[12px] font-bold text-text-muted uppercase tracking-wider">Цена (UZS)</label>
-                        <input type="number" required min="0" value={newProduct.price || ''} onChange={e => setNewProduct({...newProduct, price: Number(e.target.value)})} className="w-full bg-surface-alt border border-border-color rounded-[10px] py-2.5 px-4 text-[13px] text-text-main focus:border-text-muted outline-none transition-all" placeholder="0.00" />
-                      </div>
-                      <div className="flex flex-col gap-2">
-                        <label className="text-[12px] font-bold text-text-muted uppercase tracking-wider">Количество (шт.)</label>
-                        <input type="number" required min="0" value={newProduct.stock || ''} onChange={e => setNewProduct({...newProduct, stock: Number(e.target.value)})} className="w-full bg-surface-alt border border-border-color rounded-[10px] py-2.5 px-4 text-[13px] text-text-main focus:border-text-muted outline-none transition-all" placeholder="0" />
-                      </div>
-                    </div>
-                    <div className="flex flex-col gap-2">
-                      <label className="text-[12px] font-bold text-text-muted uppercase tracking-wider">Краткое описание товара</label>
-                      <textarea required value={newProduct.description} onChange={e => setNewProduct({...newProduct, description: e.target.value})} rows={3} className="w-full bg-surface-alt border border-border-color rounded-[10px] py-2.5 px-4 text-[13px] text-text-main focus:border-text-muted outline-none transition-all placeholder:text-text-muted/50 resize-none" placeholder="Основная информация..." />
-                    </div>
-
-                    <div className="flex flex-col gap-4 border-t border-border-color pt-4">
-                      <div className="flex flex-col gap-2">
-                        <label className="text-[12px] font-bold text-text-muted uppercase tracking-wider">Размеры одежды (Опционально)</label>
-                        <div className="flex flex-wrap gap-2">
-                          {CLOTHING_SIZES.map(s => (
-                            <button
-                              type="button"
-                              key={s}
-                              onClick={() => setNewProduct(prev => ({...prev, sizes: prev.sizes.includes(s) ? prev.sizes.filter(x => x !== s) : [...prev.sizes, s]}))}
-                              className={`px-3 py-1.5 rounded-lg text-[12px] font-bold uppercase transition-all border ${newProduct.sizes.includes(s) ? 'bg-brand-primary text-white border-brand-primary' : 'bg-surface-alt text-text-muted border-border-color hover:border-text-muted'}`}
-                            >
-                              {s}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                      
-                      <div className="flex flex-col gap-2">
-                        <label className="text-[12px] font-bold text-text-muted uppercase tracking-wider">Размеры обуви (Опционально)</label>
-                        <div className="flex flex-wrap gap-2">
-                          {SHOE_SIZES.map(s => (
-                            <button
-                              type="button"
-                              key={s}
-                              onClick={() => setNewProduct(prev => ({...prev, sizes: prev.sizes.includes(s) ? prev.sizes.filter(x => x !== s) : [...prev.sizes, s]}))}
-                              className={`px-3 py-1.5 rounded-lg text-[12px] font-bold uppercase transition-all border ${newProduct.sizes.includes(s) ? 'bg-brand-primary text-white border-brand-primary' : 'bg-surface-alt text-text-muted border-border-color hover:border-text-muted'}`}
-                            >
-                              {s}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div className="flex flex-col gap-2">
-                        <label className="text-[12px] font-bold text-text-muted uppercase tracking-wider">Цвета (Опционально)</label>
-                        <div className="flex flex-wrap gap-2">
-                          {COLORS.map(c => (
-                            <button
-                              type="button"
-                              key={c}
-                              onClick={() => setNewProduct(prev => ({...prev, colors: prev.colors.includes(c) ? prev.colors.filter(x => x !== c) : [...prev.colors, c]}))}
-                              className={`px-3 py-1.5 rounded-lg text-[12px] font-bold transition-all border ${newProduct.colors.includes(c) ? 'bg-brand-primary text-white border-brand-primary' : 'bg-surface-alt text-text-muted border-border-color hover:border-text-muted'}`}
-                            >
-                              {c}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex flex-col gap-2">
-                       <label className="text-[12px] font-bold text-text-muted uppercase tracking-wider">Медиа (Главное фото, 2 доп. фото, 1 видео)</label>
-                       
-                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-1">
-                         <div className="flex flex-col gap-1">
-                           <span className="text-[10px] text-text-muted">Главное</span>
-                           {newProduct.imageBase64 && (
-                             <div className="w-full aspect-square rounded-xl overflow-hidden border border-border-color shadow-sm mb-1">
-                               <img src={newProduct.imageBase64} alt="Preview 1" className="w-full h-full object-cover" />
-                             </div>
-                           )}
-                           <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, 'imageBase64')} className="block w-full text-[10px] text-text-muted file:mr-2 file:py-1.5 file:px-2 file:rounded-xl file:border file:border-border-color file:font-bold file:bg-surface-alt hover:file:bg-surface cursor-pointer" />
-                         </div>
-
-                         <div className="flex flex-col gap-1">
-                           <span className="text-[10px] text-text-muted">Фото 2</span>
-                           {newProduct.additionalImage1 && (
-                             <div className="w-full aspect-square rounded-xl overflow-hidden border border-border-color shadow-sm mb-1">
-                               <img src={newProduct.additionalImage1} alt="Preview 2" className="w-full h-full object-cover" />
-                             </div>
-                           )}
-                           <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, 'additionalImage1')} className="block w-full text-[10px] text-text-muted file:mr-2 file:py-1.5 file:px-2 file:rounded-xl file:border file:border-border-color file:font-bold file:bg-surface-alt hover:file:bg-surface cursor-pointer" />
-                         </div>
-
-                         <div className="flex flex-col gap-1">
-                           <span className="text-[10px] text-text-muted">Фото 3</span>
-                           {newProduct.additionalImage2 && (
-                             <div className="w-full aspect-square rounded-xl overflow-hidden border border-border-color shadow-sm mb-1">
-                               <img src={newProduct.additionalImage2} alt="Preview 3" className="w-full h-full object-cover" />
-                             </div>
-                           )}
-                           <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, 'additionalImage2')} className="block w-full text-[10px] text-text-muted file:mr-2 file:py-1.5 file:px-2 file:rounded-xl file:border file:border-border-color file:font-bold file:bg-surface-alt hover:file:bg-surface cursor-pointer" />
-                         </div>
-
-                         <div className="flex flex-col gap-1">
-                           <span className="text-[10px] text-text-muted">Видео</span>
-                           {newProduct.videoBase64 && (
-                             <div className="w-full aspect-square rounded-xl overflow-hidden border border-border-color shadow-sm mb-1 bg-black flex flex-col items-center justify-center text-white">
-                                <span className="text-[10px] uppercase font-bold">Видео</span>
-                             </div>
-                           )}
-                           <input type="file" accept="video/*" onChange={(e) => handleImageUpload(e, 'videoBase64')} className="block w-full text-[10px] text-text-muted file:mr-2 file:py-1.5 file:px-2 file:rounded-xl file:border file:border-border-color file:font-bold file:bg-surface-alt hover:file:bg-surface cursor-pointer" />
-                         </div>
-                       </div>
-                    </div>
-                    <div className="mt-4 pt-4 border-t border-border-color/50 flex justify-end">
-                      <button type="submit" className="bg-brand-primary hover:bg-brand-primary-hover text-white px-6 py-3 rounded-xl text-[13px] font-bold shadow-lg shadow-brand-primary/20 transition-all flex items-center justify-center">
-                        Создать товар
-                      </button>
-                    </div>
-                  </form>
-                </div>
-              )}
+              </div>
             </div>
           )}
 
@@ -1451,6 +1335,145 @@ export default function AdminDashboard() {
                  <img src={selectedReceipt} alt="Receipt" className="w-full h-auto max-h-[60vh] object-contain" />
                </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {showAddProduct && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 min-h-[100dvh]">
+          <div className="absolute inset-0 bg-bg-base/80 backdrop-blur-sm" onClick={() => setShowAddProduct(false)}></div>
+          <div className="relative bg-surface border border-border-color rounded-[32px] p-6 max-w-2xl w-full shadow-accent card-premium max-h-[90vh] flex flex-col">
+            <div className="flex justify-between items-center mb-6 shrink-0">
+               <div>
+                  <h2 className="text-[20px] font-bold text-text-main">Добавление товара</h2>
+                  <p className="text-[13px] text-text-muted mt-1">Заполните данные для нового товара</p>
+               </div>
+               <button onClick={() => setShowAddProduct(false)} className="w-10 h-10 rounded-full bg-surface-alt hover:bg-surface border border-border-color flex items-center justify-center transition-colors text-text-muted hover:text-text-main shadow-sm">
+                 <X className="w-5 h-5" />
+               </button>
+            </div>
+            
+            <form onSubmit={handleAddProduct} className="flex flex-col gap-5 overflow-y-auto custom-scrollbar flex-1 -mr-2 pr-2">
+              <div className="flex flex-col gap-2">
+                <label className="text-[12px] font-bold text-text-muted uppercase tracking-wider">Название товара</label>
+                <input type="text" required value={newProduct.name} onChange={e => setNewProduct({...newProduct, name: e.target.value})} className="w-full bg-surface-alt border border-border-color rounded-[10px] py-2.5 px-4 text-[13px] text-text-main focus:border-text-muted outline-none transition-all placeholder:text-text-muted/50" placeholder="Например: Серверный шкаф 42U" />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex flex-col gap-2">
+                  <label className="text-[12px] font-bold text-text-muted uppercase tracking-wider">Цена (UZS)</label>
+                  <input type="number" required min="0" value={newProduct.price === 0 ? '' : newProduct.price} onChange={e => setNewProduct({...newProduct, price: Number(e.target.value)})} className="w-full bg-surface-alt border border-border-color rounded-[10px] py-2.5 px-4 text-[13px] text-text-main focus:border-text-muted outline-none transition-all" placeholder="0" />
+                </div>
+                <div className="flex flex-col gap-2">
+                  <label className="text-[12px] font-bold text-text-muted uppercase tracking-wider">Количество (шт.)</label>
+                  <input type="number" required min="0" value={newProduct.stock === 0 ? '' : newProduct.stock} onChange={e => setNewProduct({...newProduct, stock: Number(e.target.value)})} className="w-full bg-surface-alt border border-border-color rounded-[10px] py-2.5 px-4 text-[13px] text-text-main focus:border-text-muted outline-none transition-all" placeholder="0" />
+                </div>
+              </div>
+              <div className="flex flex-col gap-2">
+                <label className="text-[12px] font-bold text-text-muted uppercase tracking-wider">Краткое описание товара</label>
+                <textarea required value={newProduct.description} onChange={e => setNewProduct({...newProduct, description: e.target.value})} rows={3} className="w-full bg-surface-alt border border-border-color rounded-[10px] py-2.5 px-4 text-[13px] text-text-main focus:border-text-muted outline-none transition-all placeholder:text-text-muted/50 resize-none" placeholder="Основная информация..." />
+              </div>
+
+              <div className="flex flex-col gap-4 border-t border-border-color pt-4">
+                <div className="flex flex-col gap-2">
+                  <label className="text-[12px] font-bold text-text-muted uppercase tracking-wider">Размеры одежды (Опционально)</label>
+                  <div className="flex flex-wrap gap-2">
+                    {CLOTHING_SIZES.map(s => (
+                      <button
+                        type="button"
+                        key={s}
+                        onClick={() => setNewProduct(prev => ({...prev, sizes: prev.sizes.includes(s) ? prev.sizes.filter(x => x !== s) : [...prev.sizes, s]}))}
+                        className={`px-3 py-1.5 rounded-lg text-[12px] font-bold uppercase transition-all border ${newProduct.sizes.includes(s) ? 'bg-brand-primary text-white border-brand-primary' : 'bg-surface-alt text-text-muted border-border-color hover:border-text-muted'}`}
+                      >
+                        {s}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                
+                <div className="flex flex-col gap-2">
+                  <label className="text-[12px] font-bold text-text-muted uppercase tracking-wider">Размеры обуви (Опционально)</label>
+                  <div className="flex flex-wrap gap-2">
+                    {SHOE_SIZES.map(s => (
+                      <button
+                        type="button"
+                        key={s}
+                        onClick={() => setNewProduct(prev => ({...prev, sizes: prev.sizes.includes(s) ? prev.sizes.filter(x => x !== s) : [...prev.sizes, s]}))}
+                        className={`px-3 py-1.5 rounded-lg text-[12px] font-bold uppercase transition-all border ${newProduct.sizes.includes(s) ? 'bg-brand-primary text-white border-brand-primary' : 'bg-surface-alt text-text-muted border-border-color hover:border-text-muted'}`}
+                      >
+                        {s}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-2">
+                  <label className="text-[12px] font-bold text-text-muted uppercase tracking-wider">Цвета (Опционально)</label>
+                  <div className="flex flex-wrap gap-2">
+                    {COLORS.map(c => (
+                      <button
+                        type="button"
+                        key={c}
+                        onClick={() => setNewProduct(prev => ({...prev, colors: prev.colors.includes(c) ? prev.colors.filter(x => x !== c) : [...prev.colors, c]}))}
+                        className={`px-3 py-1.5 rounded-lg text-[12px] font-bold transition-all border ${newProduct.colors.includes(c) ? 'bg-brand-primary text-white border-brand-primary' : 'bg-surface-alt text-text-muted border-border-color hover:border-text-muted'}`}
+                      >
+                        {c}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-2">
+                 <label className="text-[12px] font-bold text-text-muted uppercase tracking-wider">Медиа (Главное фото, 2 доп. фото, 1 видео)</label>
+                 
+                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-1">
+                   <div className="flex flex-col gap-1">
+                     <span className="text-[10px] text-text-muted">Главное</span>
+                     {newProduct.imageBase64 && (
+                       <div className="w-full aspect-square rounded-xl overflow-hidden border border-border-color shadow-sm mb-1">
+                         <img src={newProduct.imageBase64} alt="Preview 1" className="w-full h-full object-cover" />
+                       </div>
+                     )}
+                     <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, 'imageBase64')} className="block w-full text-[10px] text-text-muted file:mr-2 file:py-1.5 file:px-2 file:rounded-xl file:border file:border-border-color file:font-bold file:bg-surface-alt hover:file:bg-surface cursor-pointer" />
+                   </div>
+
+                   <div className="flex flex-col gap-1">
+                     <span className="text-[10px] text-text-muted">Фото 2</span>
+                     {newProduct.additionalImage1 && (
+                       <div className="w-full aspect-square rounded-xl overflow-hidden border border-border-color shadow-sm mb-1">
+                         <img src={newProduct.additionalImage1} alt="Preview 2" className="w-full h-full object-cover" />
+                       </div>
+                     )}
+                     <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, 'additionalImage1')} className="block w-full text-[10px] text-text-muted file:mr-2 file:py-1.5 file:px-2 file:rounded-xl file:border file:border-border-color file:font-bold file:bg-surface-alt hover:file:bg-surface cursor-pointer" />
+                   </div>
+
+                   <div className="flex flex-col gap-1">
+                     <span className="text-[10px] text-text-muted">Фото 3</span>
+                     {newProduct.additionalImage2 && (
+                       <div className="w-full aspect-square rounded-xl overflow-hidden border border-border-color shadow-sm mb-1">
+                         <img src={newProduct.additionalImage2} alt="Preview 3" className="w-full h-full object-cover" />
+                       </div>
+                     )}
+                     <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, 'additionalImage2')} className="block w-full text-[10px] text-text-muted file:mr-2 file:py-1.5 file:px-2 file:rounded-xl file:border file:border-border-color file:font-bold file:bg-surface-alt hover:file:bg-surface cursor-pointer" />
+                   </div>
+
+                   <div className="flex flex-col gap-1">
+                     <span className="text-[10px] text-text-muted">Видео</span>
+                     {newProduct.videoBase64 && (
+                       <div className="w-full aspect-square rounded-xl overflow-hidden border border-border-color shadow-sm mb-1 bg-black flex flex-col items-center justify-center text-white">
+                          <span className="text-[10px] uppercase font-bold">Видео</span>
+                       </div>
+                     )}
+                     <input type="file" accept="video/*" onChange={(e) => handleImageUpload(e, 'videoBase64')} className="block w-full text-[10px] text-text-muted file:mr-2 file:py-1.5 file:px-2 file:rounded-xl file:border file:border-border-color file:font-bold file:bg-surface-alt hover:file:bg-surface cursor-pointer" />
+                   </div>
+                 </div>
+              </div>
+              <div className="mt-4 pt-4 border-t border-border-color/50 flex justify-end shrink-0">
+                <button type="submit" className="bg-brand-primary hover:bg-brand-primary-hover text-white px-6 py-3 rounded-xl text-[13px] font-bold shadow-lg shadow-brand-primary/20 transition-all flex items-center justify-center">
+                  Создать товар
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

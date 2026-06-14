@@ -52,7 +52,7 @@ export default function ClientDashboard() {
   const [isMobileCartOpen, setIsMobileCartOpen] = useState(false);
   const [checkoutState, setCheckoutState] = useState<'idle' | 'processing' | 'success'>('idle');
 
-  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [checkoutStep, setCheckoutStep] = useState<'idle' | 'details' | 'payment'>('idle');
   const [selectedProduct, setSelectedProduct] = useState<any | null>(null);
   const [modalQuantity, setModalQuantity] = useState(1);
   const [clientDetails, setClientDetails] = useState<{name: string; phone: string; locationStr: string; latitude: number | null; longitude: number | null}>({ name: '', phone: '', locationStr: '', latitude: null, longitude: null });
@@ -193,13 +193,27 @@ export default function ClientDashboard() {
 
   const cartTotal = cart.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
 
+  const handleDetailsNext = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!clientDetails.phone || !clientDetails.locationStr) {
+       alert(lang === 'RU' ? 'Пожалуйста, заполните все данные для доставки.' : 'Iltimos, yetkazib berish ma\'lumotlarini to\'ldiring.');
+       return;
+    }
+
+    if (business?.paymentSettings?.enableBankCard) {
+      setCheckoutStep('payment');
+    } else {
+      submitOrderWithDetails();
+    }
+  };
+
   const submitOrderWithDetails = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (cart.length === 0) return;
     if (!appUser?.businessId) return;
 
     if (!clientDetails.phone || !clientDetails.locationStr) {
-       alert('Пожалуйста, заполните все данные для доставки.');
+       alert(lang === 'RU' ? 'Пожалуйста, заполните все данные для доставки.' : 'Iltimos, yetkazib berish ma\'lumotlarini to\'ldiring.');
        return;
     }
     
@@ -208,7 +222,7 @@ export default function ClientDashboard() {
        return;
     }
 
-    setIsDetailsModalOpen(false);
+    setCheckoutStep('idle');
     setCheckoutState('processing');
 
     const orderItems = cart.map(i => ({
@@ -322,7 +336,7 @@ export default function ClientDashboard() {
     if (!appUser?.businessId) return;
 
     setCheckoutReceiptImage(null);
-    setIsDetailsModalOpen(true);
+    setCheckoutStep('details');
   };
 
   const handleMarkReceived = async (orderId: string) => {
@@ -331,7 +345,7 @@ export default function ClientDashboard() {
 
   return (
     <>
-      {(checkoutState === 'success' || (checkoutState === 'processing' && !isDetailsModalOpen && activeTab !== 'profile')) && (
+      {(checkoutState === 'success' || (checkoutState === 'processing' && checkoutStep === 'idle' && activeTab !== 'profile')) && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm">
            <div className="bg-surface rounded-2xl p-8 max-w-sm w-full mx-4 shadow-xl border border-border-color text-center flex flex-col items-center">
              {checkoutState === 'processing' ? (
@@ -685,8 +699,22 @@ export default function ClientDashboard() {
                     <div className="text-[12px] font-black uppercase tracking-widest text-text-muted opacity-40">Total Amount</div>
                     <div className="font-black text-text-main text-[24px] tracking-tighter group-hover:text-text-muted transition-colors">{order.total.toLocaleString()} UZS</div>
                     <div className="flex gap-2 items-center mt-1">
-                      <div className="inline-flex items-center px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-surface-alt text-text-main border border-border-color shadow-sm">
-                         Delivered
+                      <div className={clsx(
+                        "inline-flex items-center px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider border shadow-sm",
+                        order.status === 'receipt_uploaded' ? "bg-[#F59E0B]/10 text-[#F59E0B] border-[#F59E0B]/20" :
+                        order.status === 'payment_confirmed' ? "bg-brand-success/10 text-brand-success border-brand-success/20" :
+                        order.status === 'processing' ? "bg-brand-primary/10 text-brand-primary border-brand-primary/20" :
+                        order.status === 'completed' ? "bg-text-main/10 text-text-main border-border-color" :
+                        order.status === 'cancelled' || order.status === 'rejected' ? "bg-brand-danger/10 text-brand-danger border-brand-danger/20" :
+                        "bg-surface text-text-muted border-border-color"
+                      )}>
+                         {order.status === 'receipt_uploaded' ? 'Ожидает оплаты' :
+                          order.status === 'payment_confirmed' ? 'Оплачен' :
+                          order.status === 'processing' ? 'В обработке' :
+                          order.status === 'completed' ? 'Выполнен' :
+                          order.status === 'cancelled' ? 'Отменен' :
+                          order.status === 'rejected' ? 'Отклонен (оплата)' :
+                          'Новый'}
                       </div>
                       <button 
                         onClick={() => handleDeleteOrder(order.id)}
@@ -879,113 +907,148 @@ export default function ClientDashboard() {
         )}
         </main>
       </div>
-      {isDetailsModalOpen && (
+      {(checkoutStep === 'details' || checkoutStep === 'payment') && (
         <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 min-h-[100dvh]">
-          <div className="absolute inset-0 bg-bg-base/80 backdrop-blur-sm" onClick={() => setIsDetailsModalOpen(false)}></div>
+          <div className="absolute inset-0 bg-bg-base/80 backdrop-blur-sm" onClick={() => setCheckoutStep('idle')}></div>
           <div className="relative bg-surface border border-border-color rounded-[32px] p-6 max-w-md w-full shadow-accent card-premium max-h-[90vh] flex flex-col">
-            <h2 className="text-[20px] font-bold text-text-main mb-2 shrink-0">Данные для доставки</h2>
-            <p className="text-[13px] text-text-muted mb-6 shrink-0">Введите ваше имя, телефон и адрес (или геолокацию) для оформления заказа. Эти данные сохранятся для будущих покупок.</p>
-            
-            <form onSubmit={submitOrderWithDetails} className="space-y-4 overflow-y-auto custom-scrollbar flex-1 -mr-2 pr-2">
-              <div>
-                 <label className="text-[12px] font-bold text-text-main uppercase tracking-wider mb-1 block">Имя</label>
-                 <input 
-                   type="text" 
-                   required
-                   value={clientDetails.name}
-                   onChange={e => setClientDetails(p => ({...p, name: e.target.value}))}
-                   className="w-full pl-4 pr-4 py-3 rounded-xl bg-surface border border-border-color text-text-main focus:border-text-muted outline-none placeholder:text-text-muted/50 text-[13px]"
-                   placeholder="Иван Иванов"
-                 />
-              </div>
-              <div>
-                 <label className="text-[12px] font-bold text-text-main uppercase tracking-wider mb-1 block">Телефон</label>
-                 <input 
-                   type="tel" 
-                   required
-                   value={clientDetails.phone}
-                   onChange={e => setClientDetails(p => ({...p, phone: e.target.value}))}
-                   className="w-full pl-4 pr-4 py-3 rounded-xl bg-surface border border-border-color text-text-main focus:border-text-muted outline-none placeholder:text-text-muted/50 text-[13px]"
-                   placeholder="+998 90 123 45 67"
-                 />
-              </div>
-              <div className="flex flex-col gap-2">
-                 <label className="text-[12px] font-bold text-text-main uppercase tracking-wider mb-1 block">Адрес доставки (точка на карте)</label>
-                 <div className="w-full">
-                   <div className="mb-2">
-                     <LocationPickerMap onLocationSelected={handleLocationSelected} />
-                   </div>
-                   <input 
-                     type="text" 
-                     required
-                     value={clientDetails.locationStr}
-                     onChange={e => setClientDetails(p => ({...p, locationStr: e.target.value}))}
-                     className="w-full bg-surface border border-border-color rounded-xl pl-4 pr-4 py-3 text-[13px] text-text-main focus:border-text-muted outline-none placeholder:text-text-muted/50"
-                     placeholder="Уточните адрес..."
-                   />
-                 </div>
-              </div>
+            {checkoutStep === 'details' && (
+              <>
+                <h2 className="text-[20px] font-bold text-text-main mb-2 shrink-0">Данные для доставки</h2>
+                <p className="text-[13px] text-text-muted mb-6 shrink-0">Введите ваше имя, телефон и адрес (или геолокацию) для оформления заказа. Эти данные сохранятся для будущих покупок.</p>
+                
+                <form onSubmit={handleDetailsNext} className="space-y-4 overflow-y-auto custom-scrollbar flex-1 -mr-2 pr-2">
+                  <div>
+                     <label className="text-[12px] font-bold text-text-main uppercase tracking-wider mb-1 block">Имя</label>
+                     <input 
+                       type="text" 
+                       required
+                       value={clientDetails.name}
+                       onChange={e => setClientDetails(p => ({...p, name: e.target.value}))}
+                       className="w-full pl-4 pr-4 py-3 rounded-xl bg-surface border border-border-color text-text-main focus:border-text-muted outline-none placeholder:text-text-muted/50 text-[13px]"
+                       placeholder="Иван Иванов"
+                     />
+                  </div>
+                  <div>
+                     <label className="text-[12px] font-bold text-text-main uppercase tracking-wider mb-1 block">Телефон</label>
+                     <input 
+                       type="tel" 
+                       required
+                       value={clientDetails.phone}
+                       onChange={e => setClientDetails(p => ({...p, phone: e.target.value}))}
+                       className="w-full pl-4 pr-4 py-3 rounded-xl bg-surface border border-border-color text-text-main focus:border-text-muted outline-none placeholder:text-text-muted/50 text-[13px]"
+                       placeholder="+998 90 123 45 67"
+                     />
+                  </div>
+                  <div className="flex flex-col gap-2">
+                     <label className="text-[12px] font-bold text-text-main uppercase tracking-wider mb-1 block">Адрес доставки (точка на карте)</label>
+                     <div className="w-full">
+                       <div className="mb-2">
+                         <LocationPickerMap onLocationSelected={handleLocationSelected} />
+                       </div>
+                       <input 
+                         type="text" 
+                         required
+                         value={clientDetails.locationStr}
+                         onChange={e => setClientDetails(p => ({...p, locationStr: e.target.value}))}
+                         className="w-full bg-surface border border-border-color rounded-xl pl-4 pr-4 py-3 text-[13px] text-text-main focus:border-text-muted outline-none placeholder:text-text-muted/50"
+                         placeholder="Уточните адрес..."
+                       />
+                     </div>
+                  </div>
 
-              {business?.paymentSettings?.enableBankCard && (
-                 <div className="mt-6 border-t border-border-color/50 pt-4">
-                   <h3 className="text-[16px] font-bold text-text-main mb-2">{lang === 'RU' ? 'Оплата заказа' : 'Buyurtma to\'lovi'}</h3>
-                   <p className="text-[12px] text-text-muted mb-4">{lang === 'RU' ? 'Переведите сумму заказа на указанную карту и загрузите чек для подтверждения оплаты.' : 'Buyurtma summasini ko\'rsatilgan kartaga o\'tkazing va to\'lovni tasdiqlash uchun chekni yuklang.'}</p>
-                   
-                   <div className="bg-surface-alt p-4 rounded-xl border border-border-color text-[13px] mb-4">
+                  <div className="pt-4 flex gap-3 shrink-0 pb-2">
+                     <button 
+                       type="button" 
+                       onClick={() => setCheckoutStep('idle')}
+                       className="flex-1 px-4 py-3 border border-border-color border-transparent text-text-muted rounded-xl font-bold hover:bg-surface transition-colors/50"
+                     >
+                       Отмена
+                     </button>
+                     <button 
+                       type="submit" 
+                       className="flex-1 px-4 py-3 bg-text-main hover:bg-text-main/90 text-bg-base rounded-xl font-bold transition-all shadow-md active:scale-95 flex items-center justify-center text-[13px]"
+                     >
+                       {business?.paymentSettings?.enableBankCard ? 'Далее (Оплата)' : 'Оформить заказ'}
+                     </button>
+                  </div>
+                </form>
+              </>
+            )}
+
+            {checkoutStep === 'payment' && (
+              <>
+                 <h3 className="text-[20px] font-bold text-text-main mb-2 shrink-0">{lang === 'RU' ? 'Оплата заказа' : 'Buyurtma to\'lovi'}</h3>
+                 <p className="text-[13px] text-text-muted mb-6 shrink-0">{lang === 'RU' ? 'Переведите указанную сумму на карту ниже и загрузите чек оплаты.' : 'Ko\'rsatilgan summani quyidagi kartaga o\'tkazing va to\'lov chekini yuklang.'}</p>
+                 
+                 <form onSubmit={submitOrderWithDetails} className="overflow-y-auto custom-scrollbar flex-1 -mr-2 pr-2">
+                   <div className="bg-surface-alt p-4 rounded-xl border border-border-color text-[13px] mb-6">
                       <div className="flex justify-between items-center mb-2">
-                         <span className="text-text-muted font-bold tracking-widest uppercase text-[10px]">Card Number</span>
+                         <span className="text-text-muted font-bold tracking-widest uppercase text-[10px]">К оплате</span>
+                      </div>
+                      <div className="font-mono text-[20px] text-text-main font-bold tracking-tight">{(cartTotal).toLocaleString()} UZS</div>
+                   </div>
+
+                   <div className="bg-surface-alt p-4 rounded-xl border border-border-color text-[13px] mb-6">
+                      <div className="flex justify-between items-center mb-2">
+                         <span className="text-text-muted font-bold tracking-widest uppercase text-[10px]">Номер карты</span>
                          <button 
                            type="button"
-                           onClick={() => navigator.clipboard.writeText(business.paymentSettings!.cardNumber)}
+                           onClick={() => navigator.clipboard.writeText(business?.paymentSettings?.cardNumber || '')}
                            className="text-brand-primary font-bold text-[11px] uppercase tracking-wider hover:opacity-80 transition-opacity"
                          >
-                           {lang === 'RU' ? 'Copy Card Number' : 'Nusxalash'}
+                           {lang === 'RU' ? 'Копировать' : 'Nusxalash'}
                          </button>
                       </div>
-                      <div className="font-mono text-[16px] text-text-main font-bold mb-3 tracking-widest">{business.paymentSettings.cardNumber}</div>
-                      {business.paymentSettings.cardHolderName && (
+                      <div className="font-mono text-[16px] text-text-main font-bold mb-3 tracking-widest">{business?.paymentSettings?.cardNumber}</div>
+                      {business?.paymentSettings?.cardHolderName && (
                         <>
-                           <div className="text-text-muted font-bold tracking-widest uppercase text-[10px] mb-1">Card Holder Name</div>
+                           <div className="text-text-muted font-bold tracking-widest uppercase text-[10px] mb-1">Владелец карты</div>
                            <div className="text-text-main font-bold uppercase">{business.paymentSettings.cardHolderName}</div>
                         </>
                       )}
                    </div>
 
-                   <div>
-                     <label className="text-[12px] font-bold text-text-main uppercase tracking-wider mb-1 block">Payment Receipt (Чек)</label>
-                     <p className="text-[11px] text-text-muted mb-2">{lang === 'RU' ? 'Загрузите скриншот или фотографию чека после оплаты (JPG, PNG, WEBP, до 10 MB).' : 'To\'lovdan sung kvitansiyani yuklang.'}</p>
+                   <div className="mb-6">
+                     <label className="text-[12px] font-bold text-text-main uppercase tracking-wider mb-1 block">Чек оплаты</label>
+                     <p className="text-[11px] text-text-muted mb-2">{lang === 'RU' ? 'Загрузите скриншот, фотографию или PDF-файл (до 10 MB).' : 'Skrinshot, rasm yoki PDF faylni yuklang.'}</p>
                      <input
                         type="file"
-                        accept="image/png, image/jpeg, image/webp"
+                        accept="image/png, image/jpeg, image/webp, application/pdf"
                         required
                         onChange={handleReceiptUpload}
-                        className="w-full text-[12px] text-text-muted file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-[12px] file:font-bold file:bg-surface-alt file:text-text-main hover:file:bg-border-color cursor-pointer transition-all focus:outline-none"
+                        className="w-full text-[12px] text-text-muted file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border file:border-border-color file:text-[12px] file:font-bold file:bg-surface-alt file:text-text-main hover:file:bg-border-color cursor-pointer transition-all focus:outline-none bg-surface p-2 rounded-xl border border-border-color"
                      />
-                     {checkoutReceiptImage && (
+                     {checkoutReceiptImage && checkoutReceiptImage.startsWith('data:image') && (
                        <div className="mt-3 relative w-[100px] h-[100px] rounded-xl overflow-hidden border border-border-color shadow-sm">
                           <img src={checkoutReceiptImage} alt="Receipt" className="w-full h-full object-cover" />
                        </div>
                      )}
+                     {checkoutReceiptImage && checkoutReceiptImage.startsWith('data:application/pdf') && (
+                        <div className="mt-3 p-3 bg-surface-alt rounded-xl border border-border-color text-text-main text-[12px] font-bold flex items-center">
+                           <FileText className="w-4 h-4 mr-2 text-brand-primary" />
+                           PDF файл загружен
+                        </div>
+                     )}
                    </div>
-                 </div>
-              )}
 
-              <div className="pt-4 flex gap-3 shrink-0 pb-2">
-                 <button 
-                   type="button" 
-                   onClick={() => setIsDetailsModalOpen(false)}
-                   className="flex-1 px-4 py-3 border border-border-color border-transparent text-text-muted rounded-xl font-bold hover:bg-surface transition-colors/50"
-                 >
-                   Отмена
-                 </button>
-                 <button 
-                   type="submit" 
-                   className="flex-1 px-4 py-3 bg-text-main hover:bg-text-main/90 text-bg-base rounded-xl font-bold transition-all shadow-md active:scale-95 flex items-center justify-center text-[13px]"
-                 >
-                   Подтвердить
-                 </button>
-              </div>
-            </form>
+                   <div className="pt-2 flex gap-3 shrink-0 pb-2">
+                       <button 
+                         type="button" 
+                         onClick={() => setCheckoutStep('details')}
+                         className="flex-1 px-4 py-3 border border-border-color border-transparent text-text-muted rounded-xl font-bold hover:bg-surface transition-colors/50"
+                       >
+                         Назад
+                       </button>
+                       <button 
+                         type="submit" 
+                         className="flex-1 px-4 py-3 bg-brand-primary hover:bg-brand-primary-hover text-white rounded-xl font-bold transition-all shadow-md active:scale-95 flex items-center justify-center text-[13px]"
+                       >
+                         Подтвердить оплату
+                       </button>
+                    </div>
+                 </form>
+              </>
+            )}
           </div>
         </div>
       )}

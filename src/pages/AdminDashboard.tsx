@@ -843,7 +843,7 @@ export default function AdminDashboard() {
                           </div>
                         )}
                       </div>
-                      <div className="space-y-1">
+                      <div className="space-y-1 mb-4">
                         {order.items.map((it:any) => (
                            <div key={`${it.id}-${it.size}-${it.color}`} className="text-[13px] text-text-main flex justify-between">
                              <span>
@@ -858,26 +858,37 @@ export default function AdminDashboard() {
                            </div>
                         ))}
                       </div>
+                      <div className="flex items-center gap-2 pt-3 border-t border-border-color/50">
+                        <span className="text-[11px] font-bold text-text-muted uppercase tracking-wider">Статус:</span>
+                        <select 
+                          value={order.status || 'active'}
+                          onChange={(e) => handleUpdateOrderStatus(order.id, e.target.value)}
+                          className={clsx(
+                             "text-[12px] font-bold px-2 py-1 rounded-lg border focus:outline-none appearance-none cursor-pointer",
+                             order.status === 'receipt_uploaded' ? "bg-[#F59E0B]/10 text-[#F59E0B] border-[#F59E0B]/20" :
+                             order.status === 'payment_confirmed' ? "bg-brand-success/10 text-brand-success border-brand-success/20" :
+                             order.status === 'processing' ? "bg-brand-primary/10 text-brand-primary border-brand-primary/20" :
+                             order.status === 'completed' ? "bg-text-main/10 text-text-main border-border-color" :
+                             order.status === 'cancelled' || order.status === 'rejected' ? "bg-brand-danger/10 text-brand-danger border-brand-danger/20" :
+                             "bg-surface text-text-muted border-border-color"
+                          )}
+                        >
+                          <option value="active">Новый</option>
+                          <option value="receipt_uploaded">Ожидает оплаты</option>
+                          <option value="payment_confirmed">Оплачен</option>
+                          <option value="processing">В обработке</option>
+                          <option value="completed">Выполнен</option>
+                          <option value="cancelled">Отменен</option>
+                          <option value="rejected">Отклонен (оплата)</option>
+                        </select>
+                      </div>
                     </div>
 
-                    {order.paymentMethod === 'Bank Card' && (
+                    {order.paymentMethod === 'Bank Card' && order.receiptImageBase64 && (
                       <div className="bg-surface-alt p-4 rounded-xl border border-border-color mb-4">
-                        <div className="flex justify-between items-center mb-3">
-                           <div className="text-[12px] font-bold text-text-muted uppercase tracking-wider">Статус оплаты</div>
-                           <div className={clsx(
-                             "text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider",
-                             order.status === 'receipt_uploaded' ? "bg-[#F59E0B]/10 text-[#F59E0B]" :
-                             order.status === 'rejected' ? "bg-brand-danger/10 text-brand-danger" :
-                             "bg-brand-success/10 text-brand-success"
-                           )}>
-                             {order.status === 'receipt_uploaded' ? 'Чек загружен' : order.status === 'rejected' ? 'Отклонено' : 'Подтверждено'}
-                           </div>
-                        </div>
-
-                        {order.receiptImageBase64 && (
-                          <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center justify-between mb-3">
                             <div className="text-[13px] font-bold text-text-main flex items-center gap-2">
-                               <FileText className="w-4 h-4 text-text-muted" /> Чек добавлен
+                               <FileText className="w-4 h-4 text-text-muted" /> Чек оплаты
                             </div>
                             <button
                                onClick={() => setSelectedReceipt(order.receiptImageBase64!)}
@@ -885,8 +896,7 @@ export default function AdminDashboard() {
                             >
                                Смотреть
                             </button>
-                          </div>
-                        )}
+                        </div>
 
                         {order.status === 'receipt_uploaded' && (
                           <div className="flex gap-2">
@@ -894,7 +904,7 @@ export default function AdminDashboard() {
                                onClick={() => handleUpdateOrderStatus(order.id, 'payment_confirmed')}
                                className="flex-1 bg-brand-success/10 text-brand-success hover:bg-brand-success/20 border border-brand-success/20 px-3 py-2 rounded-lg text-[12px] font-bold transition-colors"
                              >
-                               Принять
+                               Подтвердить
                              </button>
                              <button
                                onClick={() => handleUpdateOrderStatus(order.id, 'rejected')}
@@ -1331,8 +1341,12 @@ export default function AdminDashboard() {
                </button>
             </div>
             <div className="p-6">
-               <div className="rounded-[20px] overflow-hidden border border-border-color bg-surface-alt">
-                 <img src={selectedReceipt} alt="Receipt" className="w-full h-auto max-h-[60vh] object-contain" />
+               <div className="rounded-[20px] overflow-hidden border border-border-color bg-surface-alt flex flex-col items-center justify-center min-h-[300px]">
+                 {selectedReceipt.startsWith('data:application/pdf') ? (
+                   <iframe src={selectedReceipt} className="w-full h-[60vh]" title="PDF Receipt" />
+                 ) : (
+                   <img src={selectedReceipt} alt="Receipt" className="w-full h-auto max-h-[60vh] object-contain" />
+                 )}
                </div>
             </div>
           </div>

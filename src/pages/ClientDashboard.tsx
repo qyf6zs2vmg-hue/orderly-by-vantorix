@@ -54,17 +54,27 @@ export default function ClientDashboard() {
 
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<any | null>(null);
+  const [modalQuantity, setModalQuantity] = useState(1);
   const [clientDetails, setClientDetails] = useState<{name: string; phone: string; locationStr: string; latitude: number | null; longitude: number | null}>({ name: '', phone: '', locationStr: '', latitude: null, longitude: null });
   const [checkoutReceiptImage, setCheckoutReceiptImage] = useState<string | null>(null);
   
   useEffect(() => {
     if (appUser) {
+        let savedDetails = { name: '', phone: '', locationStr: '', latitude: null, longitude: null };
+        if (appUser.isAnonymous) {
+            const stored = localStorage.getItem('relible_client_details');
+            if (stored) {
+                try {
+                    savedDetails = JSON.parse(stored);
+                } catch(e) {}
+            }
+        }
         setClientDetails({
-            name: appUser.name || '',
-            phone: appUser.phone || '',
-            locationStr: appUser.locationStr || '',
-            latitude: appUser.latitude || null,
-            longitude: appUser.longitude || null
+            name: appUser.name || savedDetails.name || '',
+            phone: appUser.phone || savedDetails.phone || '',
+            locationStr: appUser.locationStr || savedDetails.locationStr || '',
+            latitude: appUser.latitude || savedDetails.latitude || null,
+            longitude: appUser.longitude || savedDetails.longitude || null
         });
     }
   }, [appUser]);
@@ -120,6 +130,17 @@ export default function ClientDashboard() {
         return prev.map(i => (i.product.id === product.id && i.size === size && i.color === color) ? {...i, quantity: i.quantity + 1} : i);
       }
       return [...prev, { product, quantity: 1, size, color }];
+    });
+  };
+
+  const addToCartMulti = (product: any, addQty: number, size?: string, color?: string) => {
+    setCart(prev => {
+      const existing = prev.find(i => i.product.id === product.id && i.size === size && i.color === color);
+      if (existing) {
+        const newTotal = Math.min(product.stock, existing.quantity + addQty);
+        return prev.map(i => (i.product.id === product.id && i.size === size && i.color === color) ? {...i, quantity: newTotal} : i);
+      }
+      return [...prev, { product, quantity: Math.min(product.stock, addQty), size, color }];
     });
   };
 
@@ -201,17 +222,27 @@ export default function ClientDashboard() {
 
     try {
       // Update user with these details if they don't have them
-      if (!appUser.phone || !appUser.locationStr || !appUser.latitude) {
-          const updateData: any = {
-             phone: clientDetails.phone,
-             locationStr: clientDetails.locationStr,
-             latitude: clientDetails.latitude,
-             longitude: clientDetails.longitude,
-          };
-          if (clientDetails.name) {
-              updateData.name = clientDetails.name;
-          }
-          await updateDoc(doc(db, 'users', appUser.uid), updateData);
+      if (appUser.isAnonymous) {
+          localStorage.setItem('relible_client_details', JSON.stringify({
+              name: clientDetails.name,
+              phone: clientDetails.phone,
+              locationStr: clientDetails.locationStr,
+              latitude: clientDetails.latitude,
+              longitude: clientDetails.longitude
+          }));
+      } else {
+        if (!appUser.phone || !appUser.locationStr || !appUser.latitude) {
+            const updateData: any = {
+               phone: clientDetails.phone,
+               locationStr: clientDetails.locationStr,
+               latitude: clientDetails.latitude,
+               longitude: clientDetails.longitude,
+            };
+            if (clientDetails.name) {
+                updateData.name = clientDetails.name;
+            }
+            await updateDoc(doc(db, 'users', appUser.uid), updateData);
+        }
       }
 
       await addDoc(collection(db, 'orders'), {
@@ -261,13 +292,23 @@ export default function ClientDashboard() {
     if (!appUser?.uid) return;
     try {
       setCheckoutState('processing');
-      await updateDoc(doc(db, 'users', appUser.uid), {
-        name: clientDetails.name,
-        phone: clientDetails.phone,
-        locationStr: clientDetails.locationStr,
-        latitude: clientDetails.latitude,
-        longitude: clientDetails.longitude,
-      });
+      if (appUser.isAnonymous) {
+          localStorage.setItem('relible_client_details', JSON.stringify({
+              name: clientDetails.name,
+              phone: clientDetails.phone,
+              locationStr: clientDetails.locationStr,
+              latitude: clientDetails.latitude,
+              longitude: clientDetails.longitude
+          }));
+      } else {
+        await updateDoc(doc(db, 'users', appUser.uid), {
+          name: clientDetails.name,
+          phone: clientDetails.phone,
+          locationStr: clientDetails.locationStr,
+          latitude: clientDetails.latitude,
+          longitude: clientDetails.longitude,
+        });
+      }
       setCheckoutState('success');
       setTimeout(() => setCheckoutState('idle'), 2000);
     } catch (err) {
@@ -280,12 +321,8 @@ export default function ClientDashboard() {
     if (cart.length === 0) return;
     if (!appUser?.businessId) return;
 
-    if (!appUser.name || !appUser.phone || !appUser.locationStr || !!business?.paymentSettings?.enableBankCard) {
-       setIsDetailsModalOpen(true);
-       return;
-    }
-    
-    await submitOrderWithDetails();
+    setCheckoutReceiptImage(null);
+    setIsDetailsModalOpen(true);
   };
 
   const handleMarkReceived = async (orderId: string) => {
@@ -447,7 +484,7 @@ export default function ClientDashboard() {
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 pb-24 xl:pb-0">
                 {products.filter(p => !searchQuery || p.name.toLowerCase().includes(searchQuery.toLowerCase())).map(product => {
                   return (
-                    <div key={product.id} onClick={() => setSelectedProduct(product)} className="bg-surface p-3 rounded-[16px] border border-border-color hover:border-brand-accent/30 hover:shadow-[0_8px_30px_rgb(37,99,235,0.06)] flex flex-col gap-3 shadow-sm group transition-all duration-300 cursor-pointer">
+                    <div key={product.id} onClick={() => { setSelectedProduct(product); setModalQuantity(1); }} className="bg-surface p-3 rounded-[16px] border border-border-color hover:border-brand-accent/30 hover:shadow-[0_8px_30px_rgb(37,99,235,0.06)] flex flex-col gap-3 shadow-sm group transition-all duration-300 cursor-pointer">
                       {product.imageUrl ? (
                         <div className="w-full aspect-square bg-surface-alt rounded-[12px] overflow-hidden border border-border-color shrink-0 relative">
                           <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
@@ -465,8 +502,9 @@ export default function ClientDashboard() {
                         <h3 className="text-text-main font-bold text-[13px] leading-tight mb-1 line-clamp-2">{product.name}</h3>
                         
                         <div className="mt-auto pt-2 flex flex-col gap-2">
-                          <div className="text-text-main font-black text-[14px] tracking-tight">
-                            {(product.price || 0).toLocaleString()} UZS
+                          <div className="flex justify-between items-center text-text-main font-black text-[14px] tracking-tight">
+                            <span>{(product.price || 0).toLocaleString()} UZS</span>
+                            {product.stock > 0 && <span className="text-[10px] font-bold text-text-muted">{product.stock} шт.</span>}
                           </div>
                           
                           {product.stock > 0 ? (
@@ -1065,48 +1103,49 @@ export default function ClientDashboard() {
                          (()=>{
                            const currentSize = selectedOptions[selectedProduct.id]?.size || (selectedProduct.sizes?.length ? selectedProduct.sizes[0] : undefined);
                            const currentColor = selectedOptions[selectedProduct.id]?.color || (selectedProduct.colors?.length ? selectedProduct.colors[0] : undefined);
-                           const cartItem = cart.find(i => i.product.id === selectedProduct.id && i.size === currentSize && i.color === currentColor);
-                           const quantity = cartItem ? cartItem.quantity : 0;
-
-                           if (quantity > 0) {
-                             return (
-                               <div className="flex items-center gap-2 bg-surface-alt/80 border border-border-color/50 rounded-xl p-1.5 shadow-inner w-full h-[50px]">
-                                   <button 
-                                     onClick={(e) => { e.stopPropagation(); removeFromCart(selectedProduct, currentSize, currentColor); }}
-                                     className="p-2.5 rounded-lg text-text-main hover:bg-surface hover:text-brand-danger shadow-sm transition-all"
-                                   >
-                                     <Minus className="w-5 h-5" />
-                                   </button>
-                                   <input 
-                                     type="number"
-                                     value={quantity || ''}
-                                     onChange={(e) => updateQuantity(selectedProduct, e.target.value, currentSize, currentColor)}
-                                     onClick={(e) => e.stopPropagation()}
-                                     placeholder="0"
-                                     className="text-[16px] font-bold flex-1 text-center text-text-main bg-transparent border-none focus:ring-0 px-0.5 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                                   />
-                                   <button 
-                                     onClick={(e) => { e.stopPropagation(); addToCart(selectedProduct, currentSize, currentColor); }}
-                                     className={clsx(
-                                       "p-2.5 rounded-lg transition-all",
-                                       quantity >= selectedProduct.stock ? "text-text-muted cursor-not-allowed opacity-30" : "text-text-main hover:bg-surface hover:text-brand-accent shadow-sm"
-                                     )}
-                                     disabled={quantity >= selectedProduct.stock}
-                                   >
-                                     <Plus className="w-5 h-5" />
-                                   </button>
+                           
+                           return (
+                             <div className="flex flex-col gap-3">
+                               <div className="flex items-center gap-3">
+                                 <div className="flex items-center justify-between border border-border-color rounded-xl p-1 bg-surface-alt w-[110px] shrink-0">
+                                     <button 
+                                       onClick={(e) => { e.stopPropagation(); setModalQuantity(Math.max(1, modalQuantity - 1)); }}
+                                       className="p-2 rounded-lg text-text-main hover:bg-surface hover:text-brand-danger shadow-sm transition-all"
+                                     >
+                                       <Minus className="w-5 h-5" />
+                                     </button>
+                                     <input 
+                                       type="number"
+                                       value={modalQuantity}
+                                       onChange={(e) => setModalQuantity(Math.min(selectedProduct.stock, Math.max(1, parseInt(e.target.value) || 1)))}
+                                       onClick={(e) => e.stopPropagation()}
+                                       className="text-[16px] font-bold flex-1 w-full text-center text-text-main bg-transparent border-none focus:ring-0 px-0.5 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                     />
+                                     <button 
+                                       onClick={(e) => { e.stopPropagation(); setModalQuantity(Math.min(selectedProduct.stock, modalQuantity + 1)); }}
+                                       className={clsx(
+                                         "p-2 rounded-lg transition-all",
+                                         modalQuantity >= selectedProduct.stock ? "text-text-muted cursor-not-allowed opacity-30" : "text-text-main hover:bg-surface hover:text-brand-accent shadow-sm"
+                                       )}
+                                       disabled={modalQuantity >= selectedProduct.stock}
+                                     >
+                                       <Plus className="w-5 h-5" />
+                                     </button>
+                                 </div>
+                                 <button 
+                                   onClick={(e) => { 
+                                     e.stopPropagation(); 
+                                     addToCartMulti(selectedProduct, modalQuantity, currentSize, currentColor);
+                                     setModalQuantity(1);
+                                     setSelectedProduct(null);
+                                   }}
+                                   className="flex-1 bg-brand-primary hover:bg-brand-primary-hover text-white py-3.5 rounded-xl text-[14px] font-bold transition-all shadow-md active:scale-95"
+                                 >
+                                   Добавить в корзину
+                                 </button>
                                </div>
-                             )
-                           } else {
-                             return (
-                               <button 
-                                 onClick={(e) => { e.stopPropagation(); addToCart(selectedProduct, currentSize, currentColor); }}
-                                 className="w-full bg-brand-primary hover:bg-brand-primary-hover text-white py-3.5 rounded-xl text-[14px] font-bold transition-all shadow-md active:scale-95"
-                               >
-                                 Добавить в корзину
-                               </button>
-                             )
-                           }
+                             </div>
+                           )
                          })()
                        ) : (
                          <div className="w-full bg-brand-danger/10 text-brand-danger border border-brand-danger/20 text-center py-3.5 rounded-xl text-[14px] font-bold">

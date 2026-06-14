@@ -342,7 +342,7 @@ export default function AdminDashboard() {
         
         {/* User Profile Summary in Sidebar */}
         <div className="flex items-center gap-2 px-3 mb-8">
-           <img src="https://lh3.googleusercontent.com/d/1bV4yXsTNYUMjZ7Qe5dYuXf5R6B_xNfop" alt="Relible Commerce" referrerPolicy="no-referrer" className="w-8 h-auto object-contain" />
+           <img src="https://lh3.googleusercontent.com/d/1uxQ3yk4tozhUFrVZbP5oUqMUkLY690HB" alt="Relible Commerce" referrerPolicy="no-referrer" className="w-8 h-auto object-contain" />
            <span className="font-bold tracking-widest uppercase text-[15px] text-text-main">Relible Commerce</span>
         </div>
 

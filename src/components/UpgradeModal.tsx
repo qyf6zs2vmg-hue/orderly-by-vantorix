@@ -51,7 +51,11 @@ export function UpgradeModal({ isOpen, onClose }: UpgradeModalProps) {
                         <Check className="w-5 h-5 text-green-500" />
                     </li>
                     <li className="flex items-center justify-between">
-                        <span className="text-text-muted">Фотографии товаров</span>
+                        <span className="text-text-muted">Несколько фотографии товаров</span>
+                        <X className="w-5 h-5 text-text-muted" />
+                    </li>
+                    <li className="flex items-center justify-between">
+                        <span className="text-text-muted">Видео товара</span>
                         <X className="w-5 h-5 text-text-muted" />
                     </li>
                 </ul>
@@ -94,7 +98,11 @@ export function UpgradeModal({ isOpen, onClose }: UpgradeModalProps) {
                         <Check className="w-5 h-5 text-green-500" />
                     </li>
                     <li className="flex items-center justify-between">
-                        <span className="text-text-muted">Фотографии товаров</span>
+                        <span className="text-text-muted">Несколько фотографии товаров</span>
+                        <Check className="w-5 h-5 text-green-500" />
+                    </li>
+                    <li className="flex items-center justify-between">
+                        <span className="text-text-muted">Видео товара</span>
                         <Check className="w-5 h-5 text-green-500" />
                     </li>
                 </ul>

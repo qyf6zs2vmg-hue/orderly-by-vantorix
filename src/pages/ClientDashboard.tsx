@@ -331,7 +331,7 @@ export default function ClientDashboard() {
           
         {/* User Profile Summary in Sidebar */}
         <div className="flex items-center gap-2 px-3 mb-8">
-           <img src="https://lh3.googleusercontent.com/d/1bV4yXsTNYUMjZ7Qe5dYuXf5R6B_xNfop" alt="Relible Commerce" referrerPolicy="no-referrer" className="w-8 h-auto object-contain" />
+           <img src="https://lh3.googleusercontent.com/d/1uxQ3yk4tozhUFrVZbP5oUqMUkLY690HB" alt="Relible Commerce" referrerPolicy="no-referrer" className="w-8 h-auto object-contain" />
            <span className="font-bold tracking-widest uppercase text-[15px] text-text-main">Relible Commerce</span>
         </div>
 
@@ -512,9 +512,9 @@ export default function ClientDashboard() {
               <div className="xl:hidden fixed inset-0 z-40 bg-bg-base/80 backdrop-blur-sm" onClick={() => setIsMobileCartOpen(false)}></div>
             )}
             <div className={clsx(
-                "bg-surface shadow-[0_4px_12px_rgba(16,24,40,0.03)] border-border-color flex-col h-fit shrink-0 transition-transform duration-300",
-                "xl:flex xl:w-96 xl:rounded-[16px] xl:border xl:p-6 xl:sticky xl:top-6 xl:z-0 xl:translate-y-0",
-                !isMobileCartOpen ? "hidden xl:flex" : "fixed bottom-0 left-0 right-0 z-50 rounded-t-[32px] border-t p-6 max-h-[85vh] overflow-hidden flex shadow-2xl animate-in slide-in-from-bottom-full"
+                "bg-surface shadow-[0_4px_12px_rgba(16,24,40,0.03)] border-border-color flex-col shrink-0 transition-transform duration-300",
+                "xl:flex xl:w-96 xl:rounded-[16px] xl:border xl:p-6 xl:sticky xl:top-6 xl:z-0 xl:translate-y-0 xl:h-fit",
+                !isMobileCartOpen ? "hidden xl:flex" : "fixed bottom-0 left-0 right-0 z-50 rounded-t-[32px] border-t p-6 pb-8 flex shadow-2xl animate-in slide-in-from-bottom-full h-auto max-h-[90vh]"
             )}>
               {/* Close Button on Mobile */}
               {isMobileCartOpen && (
@@ -523,7 +523,7 @@ export default function ClientDashboard() {
                 </div>
               )}
 
-              <div className="flex items-center justify-between mb-6 pb-4 border-b border-border-color">
+              <div className="flex items-center justify-between mb-6 pb-4 border-b border-border-color shrink-0">
                 <h2 className="text-[16px] font-bold text-text-main flex items-center">
                   <ShoppingCart className="w-[18px] h-[18px] mr-2 text-text-muted opacity-80" />
                   Ваша корзина
@@ -541,8 +541,8 @@ export default function ClientDashboard() {
                   <span className="text-[13px] font-medium">Корзина пуста</span>
                 </div>
               ) : (
-                <div className="flex flex-col flex-1 h-full max-h-fit min-h-0">
-                  <div className="space-y-4 mb-6 custom-scrollbar shrink overflow-y-auto pr-2" style={{ maxHeight: isMobileCartOpen ? 'inherit' : '45vh' }}>
+                <div className="flex flex-col w-full">
+                  <div className="space-y-4 mb-6 custom-scrollbar overflow-y-auto pr-2" style={{ maxHeight: isMobileCartOpen ? '60vh' : '45vh' }}>
                     {cart.map(item => (
                       <div key={`${item.product.id}-${item.size}-${item.color}`} className="flex items-center justify-between">
                         <div className="flex-1 pr-2">
@@ -583,7 +583,7 @@ export default function ClientDashboard() {
                     ))}
                   </div>
                   
-                  <div className="border-t border-border-color pt-4 mb-4 mt-auto">
+                  <div className="border-t border-border-color pt-4 mb-4 mt-auto shrink-0">
                     <div className="flex justify-between items-center">
                       <span className="text-[13px] font-medium text-text-muted">Итого:</span>
                       <span className="text-text-main font-bold text-[20px] tracking-tight">{cartTotal.toLocaleString()} UZS</span>

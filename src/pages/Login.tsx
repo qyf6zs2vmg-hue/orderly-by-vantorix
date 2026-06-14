@@ -88,7 +88,7 @@ export default function Login() {
       >
         <div className="bg-surface/80 backdrop-blur-xl rounded-[24px] p-6 sm:p-10 border border-white/20 flex flex-col items-center">
           
-          <img src="https://lh3.googleusercontent.com/d/1bV4yXsTNYUMjZ7Qe5dYuXf5R6B_xNfop" alt="Relible Commerce" referrerPolicy="no-referrer" className="w-24 h-auto mb-2 object-contain" />
+          <img src="https://lh3.googleusercontent.com/d/1uxQ3yk4tozhUFrVZbP5oUqMUkLY690HB" alt="Relible Commerce" referrerPolicy="no-referrer" className="w-24 h-auto mb-2 object-contain" />
           <h1 className="text-2xl font-black text-text-main tracking-tight mb-8">Relible Commerce</h1>
 
           <motion.div 

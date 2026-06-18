@@ -16,7 +16,7 @@ export const translations = {
       trustedBy: 'Интеграция с вашей инфраструктурой',
       
       overviewTitle: 'Управление оптовыми заказами',
-      overviewSubtitle: 'Как работает Relible Commerce',
+      overviewSubtitle: 'Как работает Unimea Commerce',
       step1Title: '1. Настройка каталога',
       step1Desc: 'Создайте собственную среду: загружайте товары, управляйте прайс-листами и контролируйте актуальные запасы на складе.',
       step2Title: '2. Приглашение клиентов',
@@ -36,9 +36,9 @@ export const translations = {
       featWorkflowDesc: 'Вся информация клиентов и статусы заказов хранятся в одном безопасном и удобном месте.',
 
       problemsTitle: 'Почему пора отказаться от ручных заказов',
-      problemsSubtitle: 'Ручной контроль против платформы Relible Commerce',
+      problemsSubtitle: 'Ручной контроль против платформы Unimea Commerce',
       manualApproach: 'Ручные B2B заказы (Без системы)',
-      digitalApproach: 'С платформой Relible Commerce',
+      digitalApproach: 'С платформой Unimea Commerce',
       prob1: 'Ошибки и путаница при вводе заказов',
       prob2: 'Несоответствие запасов: клиенты заказывают то, чего уже нет',
       prob3: 'Долгие ответы клиентам и задержки в обработке сообщений',
@@ -58,7 +58,7 @@ export const translations = {
       privacyPolicy: 'Политика конфиденциальности',
       termsOfService: 'Условия обслуживания',
       cookiesSettings: 'Настройки файлов cookie',
-      footerCopyright: 'Relible Commerce © {year} — CREATED BY RELIBLE LABS',
+      footerCopyright: 'Unimea Commerce © {year} — CREATED BY UNIMEA LABS',
       footerDesc: 'Специализированная B2B платформа для централизованного управления оптовыми заказами.',
       
       systematicFlow: 'Синхронизация заказов',
@@ -151,7 +151,7 @@ export const translations = {
       trustedBy: 'Biznes infratuzilmangiz bilan integratsiya',
       
       overviewTitle: 'Ulgurji buyurtmalarni boshqarish',
-      overviewSubtitle: 'Relible Commerce qanday ishlaydi',
+      overviewSubtitle: 'Unimea Commerce qanday ishlaydi',
       step1Title: '1. Katalogni sozlash',
       step1Desc: 'O\'z muhitingizni yarating: mahsulotlarni yuklang, narxlarni boshqaring va ombordagi joriy zaxiralarni nazorat qiling.',
       step2Title: '2. Mijozlarni taklif qilish',
@@ -171,9 +171,9 @@ export const translations = {
       featWorkflowDesc: 'Barcha mijozlar ma\'lumotlari, buyurtmalar tarixi va ishlash holatlari bitta xavfsiz joyda saqlanadi.',
 
       problemsTitle: 'Nima uchun qo\'lda buyurtma olishdan voz kechish vaqti keldi',
-      problemsSubtitle: 'Qo\'lda boshqarish Relible Commerce platformasiga qarshi',
+      problemsSubtitle: 'Qo\'lda boshqarish Unimea Commerce platformasiga qarshi',
       manualApproach: 'Tizimsiz qo\'lda B2B buyurtmalari',
-      digitalApproach: 'Relible Commerce platformasi bilan',
+      digitalApproach: 'Unimea Commerce platformasi bilan',
       prob1: 'Buyurtma kiritishda xatolar va tushunmovchiliklar',
       prob2: 'Zaxiralardagi nomuvofiqlik: mijozlar yo\'q narsaga buyurtma beradi',
       prob3: 'Mijozlarga uzoq javob berish va jarayondagi kechikishlar',
@@ -193,7 +193,7 @@ export const translations = {
       privacyPolicy: 'Maxfiylik siyosati',
       termsOfService: 'Xizmat ko\'rsatish shartlari',
       cookiesSettings: 'Cookie sozlamalari',
-      footerCopyright: 'Relible Commerce © {year} — CREATED BY RELIBLE LABS',
+      footerCopyright: 'Unimea Commerce © {year} — CREATED BY UNIMEA LABS',
       footerDesc: 'Ulgurji buyurtmalar, qoldiqlar va mijozlarni boshqarish uchun ixtisoslashtirilgan B2B platformasi.',
       
       systematicFlow: 'Buyurtmalar sinxronizatsiyasi',

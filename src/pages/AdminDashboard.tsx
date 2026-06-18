@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { collection, onSnapshot, query, where, doc, updateDoc, deleteDoc, setDoc, addDoc, getDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { useAuth } from '../lib/AuthContext';
@@ -34,6 +35,15 @@ export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<'invites' | 'requests' | 'users' | 'orders' | 'products' | 'settings' | 'payments'>('products');
   const [isSecurityDialogOpen, setIsSecurityDialogOpen] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [showGuestModal, setShowGuestModal] = useState(false);
+  
+  const requireAuth = () => {
+    if (!appUser) {
+      setShowGuestModal(true);
+      return false;
+    }
+    return true;
+  };
   
   const [invites, setInvites] = useState<any[]>([]);
   const [publicDomainInput, setPublicDomainInput] = useState('');
@@ -41,6 +51,7 @@ export default function AdminDashboard() {
   const publicInvite = invites.find(inv => inv.isPublicLink);
 
   const handleCreatePublicLink = async () => {
+    if (!requireAuth()) return;
     if (!publicDomainInput.trim() || !appUser?.businessId) return;
     const slug = publicDomainInput.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '');
     if (!slug) return;
@@ -71,11 +82,13 @@ export default function AdminDashboard() {
   };
 
   const handleTogglePublicLinkBlock = async () => {
+     if (!requireAuth()) return;
      if (!publicInvite) return;
      await updateDoc(doc(db, 'invites', publicInvite.id), { blocked: !publicInvite.blocked });
   };
 
   const handleDeletePublicLink = async () => {
+     if (!requireAuth()) return;
      if (!publicInvite) return;
      if (window.confirm('Вы уверены что хотите удалить ссылку? Клиенты больше не смогут присоединиться по старой ссылке.')) {
          await deleteDoc(doc(db, 'invites', publicInvite.id));
@@ -118,8 +131,35 @@ export default function AdminDashboard() {
   const [selectedReceipt, setSelectedReceipt] = useState<string | null>(null);
 
   const handleUpdateOrderStatus = async (orderId: string, status: string) => {
+    if (!requireAuth()) return;
     try {
-      await updateDoc(doc(db, 'orders', orderId), { status });
+      const order = orders.find(o => o.id === orderId);
+      if (!order) return;
+      
+      const updates: any = { status };
+      
+      // Subtract stock only if we haven't done it yet and the status is a confirmed or processing state
+      if (!order.isStockSubtracted && ['payment_confirmed', 'processing', 'completed'].includes(status)) {
+        updates.isStockSubtracted = true;
+        for (const item of order.items) {
+          if (item.id) {
+            try {
+               // Find the current product to get latest stock
+               const prodDoc = await getDoc(doc(db, 'products', item.id));
+               if (prodDoc.exists()) {
+                  const currentStock = prodDoc.data().stock || 0;
+                  await updateDoc(doc(db, 'products', item.id), {
+                    stock: Math.max(0, currentStock - item.quantity)
+                  });
+               }
+            } catch (e) {
+               console.error("Failed to update stock", e);
+            }
+          }
+        }
+      }
+
+      await updateDoc(doc(db, 'orders', orderId), updates);
     } catch (e) {
       console.error("Failed to update status", e);
     }
@@ -167,6 +207,7 @@ export default function AdminDashboard() {
   }, [appUser]);
 
   const handleCreateInvite = async () => {
+    if (!requireAuth()) return;
     if (!appUser?.businessId) return;
     if (appUser?.plan_type !== 'pro' && invites.length >= 1) {
       setShowUpgradeModal(true);
@@ -182,6 +223,7 @@ export default function AdminDashboard() {
   };
 
   const handleBlockInvite = async (inviteId: string) => {
+    if (!requireAuth()) return;
     try {
       await updateDoc(doc(db, 'invites', inviteId), { blocked: true });
     } catch (error) {
@@ -190,22 +232,27 @@ export default function AdminDashboard() {
   };
 
   const handleApproveUser = async (userId: string) => {
+    if (!requireAuth()) return;
     await updateDoc(doc(db, 'users', userId), { status: 'active' });
   };
 
   const handleRejectUser = async (userId: string) => {
+    if (!requireAuth()) return;
     await deleteDoc(doc(db, 'users', userId));
   };
 
   const handleBlockUser = async (userId: string) => {
+    if (!requireAuth()) return;
     await updateDoc(doc(db, 'users', userId), { status: 'blocked' });
   };
   
   const handleUnblockUser = async (userId: string) => {
+    if (!requireAuth()) return;
     await updateDoc(doc(db, 'users', userId), { status: 'active' });
   };
 
   const handleDeleteOrder = async (orderId: string) => {
+    if (!requireAuth()) return;
     if (confirm('Вы уверены, что хотите удалить или скрыть этот заказ? Документ будет удален из базы данных.')) {
       try {
         await deleteDoc(doc(db, 'orders', orderId));
@@ -216,6 +263,7 @@ export default function AdminDashboard() {
   };
 
   const handleSaveEdit = async () => {
+    if (!requireAuth()) return;
     if (!editingClient) return;
     await updateDoc(doc(db, 'users', editingClient.id), {
       name: editingClient.name
@@ -245,6 +293,7 @@ export default function AdminDashboard() {
 
   const handleAddProduct = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!requireAuth()) return;
     if (!appUser?.businessId) return;
     if (appUser?.plan_type !== 'pro' && products.length >= 20) {
       setShowUpgradeModal(true);
@@ -275,6 +324,7 @@ export default function AdminDashboard() {
   const [savePaymentSuccess, setSavePaymentSuccess] = useState(false);
 
   const handleSavePaymentSettings = async () => {
+    if (!requireAuth()) return;
     if (!appUser?.businessId) return;
     setIsSavingPayments(true);
     setSavePaymentSuccess(false);
@@ -293,6 +343,7 @@ export default function AdminDashboard() {
 
   const handleEditProductSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!requireAuth()) return;
     if (!editingProduct) return;
     try {
       await updateDoc(doc(db, 'products', editingProduct.id), {
@@ -314,6 +365,7 @@ export default function AdminDashboard() {
   };
 
   const handleDeleteProduct = async (productId: string) => {
+    if (!requireAuth()) return;
     if (!window.confirm('Вы уверены, что хотите удалить этот товар?')) return;
     try {
       await deleteDoc(doc(db, 'products', productId));
@@ -342,8 +394,10 @@ export default function AdminDashboard() {
         
         {/* User Profile Summary in Sidebar */}
         <div className="flex items-center gap-2 px-3 mb-8">
-           <img src="https://lh3.googleusercontent.com/d/1uxQ3yk4tozhUFrVZbP5oUqMUkLY690HB" alt="Relible Commerce" referrerPolicy="no-referrer" className="w-8 h-auto object-contain" />
-           <span className="font-bold tracking-widest uppercase text-[15px] text-text-main">Relible Commerce</span>
+           <div className="flex bg-brand-primary p-2 rounded-xl shadow-lg">
+             <Store className="w-5 h-5 text-white" />
+           </div>
+           <span className="font-bold tracking-widest uppercase text-[15px] text-text-main">Unimea Commerce</span>
         </div>
 
         <div className="flex items-center gap-3 px-3 mb-8">
@@ -444,7 +498,7 @@ export default function AdminDashboard() {
              <LogOut className="w-4 h-4 mr-2" /> {t.common.logout}
            </button>
            <div className="text-[10px] text-text-muted font-bold tracking-widest opacity-60 uppercase text-center px-2">
-             Relible Commerce © {new Date().getFullYear()} — CREATED BY RELIBLE LABS
+             Unimea Commerce © {new Date().getFullYear()} — CREATED BY UNIMEA LABS
            </div>
         </div>
       </div>
@@ -946,7 +1000,7 @@ export default function AdminDashboard() {
                   <h1 className="text-[24px] font-bold text-text-main tracking-tight">Товары</h1>
                   <p className="text-[13px] text-text-muted mt-1">Управление ассортиментом магазина</p>
                 </div>
-                <button onClick={() => setShowAddProduct(true)} className="bg-brand-primary text-white border border-transparent shadow-sm px-4 py-2 rounded-[10px] text-[13px] font-bold hover:bg-brand-primary-hover transition-all">
+                <button onClick={() => { if (!requireAuth()) return; setShowAddProduct(true); }} className="bg-brand-primary text-white border border-transparent shadow-sm px-4 py-2 rounded-[10px] text-[13px] font-bold hover:bg-brand-primary-hover transition-all">
                   Добавить товар
                 </button>
               </div>
@@ -1068,7 +1122,7 @@ export default function AdminDashboard() {
                                 <div className="flex items-center gap-2">
                                   <div className="flex items-center gap-1 bg-surface border border-border-color rounded-lg p-0.5 shadow-sm">
                                       <button 
-                                        onClick={async (e) => { e.stopPropagation(); await updateDoc(doc(db, 'products', product.id), { stock: Math.max(0, product.stock - 1) }); }}
+                                        onClick={async (e) => { e.stopPropagation(); if (!requireAuth()) return; await updateDoc(doc(db, 'products', product.id), { stock: Math.max(0, product.stock - 1) }); }}
                                         className="p-1 rounded text-text-muted hover:text-brand-danger hover:bg-surface-alt transition-colors"
                                       >
                                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M5 12h14"/></svg>
@@ -1078,13 +1132,14 @@ export default function AdminDashboard() {
                                         value={product.stock}
                                         onClick={e => e.stopPropagation()}
                                         onChange={async (e) => {
+                                          if (!requireAuth()) return;
                                           const v = parseInt(e.target.value) || 0;
                                           await updateDoc(doc(db, 'products', product.id), { stock: v });
                                         }}
                                         className="text-[12px] font-bold w-10 text-center text-text-main bg-transparent border-none focus:ring-0 p-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                       />
                                       <button 
-                                        onClick={async (e) => { e.stopPropagation(); await updateDoc(doc(db, 'products', product.id), { stock: product.stock + 1 }); }}
+                                        onClick={async (e) => { e.stopPropagation(); if (!requireAuth()) return; await updateDoc(doc(db, 'products', product.id), { stock: product.stock + 1 }); }}
                                         className="p-1 rounded text-text-muted hover:text-brand-primary hover:bg-surface-alt transition-colors"
                                       >
                                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 5v14M5 12h14"/></svg>
@@ -1488,6 +1543,32 @@ export default function AdminDashboard() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {showGuestModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-text-main/50 backdrop-blur-sm">
+          <div className="bg-surface rounded-[24px] p-8 max-w-sm w-full shadow-2xl border border-border-color flex flex-col items-center animate-in zoom-in-95">
+             <Store className="w-12 h-12 text-brand-primary mb-4" />
+             <h3 className="text-[20px] font-bold text-text-main mb-2 tracking-tight text-center">Создайте свой бизнес</h3>
+             <p className="text-[13px] text-text-muted text-center mb-6">
+                Вы находитесь в гостевом режиме просмотра интерфейса. Для создания товаров, ссылок и управления заказами, пожалуйста зарегистрируйтесь или войдите в аккаунт.
+             </p>
+             <div className="flex flex-col gap-3 w-full">
+                <Link to="/register" className="w-full text-center bg-brand-primary hover:bg-brand-primary-hover text-white py-3 rounded-xl font-bold shadow-md transition-all text-[13px]">
+                   Зарегистрироваться
+                </Link>
+                <Link to="/login" className="w-full text-center bg-surface-alt border border-border-color text-text-main hover:bg-surface py-3 rounded-xl font-bold transition-all text-[13px]">
+                   Войти
+                </Link>
+                <button
+                  onClick={() => setShowGuestModal(false)}
+                  className="w-full mt-2 text-center text-text-muted hover:text-text-main font-bold text-[13px] transition-colors"
+                >
+                  Продолжить просмотр
+                </button>
+             </div>
           </div>
         </div>
       )}

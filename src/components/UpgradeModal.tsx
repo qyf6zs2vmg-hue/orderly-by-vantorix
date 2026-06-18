@@ -20,7 +20,7 @@ export function UpgradeModal({ isOpen, onClose }: UpgradeModalProps) {
         
         <div className="text-center mb-8 mt-2">
             <h2 className="text-2xl md:text-3xl font-bold text-text-main mb-2">Выберите план</h2>
-            <p className="text-text-muted">Развивайте свой бизнес с Relible без ограничений</p>
+            <p className="text-text-muted">Развивайте свой бизнес с Unimea без ограничений</p>
         </div>
 
         <div className="grid md:grid-cols-2 gap-6 w-full">

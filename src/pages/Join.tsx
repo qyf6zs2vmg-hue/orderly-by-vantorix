@@ -321,7 +321,7 @@ export default function Join() {
           </button>
           <div className="bg-surface rounded-[24px] p-8 sm:p-10 shadow-[0_4px_12px_rgba(16,24,40,0.06)] border border-border-color">
              <h1 className="text-[22px] font-bold text-text-main tracking-tight mb-8">
-               {lang === 'RU' ? 'Политика конфиденциальности Relible Commerce' : 'Relible Commerce maxfiylik siyosati'}
+               {lang === 'RU' ? 'Политика конфиденциальности Unimea Commerce' : 'Unimea Commerce maxfiylik siyosati'}
              </h1>
              <div className="text-text-muted leading-relaxed text-[13px]">
                <PrivacyPolicyContent lang={lang} />

@@ -3,7 +3,7 @@ import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { auth, db } from '../lib/firebase';
 import { Link, useNavigate, Navigate } from 'react-router-dom';
-import { Lock, Mail, EyeOff } from 'lucide-react';
+import { Lock, Mail, EyeOff, Store } from 'lucide-react';
 import { useAuth } from '../lib/AuthContext';
 import { motion } from 'motion/react';
 
@@ -88,8 +88,10 @@ export default function Login() {
       >
         <div className="bg-surface/80 backdrop-blur-xl rounded-[24px] p-6 sm:p-10 border border-white/20 flex flex-col items-center">
           
-          <img src="https://lh3.googleusercontent.com/d/1uxQ3yk4tozhUFrVZbP5oUqMUkLY690HB" alt="Relible Commerce" referrerPolicy="no-referrer" className="w-24 h-auto mb-2 object-contain" />
-          <h1 className="text-2xl font-black text-text-main tracking-tight mb-8">Relible Commerce</h1>
+          <div className="flex bg-brand-primary p-3 rounded-2xl mb-4 shadow-lg">
+            <Store className="w-12 h-12 text-white" />
+          </div>
+          <h1 className="text-2xl font-black text-text-main tracking-tight mb-8">Unimea Commerce</h1>
 
           <motion.div 
             initial={{ opacity: 0 }}

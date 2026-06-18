@@ -53,6 +53,7 @@ export default function ClientDashboard() {
   const [checkoutState, setCheckoutState] = useState<'idle' | 'processing' | 'success'>('idle');
 
   const [checkoutStep, setCheckoutStep] = useState<'idle' | 'details' | 'payment'>('idle');
+  const [payingOrderId, setPayingOrderId] = useState<string | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<any | null>(null);
   const [modalQuantity, setModalQuantity] = useState(1);
   const [clientDetails, setClientDetails] = useState<{name: string; phone: string; locationStr: string; latitude: number | null; longitude: number | null}>({ name: '', phone: '', locationStr: '', latitude: null, longitude: null });
@@ -200,10 +201,30 @@ export default function ClientDashboard() {
        return;
     }
 
-    if (business?.paymentSettings?.enableBankCard) {
-      setCheckoutStep('payment');
-    } else {
-      submitOrderWithDetails();
+    submitOrderWithDetails();
+  };
+
+  const submitPaymentForOrder = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!payingOrderId || !checkoutReceiptImage) {
+        alert(lang === 'RU' ? 'Пожалуйста загрузите чек' : 'Iltimos, chekni yuklang');
+        return;
+    }
+    
+    setCheckoutState('processing');
+    try {
+        await updateDoc(doc(db, 'orders', payingOrderId), {
+            receiptImageBase64: checkoutReceiptImage,
+            status: 'receipt_uploaded'
+        });
+        setCheckoutStep('idle');
+        setCheckoutReceiptImage(null);
+        setPayingOrderId(null);
+        setCheckoutState('success');
+        setTimeout(() => setCheckoutState('idle'), 1500);
+    } catch (e) {
+        console.error(e);
+        setCheckoutState('idle');
     }
   };
 
@@ -214,11 +235,6 @@ export default function ClientDashboard() {
 
     if (!clientDetails.phone || !clientDetails.locationStr) {
        alert(lang === 'RU' ? 'Пожалуйста, заполните все данные для доставки.' : 'Iltimos, yetkazib berish ma\'lumotlarini to\'ldiring.');
-       return;
-    }
-    
-    if (business?.paymentSettings?.enableBankCard && !checkoutReceiptImage) {
-       alert(lang === 'RU' ? 'Для оформления заказа необходимо загрузить подтверждение оплаты.' : 'Buyurtma uchun to\'lov kvitansiyasini yuklash kerak.');
        return;
     }
 
@@ -270,23 +286,10 @@ export default function ClientDashboard() {
         items: orderItems,
         total: cartTotal,
         paymentMethod: business?.paymentSettings?.enableBankCard ? 'Bank Card' : 'Cash',
-        receiptImageBase64: business?.paymentSettings?.enableBankCard ? checkoutReceiptImage : null,
-        status: business?.paymentSettings?.enableBankCard ? 'receipt_uploaded' : 'active',
+        status: 'active',
+        isStockSubtracted: false,
         createdAt: Date.now()
       });
-
-      // Update product stocks
-      for (const item of cart) {
-        if (item.product.id) {
-          try {
-            await updateDoc(doc(db, 'products', item.product.id), {
-              stock: Math.max(0, item.product.stock - item.quantity)
-            });
-          } catch (e) {
-            console.error("Failed to update stock", e);
-          }
-        }
-      }
 
       setCart([]);
       
@@ -382,8 +385,10 @@ export default function ClientDashboard() {
           
         {/* User Profile Summary in Sidebar */}
         <div className="flex items-center gap-2 px-3 mb-8">
-           <img src="https://lh3.googleusercontent.com/d/1uxQ3yk4tozhUFrVZbP5oUqMUkLY690HB" alt="Relible Commerce" referrerPolicy="no-referrer" className="w-8 h-auto object-contain" />
-           <span className="font-bold tracking-widest uppercase text-[15px] text-text-main">Relible Commerce</span>
+           <div className="flex bg-brand-primary p-2 rounded-xl shadow-lg">
+             <Store className="w-5 h-5 text-white" />
+           </div>
+           <span className="font-bold tracking-widest uppercase text-[15px] text-text-main">Unimea Commerce</span>
         </div>
 
         <div className="flex items-center gap-3 px-3 mb-8">
@@ -443,7 +448,7 @@ export default function ClientDashboard() {
              <LogOut className="w-4 h-4 mr-2" /> {t.common.logout}
            </button>
            <div className="text-[10px] text-text-muted font-bold tracking-widest opacity-60 uppercase text-center px-2">
-             Relible Commerce © {new Date().getFullYear()} — CREATED BY RELIBLE LABS
+             Unimea Commerce © {new Date().getFullYear()} — CREATED BY UNIMEA LABS
            </div>
         </div>
       </div>
@@ -716,6 +721,17 @@ export default function ClientDashboard() {
                           order.status === 'rejected' ? 'Отклонен (оплата)' :
                           'Новый'}
                       </div>
+                      {(order.status === 'active' || order.status === 'rejected') && order.paymentMethod === 'Bank Card' && (
+                        <button
+                          onClick={() => {
+                            setPayingOrderId(order.id);
+                            setCheckoutStep('payment');
+                          }}
+                          className="px-4 py-1.5 bg-brand-primary text-white rounded-full text-[10px] font-black uppercase tracking-wider shadow-sm hover:opacity-90 transition-opacity"
+                        >
+                          Оплатить
+                        </button>
+                      )}
                       <button 
                         onClick={() => handleDeleteOrder(order.id)}
                         className="p-1.5 text-text-muted hover:text-brand-danger bg-surface-alt hover:bg-brand-danger/10 rounded-full transition-all border border-border-color hover:border-brand-danger/20"
@@ -968,7 +984,7 @@ export default function ClientDashboard() {
                        type="submit" 
                        className="flex-1 px-4 py-3 bg-text-main hover:bg-text-main/90 text-bg-base rounded-xl font-bold transition-all shadow-md active:scale-95 flex items-center justify-center text-[13px]"
                      >
-                       {business?.paymentSettings?.enableBankCard ? 'Далее (Оплата)' : 'Оформить заказ'}
+                       Оформить заказ
                      </button>
                   </div>
                 </form>
@@ -980,12 +996,14 @@ export default function ClientDashboard() {
                  <h3 className="text-[20px] font-bold text-text-main mb-2 shrink-0">{lang === 'RU' ? 'Оплата заказа' : 'Buyurtma to\'lovi'}</h3>
                  <p className="text-[13px] text-text-muted mb-6 shrink-0">{lang === 'RU' ? 'Переведите указанную сумму на карту ниже и загрузите чек оплаты.' : 'Ko\'rsatilgan summani quyidagi kartaga o\'tkazing va to\'lov chekini yuklang.'}</p>
                  
-                 <form onSubmit={submitOrderWithDetails} className="overflow-y-auto custom-scrollbar flex-1 -mr-2 pr-2">
+                 <form onSubmit={submitPaymentForOrder} className="overflow-y-auto custom-scrollbar flex-1 -mr-2 pr-2">
                    <div className="bg-surface-alt p-4 rounded-xl border border-border-color text-[13px] mb-6">
                       <div className="flex justify-between items-center mb-2">
                          <span className="text-text-muted font-bold tracking-widest uppercase text-[10px]">К оплате</span>
                       </div>
-                      <div className="font-mono text-[20px] text-text-main font-bold tracking-tight">{(cartTotal).toLocaleString()} UZS</div>
+                      <div className="font-mono text-[20px] text-text-main font-bold tracking-tight">
+                         {payingOrderId ? myOrders.find(o => o.id === payingOrderId)?.total.toLocaleString() : 0} UZS
+                      </div>
                    </div>
 
                    <div className="bg-surface-alt p-4 rounded-xl border border-border-color text-[13px] mb-6">
@@ -1034,16 +1052,19 @@ export default function ClientDashboard() {
                    <div className="pt-2 flex gap-3 shrink-0 pb-2">
                        <button 
                          type="button" 
-                         onClick={() => setCheckoutStep('details')}
+                         onClick={() => {
+                            setCheckoutStep('idle');
+                            setPayingOrderId(null);
+                         }}
                          className="flex-1 px-4 py-3 border border-border-color border-transparent text-text-muted rounded-xl font-bold hover:bg-surface transition-colors/50"
                        >
-                         Назад
+                         Отмена
                        </button>
                        <button 
                          type="submit" 
                          className="flex-1 px-4 py-3 bg-brand-primary hover:bg-brand-primary-hover text-white rounded-xl font-bold transition-all shadow-md active:scale-95 flex items-center justify-center text-[13px]"
                        >
-                         Подтвердить оплату
+                         Отправить чек
                        </button>
                     </div>
                  </form>

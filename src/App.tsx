@@ -56,23 +56,49 @@ function ProtectedRoute({ children, requiredRole }: { children: React.ReactNode,
   return <>{children}</>;
 }
 
+function GuestOrOwnerRoute({ children }: { children: React.ReactNode }) {
+  const { user, appUser, loading } = useAuth();
+
+  if (loading) return <SplashScreen />;
+
+  if (!user) {
+    return <>{children}</>; // allow guests
+  }
+
+  if (!appUser) {
+    const creationTime = new Date(user.metadata.creationTime || '').getTime();
+    if (Date.now() - creationTime > 10000) {
+      return <AccountStatusScreen status="deleted" />;
+    }
+    return <SplashScreen />;
+  }
+
+  if (appUser.role === 'client') {
+    return <Navigate to="/client" replace />;
+  }
+
+  if (appUser.status === 'blocked') return <AccountStatusScreen status="blocked" />;
+
+  return <>{children}</>;
+}
+
 function HomeRedirect() {
   const { user, appUser, loading } = useAuth();
   
   if (loading) return <SplashScreen />;
   
   if (!user) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/admin" replace />;
   }
 
-  if (loading || !appUser) {
+  if (!appUser) {
     return <SplashScreen />;
   }
 
   if (appUser.role === 'owner' || appUser.role === 'admin') return <Navigate to="/admin" replace />;
   if (appUser.role === 'client') return <Navigate to="/client" replace />;
 
-  return <Navigate to="/login" replace />;
+  return <Navigate to="/admin" replace />;
 }
 
 export default function App() {
@@ -85,7 +111,7 @@ export default function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/join" element={<Join />} />
           <Route path="/invite/:code" element={<Join />} />
-          <Route path="/admin" element={<ProtectedRoute requiredRole="owner"><AdminDashboard /></ProtectedRoute>} />
+          <Route path="/admin" element={<GuestOrOwnerRoute><AdminDashboard /></GuestOrOwnerRoute>} />
           <Route path="/client" element={<ProtectedRoute requiredRole="client"><ClientDashboard /></ProtectedRoute>} />
           <Route path="/dev" element={<DeveloperPanel />} />
           <Route path="*" element={<Navigate to="/" replace />} />
